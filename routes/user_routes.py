@@ -44,6 +44,10 @@ def login():
 
     template = allowed_dashboards.get(role, 'admin/dashboard.html')
 
+    # For secretary, redirect to dashboard route to avoid POST resubmit on refresh
+    if role == 'secretary':
+        return redirect(url_for('secretary.dashboard', first_name=user.first_name, email=user.email))
+
     # Pass first_name and email to the dashboard template
     return render_template(template, first_name=user.first_name, email=user.email)
 

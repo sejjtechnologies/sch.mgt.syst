@@ -280,3 +280,98 @@ def api_pupils():
         out.append(obj)
 
     return jsonify(out)
+
+
+@secretary_bp.route('/secretary/delete/<uuid:id>', methods=['POST'])
+def delete_pupil(id):
+    pupil = Pupil.query.get_or_404(str(id))
+    db.session.delete(pupil)
+    db.session.commit()
+    flash('Pupil deleted successfully', 'success')
+    return redirect(url_for('secretary.manage_pupils'))
+
+
+@secretary_bp.route('/secretary/edit/<uuid:id>', methods=['GET'])
+def edit_pupil(id):
+    pupil = Pupil.query.get_or_404(id)
+    stream_objs = Stream.query.order_by(Stream.name).all()
+    class_objs = SchoolClass.query.order_by(SchoolClass.level).all()
+
+    streams = [s.to_dict() for s in stream_objs]
+    classes = [c.to_dict() for c in class_objs]
+
+    # Check for flashed messages
+    flashed = get_flashed_messages(with_categories=True)
+    success = None
+    error = None
+    transient = False
+    if flashed:
+        cat, msg = flashed[0]
+        if cat == 'success':
+            success = msg
+        else:
+            error = msg
+        transient = True
+
+    return render_template('secretary/edit_pupils.html', pupil=pupil, streams=streams, classes=classes, success=success, error=error, transient=transient)
+
+
+@secretary_bp.route('/secretary/edit/<uuid:id>', methods=['POST'])
+def edit_pupil_submit(id):
+    pupil = Pupil.query.get_or_404(id)
+
+    # Update fields
+    pupil.first_name = request.form.get('first_name', '').strip()
+    pupil.last_name = request.form.get('last_name', '').strip()
+    pupil.gender = request.form.get('gender', '').strip()
+    dob_str = request.form.get('dob', '').strip()
+    if dob_str:
+        try:
+            pupil.dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    pupil.nationality = request.form.get('nationality', '').strip()
+    pupil.village = request.form.get('village', '').strip()
+    pupil.subcounty = request.form.get('subcounty', '').strip()
+    pupil.district = request.form.get('district', '').strip()
+    pupil.religion = request.form.get('religion', '').strip()
+    pupil.guardian_first = request.form.get('guardian_first', '').strip()
+    pupil.guardian_last = request.form.get('guardian_last', '').strip()
+    pupil.guardian_phone = request.form.get('guardian_phone', '').strip()
+    pupil.guardian_relationship = request.form.get('guardian_relationship', '').strip()
+    pupil.guardian_occupation = request.form.get('guardian_occupation', '').strip()
+    pupil.previous_school = request.form.get('previous_school', '').strip()
+    admission_date_str = request.form.get('admission_date', '').strip()
+    if admission_date_str:
+        try:
+            pupil.admission_date = datetime.strptime(admission_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    pupil.enrollment_status = request.form.get('enrollment_status', 'active').strip()
+
+    # System generated, but allow editing
+    pupil.roll_number = request.form.get('roll_number', '').strip()
+    pupil.admission_number = request.form.get('admission_number', '').strip()
+
+    # Class and stream
+    class_id = request.form.get('class_admitted')
+    if class_id:
+        try:
+            pupil.class_id = int(class_id)
+        except ValueError:
+            pass
+    stream_id = request.form.get('stream')
+    if stream_id:
+        try:
+            pupil.stream_id = int(stream_id)
+        except ValueError:
+            pass
+
+    try:
+        db.session.commit()
+        flash('Pupil updated successfully', 'success')
+        return redirect(url_for('secretary.manage_pupils'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating pupil: {str(e)}', 'error')
+        return redirect(url_for('secretary.edit_pupil', id=id))
