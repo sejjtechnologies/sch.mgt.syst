@@ -26,7 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt /app/requirements.txt
 
-RUN pip install --upgrade pip && pip install --no-cache-dir -r /app/requirements.txt
+# Ensure the binary psycopg2 driver is installed even if cached layers persist
+RUN pip install --upgrade pip && pip install --no-cache-dir psycopg2-binary==2.9.7
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app
 

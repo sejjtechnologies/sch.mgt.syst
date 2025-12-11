@@ -9,6 +9,11 @@ from models import db, Pupil, Stream, SchoolClass
 secretary_bp = Blueprint('secretary', __name__)
 
 
+@secretary_bp.route('/secretary/dashboard')
+def dashboard():
+    return render_template('secretary/dashboard.html')
+
+
 @secretary_bp.route('/secretary/register', methods=['GET'])
 def register_form():
     # Fetch streams/classes and pass to template so dropdowns can be rendered server-side

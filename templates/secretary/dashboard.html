@@ -23,12 +23,12 @@
     </nav>
 
     <main class="container py-5 d-flex align-items-center" style="min-height:60vh;">
-      <div class="w-100 d-flex justify-content-center gap-3">
-        <a href="{{ url_for('secretary.register_form') }}" class="btn btn-success btn-lg text-white d-flex align-items-center px-4 py-3">
+      <div class="w-100 d-flex flex-column flex-sm-row justify-content-center gap-3">
+        <a href="{{ url_for('secretary.register_form') }}" class="btn btn-success btn-md text-white d-flex align-items-center px-4 py-3">
           <i class="bi bi-person-plus me-2"></i>
           Register pupil
         </a>
-        <a href="{{ url_for('secretary.manage_pupils') }}" class="btn btn-primary btn-lg text-white d-flex align-items-center px-4 py-3">
+        <a href="{{ url_for('secretary.manage_pupils') }}" class="btn btn-primary btn-md text-white d-flex align-items-center px-4 py-3">
           <i class="bi bi-people-fill me-2"></i>
           Manage pupils
         </a>

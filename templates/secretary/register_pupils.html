@@ -27,9 +27,9 @@
       <div class="container-fluid">
         <a class="navbar-brand text-white" href="/">Secretary — Register Pupils</a>
         <div class="ms-auto">
-          <button id="backBtn" type="button" class="btn btn-light btn-sm d-flex align-items-center">
+          <a href="{{ url_for('secretary.dashboard') }}" class="btn btn-light btn-sm d-flex align-items-center">
             <i class="bi bi-box-arrow-left me-2"></i>Back
-          </button>
+          </a>
         </div>
       </div>
     </nav>
@@ -194,18 +194,11 @@
 
               <!-- Roll/admission numbers will be assigned by backend; no client-side generate button -->
 
-              <div class="d-flex justify-content-center mt-3">
-                <button id="registerBtn" type="submit" class="btn btn-success btn-lg text-white d-flex align-items-center">
-                  <i class="bi bi-person-plus me-2"></i>
-                  Register pupil
-                </button>
-              </div>
-
             </form>
           </div>
 
           <div class="d-flex justify-content-center mt-3">
-            <button id="registerBtn" class="btn btn-success btn-lg text-white d-flex align-items-center">
+            <button id="submitBtn" onclick="document.getElementById('registerForm').submit()" class="btn btn-success btn-lg text-white d-flex align-items-center">
               <i class="bi bi-person-plus me-2"></i>
               Register pupil
             </button>
@@ -270,21 +263,7 @@
         } catch (e) { /* ignore */ }
       })();
 
-      // Register button submits the form (no JS needed; button is type=submit)
-
-      // Back button: try history.back() and fallback to dashboard (/) if no history
-      const backBtn = document.getElementById('backBtn');
-      if (backBtn) {
-        backBtn.addEventListener('click', function(){
-          try {
-            history.back();
-            // if nothing happens in 300ms, fallback to index/dashboard
-            setTimeout(() => { window.location.href = '/'; }, 300);
-          } catch (e) {
-            window.location.href = '/';
-          }
-        });
-      }
+      // Register button submits the form via onclick
     </script>
   </body>
 </html>
