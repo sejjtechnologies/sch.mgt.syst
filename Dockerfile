@@ -14,6 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     zlib1g-dev \
     ca-certificates \
+    # For weasyprint / rendering
+    libcairo2 libcairo2-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev libffi-dev \
+    libxml2 libxml2-dev libxslt1.1 libxslt1-dev \
+    shared-mime-info \
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
@@ -22,9 +27,10 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r /app/requirements
 
 COPY . /app
 
-# Default port (Vercel provides $PORT at runtime)
+# Default port (platform provides $PORT at runtime)
 ENV PORT 8080
 EXPOSE 8080
 
 # Run with gunicorn and bind to the platform provided $PORT
-CMD exec gunicorn app:app --bind 0.0.0.0:${PORT} --workers 1
+# Use 2 workers and a timeout to be more resilient in PaaS environments
+CMD exec gunicorn app:app --bind 0.0.0.0:${PORT} --workers 2 --timeout 120
