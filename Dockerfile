@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     # For weasyprint / rendering
     libcairo2 libcairo2-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 libgdk-pixbuf2.0-dev libffi-dev \
+    libgdk-pixbuf-xlib-2.0-0 libgdk-pixbuf-xlib-2.0-dev libffi-dev \
     libxml2 libxml2-dev libxslt1.1 libxslt1-dev \
     shared-mime-info \
  && rm -rf /var/lib/apt/lists/*
