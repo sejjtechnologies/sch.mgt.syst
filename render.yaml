@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: sch-manager
+    env: docker
+    repo: https://github.com/sejjtechnologies/sch.mgt.syst
+    branch: main
+    plan: free
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: DATABASE_URL
+        value: ""
+        generateValue: false
+        requireOnCreate: true
+      - key: SECRET_KEY
+        value: ""
+        generateValue: false
+        requireOnCreate: true
+    autoDeploy: true
+    disk: 5000
+    cpu: 1
+    envVarsSecret: []
