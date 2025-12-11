@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Welcome — School Manager</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+      :root {
+        --primary: #0d6efd;
+        --accent: #6610f2;
+        --success: #198754;
+        --muted: #6c757d;
+        --bg: #f8fafc;
+        --card: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg);
+      }
+
+      /* Fixed navbar */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        box-shadow: 0 4px 12px rgba(11, 15, 30, 0.15);
+        padding: 0.75rem 1rem;
+        height: 70px;
+      }
+
+      .navbar .navbar-brand {
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+      .logo {
+        height: 45px;
+        width: 45px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
+      /* Full viewport layout */
+      .app-shell {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        padding-top: 70px;
+        overflow: hidden;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        overflow: hidden;
+        position: relative;
+        z-index: 5;
+      }
+
+      .hero {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-left {
+        display: none;
+      }
+
+      .school-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0b1a3a;
+        margin-bottom: 0.3rem;
+        line-height: 1.2;
+      }
+
+      .school-sub {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+      }
+
+      .description {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .feature-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .feature-list li {
+        color: var(--muted);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .feature-list .bi {
+        color: var(--success);
+        font-size: 1.1rem;
+      }
+
+      /* Login card */
+      .login-card {
+        width: 100%;
+        background: var(--card);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 10px 40px rgba(11, 15, 30, 0.1);
+        border: 1px solid #e9ecef;
+        position: relative;
+        z-index: 10;
+      }
+
+      .login-bg {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(102, 16, 242, 0.05)),
+                    url('/static/images/login-bg.jpg') center/cover no-repeat;
+        background-attachment: fixed;
+        z-index: 1;
+      }
+
+      .login-card h5 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #0b1a3a;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+      }
+
+      .form-label {
+        font-weight: 500;
+        color: #495057;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .input-group {
+        margin-bottom: 1rem;
+      }
+
+      .input-group-text {
+        background: #f0f2f5;
+        border: 1px solid #dee2e6;
+        color: var(--muted);
+      }
+
+      .form-control {
+        border: 1px solid #dee2e6;
+        font-size: 0.95rem;
+        padding: 0.65rem 0.75rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+      }
+
+      .form-check-input {
+        cursor: pointer;
+        border-color: #dee2e6;
+      }
+
+      .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .form-check-label {
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #495057;
+      }
+
+      .login-footer {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+      }
+
+      .btn-primary:hover {
+        background: #0b5ed7;
+        color: #fff;
+      }
+
+      .btn-sm-link {
+        background: none;
+        border: none;
+        color: var(--primary);
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0;
+      }
+
+      .btn-sm-link:hover {
+        text-decoration: underline;
+      }
+
+      /* School branding - positioned above card */
+      .school-branding {
+        text-align: center;
+        margin-bottom: 1rem;
+        animation: fadeInDown 0.6s ease-out;
+      }
+
+      .school-name-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #e31c23;
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+      }
+
+      .school-motto-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        color: #0d6efd;
+        margin-top: 0.25rem;
+        font-style: italic;
+      }
+
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Password toggle button */
+      .password-toggle {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 0.5rem;
+        font-size: 1rem;
+        transition: color 0.2s;
+      }
+
+      .password-toggle:hover {
+        color: var(--primary);
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .login-card {
+          padding: 1.5rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .navbar {
+          padding: 0.5rem 1rem;
+          height: 60px;
+        }
+
+        .navbar .navbar-brand {
+          font-size: 0.9rem;
+        }
+
+        .logo {
+          height: 40px;
+          width: 40px;
+        }
+
+        .app-shell {
+          padding-top: 60px;
+        }
+
+        .content {
+          padding: 1rem;
+        }
+
+        .hero {
+          gap: 1.5rem;
+        }
+
+        .hero-left {
+          padding: 1rem;
+        }
+
+        .school-title {
+          font-size: 1.3rem;
+        }
+
+        .login-card {
+          padding: 1.25rem;
+        }
+
+        .d-md-flex {
+          display: none !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .school-title {
+          font-size: 1.1rem;
+        }
+
+        .school-sub {
+          font-size: 0.85rem;
+        }
+
+        .description {
+          font-size: 0.85rem;
+        }
+
+        .feature-list li {
+          font-size: 0.8rem;
+        }
+
+        .form-control {
+          font-size: 0.9rem;
+          padding: 0.5rem 0.6rem;
+        }
+
+        .login-card h5 {
+          font-size: 1.1rem;
+          margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+          padding: 0.5rem 1rem;
+          font-size: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-bg"></div>
+    <div class="app-shell">
+      <nav class="navbar">
+        <div class="container-fluid px-3 h-100">
+          <div class="d-flex align-items-center justify-content-between h-100" style="width: 100%;">
+            <a class="navbar-brand" href="#" style="margin-bottom: 0;">
+              <div class="logo">
+                <i class="bi bi-mortarboard" style="color: #fff;"></i>
+              </div>
+              <span style="white-space: nowrap;">School Manager</span>
+            </a>
+            <div class="d-none d-md-flex align-items-center text-white small" style="gap: 0.5rem;">
+              <i class="bi bi-check-circle"></i>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="content">
+        <div class="hero">
+          <div class="hero-left">
+            <!-- Hidden - only login card displayed -->
+          </div>
+
+          <div class="hero-right">
+            <div class="school-branding">
+              <h1 class="school-name-title">Greenfield Primary School</h1>
+              <p class="school-motto-text">Imagine More. Build More.</p>
+            </div>
+            <div class="login-card">
+              <h5 style="margin-bottom: 1.5rem; text-align: center;"><i class="bi bi-person-lock me-2"></i>Role Login</h5>
+              <form method="post" action="{{ url_for('user.login') }}">
+                {% if error %}
+                <div id="serverError" class="alert alert-danger" role="alert">{{ error }}</div>
+                {% endif %}
+                <!-- transientFlag is rendered as a hidden input so JS can read it without embedding Jinja inside JS code -->
+                <input type="hidden" id="transientFlag" value="{{ transient|default(False)|tojson }}">
+                <div class="mb-2">
+                  <label class="form-label">Email Address</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input
+                      type="email"
+                      name="email"
+                      class="form-control"
+                      placeholder=""
+                      value="{{ request.form.email or '' }}"
+                      required>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Password</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input
+                      type="password"
+                      id="passwordInput"
+                      name="password"
+                      class="form-control"
+                      placeholder=""
+                      required>
+                    <button type="button" class="password-toggle" id="passwordToggle" title="Show/hide password">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="remember">
+                    <label class="form-check-label" for="remember">Remember me</label>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+
+                <div class="login-footer">
+                  <div>Forgot password? <a href="#" class="btn-sm-link">Reset here</a></div>
+                  <div style="margin-top: 0.5rem;">Contact admin@school.org for support</div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Password toggle functionality
+      const passwordInput = document.getElementById('passwordInput');
+      const passwordToggle = document.getElementById('passwordToggle');
+
+      if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+
+          // Toggle icon
+          const icon = passwordToggle.querySelector('i');
+          icon.classList.toggle('bi-eye');
+          icon.classList.toggle('bi-eye-slash');
+        });
+      }
+
+        // Auto-dismiss transient server errors (only when backend marked them transient)
+        (function() {
+          const serverError = document.getElementById('serverError');
+          if (!serverError) return;
+          // Read transient flag from a hidden input (avoids embedding template tags inside JS)
+          const transient = (function() {
+            const el = document.getElementById('transientFlag');
+            return el ? String(el.value) === 'true' : false;
+          })();
+          if (transient) {
+            setTimeout(() => {
+              try {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(serverError);
+                bsAlert.close();
+              } catch (e) {
+                // Fallback: remove element
+                serverError.remove();
+              }
+            }, 2000);
+          }
+        })();
+    </script>
+  </body>
+</html>

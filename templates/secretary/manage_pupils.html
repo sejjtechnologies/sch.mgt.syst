@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Pupils — Secretary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">Secretary</a>
+        <div class="ms-auto">
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger text-white">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Registered pupils</h3>
+        <a href="{{ url_for('secretary.register_form') }}" class="btn btn-success">New registration</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-striped table-bordered">
+          <thead class="table-light small">
+            <tr>
+              <th>#</th>
+              <th>Admission No</th>
+              <th>Roll No</th>
+              <th>Name</th>
+              <th>Gender</th>
+              <th>DOB</th>
+              <th>Class</th>
+              <th>Stream</th>
+              <th>Guardian</th>
+              <th>Phone</th>
+              <th>Village</th>
+              <th>Subcounty</th>
+              <th>District</th>
+              <th>Nationality</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody class="small">
+            {% for p in pupils %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ p.admission_number }}</td>
+              <td>{{ p.roll_number }}</td>
+              <td>{{ p.first_name }} {{ p.last_name }}</td>
+              <td>{{ p.gender }}</td>
+              <td>{{ p.dob or '' }}</td>
+              <td>{{ p.class_admitted or '' }}</td>
+              <td>{{ p.stream or '' }}</td>
+              <td>{{ p.guardian_first or '' }} {{ p.guardian_last or '' }}</td>
+              <td>{{ p.guardian_phone or '' }}</td>
+              <td>{{ p.village or '' }}</td>
+              <td>{{ p.subcounty or '' }}</td>
+              <td>{{ p.district or '' }}</td>
+              <td>{{ p.nationality or '' }}</td>
+              <td>{{ p.enrollment_status or '' }}</td>
+              <td>{{ p.created_at or '' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="16" class="text-center">No pupils registered</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

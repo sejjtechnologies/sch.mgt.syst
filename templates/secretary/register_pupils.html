@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register Pupils — Secretary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      :root{--page-bg:#f6f9fb;--card-grad-start:#e6f9f1;--card-grad-end:#e8f3ff}
+      body{background:var(--page-bg);font-family:Inter,system-ui,Arial,sans-serif}
+      /* Fixed top nav */
+      .navbar{position:fixed;top:0;left:0;right:0;z-index:1030;background:#0d6efd;color:#fff;padding:.6rem 1rem}
+      .container-main{padding-top:72px;padding-bottom:2rem}
+      /* Card carries the light green/blue background requested */
+      .card{border-radius:12px;background:linear-gradient(180deg,var(--card-grad-start),var(--card-grad-end));border:1px solid rgba(11,15,30,0.05)}
+      .form-control-sm{padding:.35rem .5rem;font-size:.9rem}
+      /* Labels should be strong black but keep small font style */
+      .form-label{color:#000;font-weight:700}
+      .section-title{font-weight:600;color:#0b3a58;margin-bottom:.5rem}
+      .muted-small{font-size:.85rem;color:#6c757d}
+      @media (max-width:576px){.row-cols-sm-2>.col{flex:0 0 50%;max-width:50%}}
+    </style>
+  </head>
+  <body>
+    <nav class="navbar d-flex align-items-center">
+      <div class="container-fluid">
+        <a class="navbar-brand text-white" href="/">Secretary — Register Pupils</a>
+        <div class="ms-auto">
+          <button id="backBtn" type="button" class="btn btn-light btn-sm d-flex align-items-center">
+            <i class="bi bi-box-arrow-left me-2"></i>Back
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container container-main">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+          <div class="card shadow-sm p-3 p-md-4">
+            <form id="registerForm" method="post" action="{{ url_for('secretary.register_submit') }}">
+
+              {% if success %}
+                <div id="serverMsg" class="alert alert-success" role="alert">{{ success }}</div>
+              {% elif error %}
+                <div id="serverMsg" class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endif %}
+              <input type="hidden" id="transientFlag" value="{{ '1' if transient else '' }}">
+
+              <div class="mb-3">
+                <h5 class="section-title text-primary"><span class="badge bg-primary me-2">1</span><i class="bi bi-person-fill me-2"></i>Pupil details</h5>
+                <p class="muted-small">Use the compact fields — form is mobile-friendly.</p>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">First name</label>
+                  <input name="first_name" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Last name</label>
+                  <input name="last_name" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Gender</label>
+                  <select name="gender" class="form-select form-select-sm" required>
+                    <option value="">Select</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Date of birth</label>
+                  <input name="dob" type="date" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Nationality</label>
+                  <select name="nationality" class="form-select form-select-sm" required>
+                    <option value="">Select nationality</option>
+                    <option>Uganda</option>
+                    <option>Kenya</option>
+                    <option>Tanzania</option>
+                    <option>Rwanda</option>
+                    <option>Burundi</option>
+                    <option>South Sudan</option>
+                    <option>Somalia</option>
+                    <option>Ethiopia</option>
+                    <option>Eritrea</option>
+                    <option>Djibouti</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small">Home address (split)</label>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label xsmall">Village / Street</label>
+                  <input name="village" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label xsmall">Subcounty / Town Council</label>
+                  <input name="subcounty" data-capitalize="true" class="form-control form-control-sm">
+                </div>
+                <div class="col-12 col-sm-4">
+                  <label class="form-label xsmall">District</label>
+                  <input name="district" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Religion</label>
+                  <input name="religion" data-capitalize="true" class="form-control form-control-sm">
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5 class="section-title text-success"><span class="badge bg-success me-2">2</span><i class="bi bi-people-fill me-2"></i>Parent / Guardian</h5>
+              </div>
+
+              <div class="row g-2 mb-2">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Guardian first name</label>
+                  <input name="guardian_first" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Guardian last name</label>
+                  <input name="guardian_last" data-capitalize="true" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Phone number</label>
+                  <input name="guardian_phone" class="form-control form-control-sm" inputmode="tel">
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Relationship to pupil</label>
+                  <input name="guardian_relationship" data-capitalize="true" class="form-control form-control-sm">
+                </div>
+                <div class="col-12">
+                  <label class="form-label small">Occupation</label>
+                  <input name="guardian_occupation" data-capitalize="true" class="form-control form-control-sm">
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="mb-3">
+                <h5 class="section-title text-info"><span class="badge bg-info me-2">3</span><i class="bi bi-journal-bookmark me-2"></i>Admission details</h5>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Class admitted to</label>
+                  <select id="classSelect" name="class_admitted" class="form-select form-select-sm">
+                    <option value="">Select class</option>
+                    {% for c in classes %}
+                      <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Stream</label>
+                  <select id="streamSelect" name="stream" class="form-select form-select-sm">
+                    <option value="">Select stream</option>
+                    {% for s in streams %}
+                      <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Previous school (if any)</label>
+                  <input name="previous_school" data-capitalize="true" class="form-control form-control-sm">
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Admission date</label>
+                  <input name="admission_date" type="date" class="form-control form-control-sm">
+                </div>
+
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Roll number (system)</label>
+                  <input id="rollNumber" name="roll_number" class="form-control form-control-sm" readonly>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Admission number (system)</label>
+                  <input id="admissionNumber" name="admission_number" class="form-control form-control-sm" readonly>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label small">Enrollment status</label>
+                  <select name="enrollment_status" class="form-select form-select-sm">
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Roll/admission numbers will be assigned by backend; no client-side generate button -->
+
+              <div class="d-flex justify-content-center mt-3">
+                <button id="registerBtn" type="submit" class="btn btn-success btn-lg text-white d-flex align-items-center">
+                  <i class="bi bi-person-plus me-2"></i>
+                  Register pupil
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          <div class="d-flex justify-content-center mt-3">
+            <button id="registerBtn" class="btn btn-success btn-lg text-white d-flex align-items-center">
+              <i class="bi bi-person-plus me-2"></i>
+              Register pupil
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Roll/admission numbers will be assigned by the backend; client-side generation removed.
+
+      // If the template provided `streams_json` and `classes_json`, we can use them
+      (function hydrateSelects(){
+        try {
+          const streams = window.__STREAMS__ || JSON.parse('{{ streams_json | safe }}');
+          const classes = window.__CLASSES__ || JSON.parse('{{ classes_json | safe }}');
+
+          const streamSelect = document.getElementById('streamSelect');
+          if (streamSelect && Array.isArray(streams)) {
+            streamSelect.innerHTML = '<option value="">Select stream</option>' + streams.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+          }
+
+          const classSelect = document.getElementById('classSelect');
+          if (classSelect && Array.isArray(classes)) {
+            classSelect.innerHTML = '<option value="">Select class</option>' + classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+          }
+        } catch (e) {
+          // ignore if JSON parsing fails — selects already rendered server-side
+        }
+      })();
+
+      // Auto-capitalize first letter of names/places/roles as the user types
+      (function attachAutoCapitalize(){
+        function capitalizeWords(s){
+          return s.replace(/\b\w/g, function(ch){ return ch.toUpperCase(); });
+        }
+
+        const inputs = document.querySelectorAll('input[data-capitalize="true"]');
+        inputs.forEach(function(el){
+          el.addEventListener('input', function(e){
+            const start = el.selectionStart;
+            const end = el.selectionEnd;
+            const newVal = capitalizeWords(el.value);
+            if (newVal !== el.value) {
+              el.value = newVal;
+              try { el.setSelectionRange(start, end); } catch (err) { /* ignore */ }
+            }
+          });
+        });
+      })();
+
+      // Auto-dismiss transient server message after 2 seconds when `transient` flag is set
+      (function dismissServerMsg(){
+        try {
+          const flagEl = document.getElementById('transientFlag');
+          const transient = flagEl && flagEl.value === '1';
+          if (transient) {
+            const msg = document.getElementById('serverMsg');
+            if (msg) setTimeout(() => { msg.remove(); }, 2000);
+          }
+        } catch (e) { /* ignore */ }
+      })();
+
+      // Register button submits the form (no JS needed; button is type=submit)
+
+      // Back button: try history.back() and fallback to dashboard (/) if no history
+      const backBtn = document.getElementById('backBtn');
+      if (backBtn) {
+        backBtn.addEventListener('click', function(){
+          try {
+            history.back();
+            // if nothing happens in 300ms, fallback to index/dashboard
+            setTimeout(() => { window.location.href = '/'; }, 300);
+          } catch (e) {
+            window.location.href = '/';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
