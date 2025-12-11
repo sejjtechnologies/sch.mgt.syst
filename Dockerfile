@@ -5,6 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Build cache bust argument: bump this to force pip reinstall during CI builds
+ARG CACHEBUST=1
+
 # Install system deps needed by some packages (Pillow, psycopg, weasyprint deps are heavy,
 # keep minimal here; you may need to add more libs if build fails on Vercel)
 RUN apt-get update && apt-get install -y --no-install-recommends \
