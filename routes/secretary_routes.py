@@ -293,7 +293,7 @@ def delete_pupil(id):
 
 @secretary_bp.route('/secretary/edit/<uuid:id>', methods=['GET'])
 def edit_pupil(id):
-    pupil = Pupil.query.get_or_404(id)
+    pupil = Pupil.query.get_or_404(str(id))
     stream_objs = Stream.query.order_by(Stream.name).all()
     class_objs = SchoolClass.query.order_by(SchoolClass.level).all()
 
@@ -318,7 +318,7 @@ def edit_pupil(id):
 
 @secretary_bp.route('/secretary/edit/<uuid:id>', methods=['POST'])
 def edit_pupil_submit(id):
-    pupil = Pupil.query.get_or_404(id)
+    pupil = Pupil.query.get_or_404(str(id))
 
     # Update fields
     pupil.first_name = request.form.get('first_name', '').strip()
@@ -349,23 +349,13 @@ def edit_pupil_submit(id):
             pass
     pupil.enrollment_status = request.form.get('enrollment_status', 'active').strip()
 
-    # System generated, but allow editing
-    pupil.roll_number = request.form.get('roll_number', '').strip()
-    pupil.admission_number = request.form.get('admission_number', '').strip()
-
     # Class and stream
     class_id = request.form.get('class_admitted')
     if class_id:
-        try:
-            pupil.class_id = int(class_id)
-        except ValueError:
-            pass
+        pupil.class_admitted = class_id
     stream_id = request.form.get('stream')
     if stream_id:
-        try:
-            pupil.stream_id = int(stream_id)
-        except ValueError:
-            pass
+        pupil.stream = stream_id
 
     try:
         db.session.commit()

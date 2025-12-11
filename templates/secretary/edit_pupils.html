@@ -78,16 +78,16 @@
                   <label class="form-label small">Nationality</label>
                   <select name="nationality" class="form-select form-select-sm" required>
                     <option value="">Select nationality</option>
-                    <option>Uganda</option>
-                    <option>Kenya</option>
-                    <option>Tanzania</option>
-                    <option>Rwanda</option>
-                    <option>Burundi</option>
-                    <option>South Sudan</option>
-                    <option>Somalia</option>
-                    <option>Ethiopia</option>
-                    <option>Eritrea</option>
-                    <option>Djibouti</option>
+                    <option value="Uganda" {{ 'selected' if pupil.nationality == 'Uganda' }}>Uganda</option>
+                    <option value="Kenya" {{ 'selected' if pupil.nationality == 'Kenya' }}>Kenya</option>
+                    <option value="Tanzania" {{ 'selected' if pupil.nationality == 'Tanzania' }}>Tanzania</option>
+                    <option value="Rwanda" {{ 'selected' if pupil.nationality == 'Rwanda' }}>Rwanda</option>
+                    <option value="Burundi" {{ 'selected' if pupil.nationality == 'Burundi' }}>Burundi</option>
+                    <option value="South Sudan" {{ 'selected' if pupil.nationality == 'South Sudan' }}>South Sudan</option>
+                    <option value="Somalia" {{ 'selected' if pupil.nationality == 'Somalia' }}>Somalia</option>
+                    <option value="Ethiopia" {{ 'selected' if pupil.nationality == 'Ethiopia' }}>Ethiopia</option>
+                    <option value="Eritrea" {{ 'selected' if pupil.nationality == 'Eritrea' }}>Eritrea</option>
+                    <option value="Djibouti" {{ 'selected' if pupil.nationality == 'Djibouti' }}>Djibouti</option>
                   </select>
                 </div>
                 <div class="col-12">
@@ -95,19 +95,19 @@
                 </div>
                 <div class="col-12 col-sm-4">
                   <label class="form-label xsmall">Village / Street</label>
-                  <input name="village" data-capitalize="true" class="form-control form-control-sm" required>
+                  <input name="village" data-capitalize="true" class="form-control form-control-sm" required value="{{ pupil.village }}">
                 </div>
                 <div class="col-12 col-sm-4">
                   <label class="form-label xsmall">Subcounty / Town Council</label>
-                  <input name="subcounty" data-capitalize="true" class="form-control form-control-sm">
+                  <input name="subcounty" data-capitalize="true" class="form-control form-control-sm" value="{{ pupil.subcounty }}">
                 </div>
                 <div class="col-12 col-sm-4">
                   <label class="form-label xsmall">District</label>
-                  <input name="district" data-capitalize="true" class="form-control form-control-sm" required>
+                  <input name="district" data-capitalize="true" class="form-control form-control-sm" required value="{{ pupil.district }}">
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label small">Religion</label>
-                  <input name="religion" data-capitalize="true" class="form-control form-control-sm">
+                  <input name="religion" data-capitalize="true" class="form-control form-control-sm" value="{{ pupil.religion }}">
                 </div>
               </div>
 
@@ -120,23 +120,23 @@
               <div class="row g-2 mb-2">
                 <div class="col-12 col-sm-6">
                   <label class="form-label small">Guardian first name</label>
-                  <input name="guardian_first" data-capitalize="true" class="form-control form-control-sm" required>
+                  <input name="guardian_first" data-capitalize="true" class="form-control form-control-sm" required value="{{ pupil.guardian_first }}">
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label small">Guardian last name</label>
-                  <input name="guardian_last" data-capitalize="true" class="form-control form-control-sm" required>
+                  <input name="guardian_last" data-capitalize="true" class="form-control form-control-sm" required value="{{ pupil.guardian_last }}">
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label small">Phone number</label>
-                  <input name="guardian_phone" class="form-control form-control-sm" inputmode="tel">
+                  <input name="guardian_phone" class="form-control form-control-sm" inputmode="tel" value="{{ pupil.guardian_phone }}">
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label small">Relationship to pupil</label>
-                  <input name="guardian_relationship" data-capitalize="true" class="form-control form-control-sm">
+                  <input name="guardian_relationship" data-capitalize="true" class="form-control form-control-sm" value="{{ pupil.guardian_relationship }}">
                 </div>
                 <div class="col-12">
                   <label class="form-label small">Occupation</label>
-                  <input name="guardian_occupation" data-capitalize="true" class="form-control form-control-sm">
+                  <input name="guardian_occupation" data-capitalize="true" class="form-control form-control-sm" value="{{ '' if pupil.guardian_occupation and pupil.guardian_occupation.lower() == 'none' else pupil.guardian_occupation or '' }}">
                 </div>
               </div>
 
@@ -147,42 +147,42 @@
               </div>
 
               <div class="row g-2 mb-3">
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Class admitted to</label>
                   <select id="classSelect" name="class_admitted" class="form-select form-select-sm">
                     <option value="">Select class</option>
                     {% for c in classes %}
-                      <option value="{{ c.id }}" {{ 'selected' if pupil.class_id == c.id }}>{{ c.name }}</option>
+                      <option value="{{ c.id }}" {{ 'selected' if pupil.class_admitted == c.id }}>{{ c.name }}</option>
                     {% endfor %}
                   </select>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Stream</label>
                   <select id="streamSelect" name="stream" class="form-select form-select-sm">
                     <option value="">Select stream</option>
                     {% for s in streams %}
-                      <option value="{{ s.id }}" {{ 'selected' if pupil.stream_id == s.id }}>{{ s.name }}</option>
+                      <option value="{{ s.id }}" {{ 'selected' if pupil.stream == s.id }}>{{ s.name }}</option>
                     {% endfor %}
                   </select>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Previous school (if any)</label>
-                  <input name="previous_school" data-capitalize="true" class="form-control form-control-sm">
+                  <input name="previous_school" data-capitalize="true" class="form-control form-control-sm" value="{{ pupil.previous_school }}">
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Admission date</label>
-                  <input name="admission_date" type="date" class="form-control form-control-sm">
+                  <input name="admission_date" type="date" class="form-control form-control-sm" value="{{ pupil.admission_date.isoformat() if pupil.admission_date else '' }}">
                 </div>
 
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Roll number (system)</label>
-                  <input id="rollNumber" name="roll_number" class="form-control form-control-sm" value="{{ pupil.roll_number }}">
+                  <input id="rollNumber" name="roll_number" class="form-control form-control-sm" value="{{ pupil.roll_number }}" readonly>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <label class="form-label small">Admission number (system)</label>
-                  <input id="admissionNumber" name="admission_number" class="form-control form-control-sm" value="{{ pupil.admission_number }}">
+                  <input id="admissionNumber" name="admission_number" class="form-control form-control-sm" value="{{ pupil.admission_number }}" readonly>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-12">
                   <label class="form-label small">Enrollment status</label>
                   <select name="enrollment_status" class="form-select form-select-sm">
                     <option value="active" {{ 'selected' if pupil.enrollment_status == 'active' }}>Active</option>
