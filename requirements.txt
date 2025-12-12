@@ -40,7 +40,6 @@ phonenumbers==8.13.0
 Pillow==10.1.0
 psycopg==3.1.14
 psycopg-binary==3.1.14
-psycopg2-binary==2.9.7
 pycparser==2.23
 pydyf==0.12.1
 PyJWT==2.10.1
