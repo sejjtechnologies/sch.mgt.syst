@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create User</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  </head>
+
+  <body class="bg-light">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">School Manager</a>
+
+        <div class="ms-auto">
+          <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-sm">
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+
+          <div class="card shadow-sm rounded-3">
+            <div class="card-header bg-white">
+              <h4 class="mb-0">Create New User</h4>
+            </div>
+
+            <div class="card-body">
+
+              <!-- FLASH MESSAGES -->
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+
+              <!-- FORM -->
+              <form method="POST">
+
+                <div class="mb-3">
+                  <label for="first_name" class="form-label">First Name</label>
+                  <input type="text" class="form-control" id="first_name" name="first_name" required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="last_name" class="form-label">Last Name</label>
+                  <input type="text" class="form-control" id="last_name" name="last_name" required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                      <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="role" class="form-label">Role</label>
+                  <select class="form-select" id="role" name="role">
+                    {% for role_option in roles %}
+                      <option value="{{ role_option.lower() }}">{{ role_option }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                  <label class="form-check-label" for="is_active">Active</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create User</button>
+
+              </form>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SHOW / HIDE PASSWORD -->
+    <script>
+      document.getElementById('togglePassword').addEventListener('click', function() {
+        const input = document.getElementById('password');
+        const icon = document.getElementById('eyeIcon');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+          input.type = 'password';
+          icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+      });
+    </script>
+
+  </body>
+</html>

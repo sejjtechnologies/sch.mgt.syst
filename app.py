@@ -47,6 +47,13 @@ try:
 except Exception as e:
     print(f"⚠ Could not register secretary routes: {e}")
 
+try:
+    from routes.admin_routes import admin_bp
+    app.register_blueprint(admin_bp)
+    # admin routes registered
+except Exception as e:
+    print(f"⚠ Could not register admin routes: {e}")
+
 # Create tables for all models when the app starts, but avoid running twice with the
 # Flask reloader (WERKZEUG_RUN_MAIN). Only run on the reloader main process or when
 # not in debug mode.
