@@ -5,18 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Manage Users</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+      /* Reduce table row height overall */
+      .table td, .table th {
+        padding: 0.45rem 0.6rem;
+      }
+
+      /* Mobile optimizations */
       @media (max-width: 768px) {
-        .table td, .table th {
-          padding: 0.25rem 0.5rem;
-          font-size: 0.8rem;
+        h4 {
+          font-size: 1.1rem;
         }
-        .table {
-          font-size: 0.85rem;
+
+        .btn {
+          padding: 0.25rem 0.45rem;
+          font-size: 0.75rem;
+        }
+
+        .table td, .table th {
+          padding: 0.25rem 0.4rem;
+          font-size: 0.75rem;
+          white-space: nowrap;
+        }
+
+        .table-responsive {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Force actions to stack cleanly if needed */
+        .action-buttons a,
+        .action-buttons form {
+          display: inline-block;
+          margin-bottom: 3px;
         }
       }
     </style>
   </head>
+
   <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container-fluid">
@@ -30,8 +57,9 @@
     <main class="container py-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>Manage Users</h4>
-        <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">Create User</a>
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-success btn-sm">Create User</a>
       </div>
+
       {% with messages = get_flashed_messages() %}
         {% if messages %}
           {% for message in messages %}
@@ -39,8 +67,9 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
+
       <div class="table-responsive">
-        <table class="table table-striped">
+        <table class="table table-striped align-middle">
           <thead>
             <tr>
               <th>Name</th>
@@ -50,6 +79,7 @@
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {% for user in users %}
             <tr>
@@ -57,16 +87,19 @@
               <td>{{ user.email }}</td>
               <td>{{ user.role }}</td>
               <td>{% if user.is_active %}Yes{% else %}No{% endif %}</td>
-              <td>
+              <td class="action-buttons">
                 <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary">Edit</a>
                 <a href="{{ url_for('admin.update_password', user_id=user.id) }}" class="btn btn-sm btn-warning">Password</a>
+
                 <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display:inline;">
-                  <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                  <button type="submit" class="btn btn-sm btn-danger"
+                          onclick="return confirm('Are you sure?')">Delete</button>
                 </form>
               </td>
             </tr>
             {% endfor %}
           </tbody>
+
         </table>
       </div>
     </main>
