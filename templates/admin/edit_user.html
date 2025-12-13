@@ -4,18 +4,73 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Edit User</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+      /* Offset content for fixed navbar */
+      body {
+        padding-top: 60px;
+      }
+
+      /* Soft card background */
+      .soft-card {
+        background: #f4f9f7;
+        border: 1px solid #e0ece8;
+      }
+
+      /* Input styling */
+      .form-control,
+      .form-select {
+        background-color: #ffffff;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        transition: all 0.2s ease-in-out;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #20c997;
+        box-shadow: 0 0 0 0.15rem rgba(32, 201, 151, 0.25);
+      }
+
+      /* Back button (same style as other pages) */
+      .btn-back {
+        background: linear-gradient(135deg, #FFD966, #FFC107);
+        color: #14532d;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        transition: all 0.2s ease-in-out;
+      }
+
+      .btn-back i {
+        color: #14532d;
+      }
+
+      .btn-back:hover {
+        background: linear-gradient(135deg, #FFC107, #FFB300);
+        color: #14532d;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+      }
+    </style>
   </head>
 
   <body class="bg-light">
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+
+    <!-- NAVBAR (FIXED) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/">School Manager</a>
+        <a class="navbar-brand fw-bold" href="/">
+          School Manager
+        </a>
 
         <div class="ms-auto">
-          <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary btn-sm">
-            Back to Dashboard
+          <a href="{{ url_for('user.dashboard') }}" class="btn btn-back btn-sm px-3">
+            <i class="bi bi-box-arrow-left me-1"></i>
+            Back
           </a>
         </div>
       </div>
@@ -25,9 +80,13 @@
     <main class="container py-4">
       <div class="row justify-content-center">
         <div class="col-md-6">
-          <div class="card shadow-sm rounded-3">
-            <div class="card-header bg-white">
-              <h4 class="mb-0">Edit User</h4>
+
+          <div class="card soft-card shadow-sm rounded-3">
+            <div class="card-header bg-transparent border-0">
+              <h4 class="mb-0 fw-semibold text-primary">
+                <i class="bi bi-pencil-square me-1"></i>
+                Edit User
+              </h4>
             </div>
 
             <div class="card-body">
@@ -43,8 +102,11 @@
 
               <!-- FORM -->
               <form method="POST">
+
                 <div class="mb-3">
-                  <label for="first_name" class="form-label">First Name</label>
+                  <label for="first_name" class="form-label">
+                    <i class="bi bi-person me-1"></i> First Name
+                  </label>
                   <input type="text"
                          class="form-control"
                          id="first_name"
@@ -54,7 +116,9 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="last_name" class="form-label">Last Name</label>
+                  <label for="last_name" class="form-label">
+                    <i class="bi bi-person me-1"></i> Last Name
+                  </label>
                   <input type="text"
                          class="form-control"
                          id="last_name"
@@ -64,7 +128,9 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
+                  <label for="email" class="form-label">
+                    <i class="bi bi-envelope me-1"></i> Email
+                  </label>
                   <input type="email"
                          class="form-control"
                          id="email"
@@ -74,7 +140,9 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="role" class="form-label">Role</label>
+                  <label for="role" class="form-label">
+                    <i class="bi bi-shield-lock me-1"></i> Role
+                  </label>
                   <select class="form-select" id="role" name="role">
                     {% for role_option in roles %}
                       <option value="{{ role_option.lower() }}"
@@ -91,18 +159,31 @@
                          id="is_active"
                          name="is_active"
                          {% if user.is_active %}checked{% endif %}>
-                  <label class="form-check-label" for="is_active">Active</label>
+                  <label class="form-check-label" for="is_active">
+                    <i class="bi bi-toggle-on me-1"></i> Active
+                  </label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Update User</button>
-                <a href="{{ url_for('admin.list_users') }}" class="btn btn-secondary">Cancel</a>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save me-1"></i>
+                    Update User
+                  </button>
+
+                  <a href="{{ url_for('admin.list_users') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Cancel
+                  </a>
+                </div>
+
               </form>
             </div>
           </div>
+
         </div>
       </div>
     </main>
-
+<!-- SHOW / HIDE PASSWORD -->
     {% include 'base.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
