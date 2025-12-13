@@ -31,7 +31,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Seed users to create
 SEED_USERS = [
-    {"first_name": "Admin", "last_name": "Admin2", "email": "admin@gmail.com", "password": "admin", "role": "Admin", "is_active": True},
+    {"first_name": "Sejj", "last_name": "Technologies", "email": "sejjtechnologies@gmail.com", "password": "sejjtechug", "role": "Admin", "is_active": True},
     {"first_name": "Teacher", "last_name": "User", "email": "teacher@gmail.com", "password": "teacher", "role": "Teacher", "is_active": True},
     {"first_name": "Parent", "last_name": "User", "email": "parent@gmail.com", "password": "parent", "role": "Parent", "is_active": True},
     {"first_name": "Secretary", "last_name": "User", "email": "secretary@gmail.com", "password": "secretary", "role": "Secretary", "is_active": True},
@@ -71,10 +71,10 @@ def main():
                 except Exception:
                     print(f"Setting password for {email}: <unreadable>")
 
-                # Special-case: allow admin to use short password 'admin' by hashing directly
-                if email == 'admin@gmail.com' and u.get('password') == 'admin':
-                    user.password_hash = generate_password_hash('admin', method='pbkdf2:sha256')
-                    print(f"Bypassed validation and set raw 'admin' password for {email}")
+                # Special-case: allow admin to use password 'sejjtechug' by hashing directly
+                if email == 'sejjtechnologies@gmail.com' and u.get('password') == 'sejjtechug':
+                    user.password_hash = generate_password_hash('sejjtechug', method='pbkdf2:sha256')
+                    print(f"Bypassed validation and set raw 'sejjtechug' password for {email}")
                 else:
                     user.set_password(u['password'])
             except Exception as ex:

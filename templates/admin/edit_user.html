@@ -68,9 +68,9 @@
         </a>
 
         <div class="ms-auto">
-          <a href="{{ url_for('user.dashboard') }}" class="btn btn-back btn-sm px-3">
+          <a href="{{ url_for('admin.list_users') }}" class="btn btn-back btn-sm px-3">
             <i class="bi bi-box-arrow-left me-1"></i>
-            Back
+            Back to List
           </a>
         </div>
       </div>
@@ -139,11 +139,29 @@
                          required>
                 </div>
 
+                {% if user.role.lower() == 'admin' %}
+                <div class="mb-3">
+                  <label for="password" class="form-label">
+                    <i class="bi bi-key me-1"></i> Confirm Password (required to change email)
+                  </label>
+                  <div class="input-group">
+                    <input type="password"
+                           class="form-control"
+                           id="password"
+                           name="password"
+                           placeholder="Enter your password">
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                {% endif %}
+
                 <div class="mb-3">
                   <label for="role" class="form-label">
                     <i class="bi bi-shield-lock me-1"></i> Role
                   </label>
-                  <select class="form-select" id="role" name="role">
+                  <select class="form-select" id="role" name="role" {% if user.role.lower() == 'admin' %}disabled{% endif %}>
                     {% for role_option in roles %}
                       <option value="{{ role_option.lower() }}"
                         {% if user.role == role_option.lower() %}selected{% endif %}>
@@ -187,5 +205,21 @@
     {% include 'base.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Toggle password visibility
+      document.getElementById('togglePassword')?.addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          icon.classList.remove('bi-eye');
+          icon.classList.add('bi-eye-slash');
+        } else {
+          passwordInput.type = 'password';
+          icon.classList.remove('bi-eye-slash');
+          icon.classList.add('bi-eye');
+        }
+      });
+    </script>
   </body>
 </html>
