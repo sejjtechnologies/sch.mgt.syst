@@ -10,6 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="/static/images/school_192.png" type="image/png">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
 
     <style>
       :root {
@@ -420,6 +424,49 @@
         </div>
       </nav>
 
+      <!-- PWA Install Banner -->
+      <div id="install-banner" class="alert alert-info alert-dismissible fade show" style="display: none; margin: 10px; border-radius: 10px;" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-download me-2" style="font-size: 1.2rem;"></i>
+          <div>
+            <strong>Install School Manager</strong>
+            <p class="mb-0">Get the full app experience! Install now for offline access and better performance.</p>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm ms-auto" onclick="installPWA()">
+          <i class="bi bi-plus-circle me-1"></i>Install App
+        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <!-- PWA Install Modal -->
+      <div class="modal fade" id="installModal" tabindex="-1" aria-labelledby="installModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title" id="installModalLabel">
+                <i class="bi bi-download me-2"></i>Install School Manager
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+              <div class="mb-3">
+                <i class="bi bi-app-indicator" style="font-size: 3rem; color: #0d6efd;"></i>
+              </div>
+              <p class="text-muted">Install our app for a better experience!</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Not Now
+              </button>
+              <button type="button" id="installBtn" class="btn btn-primary" disabled onclick="installPWA(); document.getElementById('installModal').querySelector('.btn-close').click();">
+                <i class="bi bi-plus-circle me-1"></i>Install App
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="content">
         <div class="hero">
           <div class="hero-left">
@@ -533,6 +580,89 @@
             }, 2000);
           }
         })();
+    </script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+      let deferredPrompt;
+
+      // Listen for the beforeinstallprompt event
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('beforeinstallprompt event fired');
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Enable the install button
+        const installBtn = document.getElementById('installBtn');
+        if (installBtn) {
+          installBtn.disabled = false;
+          installBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Install App';
+        }
+      });
+
+      // Listen for the appinstalled event
+      window.addEventListener('appinstalled', (evt) => {
+        // Hide modal/banner
+        const modal = bootstrap.Modal.getInstance(document.getElementById('installModal'));
+        if (modal) modal.hide();
+        hideInstallPrompt();
+        console.log('PWA was installed');
+      });
+
+      function showInstallPrompt() {
+        const installBanner = document.getElementById('install-banner');
+        if (installBanner) {
+          installBanner.style.display = 'block';
+        }
+      }
+
+      function hideInstallPrompt() {
+        const installBanner = document.getElementById('install-banner');
+        if (installBanner) {
+          installBanner.style.display = 'none';
+        }
+      }
+
+      function installPWA() {
+        if (deferredPrompt) {
+          // Show the install prompt
+          deferredPrompt.prompt();
+          // Wait for the user to respond to the prompt
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+          });
+        }
+      }
+
+      // Show install modal on load if not installed
+      window.addEventListener('load', function() {
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+          const modal = new bootstrap.Modal(document.getElementById('installModal'), {
+            backdrop: 'static',
+            keyboard: false
+          });
+          modal.show();
+        }
+      });
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/static/sw.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
     </script>
   </body>
 </html>
