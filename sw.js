@@ -1,4 +1,4 @@
-const CACHE_NAME = 'school-manager-v3'; // Updated version
+const CACHE_NAME = 'school-manager-v4'; // Force cache refresh
 const urlsToCache = [
   '/static/manifest.json',
   '/static/images/school_192.png',

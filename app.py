@@ -73,11 +73,15 @@ def index():
     return render_template('index.html')
 
 
-# Optional: respond to service-worker requests to avoid 404 spam for /sw.js
+# Serve service worker from root directory
 @app.route('/sw.js')
 def service_worker():
-    # Return empty 204 (no content); replace with actual service worker file if used
-    return ('', 204)
+    try:
+        with open('sw.js', 'r') as f:
+            content = f.read()
+        return content, 200, {'Content-Type': 'application/javascript'}
+    except FileNotFoundError:
+        return 'Service worker not found', 404
 
 
 @app.route('/db-test')
