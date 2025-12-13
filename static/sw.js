@@ -1,12 +1,9 @@
-const CACHE_NAME = 'school-manager-v1';
+const CACHE_NAME = 'school-manager-v3'; // Updated version
 const urlsToCache = [
-  '/',
   '/static/manifest.json',
   '/static/images/school_192.png',
-  '/static/offline.html',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js'
+  '/static/offline.html'
+  // Removed '/' from cache - navigation requests use network-first strategy
 ];
 
 // Install Service Worker
@@ -15,24 +12,66 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Service Worker caching files.');
+        console.log('Service Worker caching core files.');
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('Service Worker installed and files cached.');
+        console.log('Service Worker installed and core files cached.');
         return self.skipWaiting();
+      })
+      .catch(error => {
+        console.error('Service Worker installation failed:', error);
       })
   );
 });
 
 // Fetch Event
 self.addEventListener('fetch', event => {
-  console.log('Fetch event for:', event.request.url);
+  console.log('Fetch event for:', event.request.url, 'Mode:', event.request.mode, 'Destination:', event.request.destination);
 
+  // Handle navigation requests (page loads) - Network First Strategy
+  if (event.request.mode === 'navigate') {
+    console.log('Handling navigation request with network-first strategy');
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          console.log('Navigation successful, caching response');
+          // Cache successful navigation responses
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          return response;
+        })
+        .catch(() => {
+          console.log('Navigation failed, serving offline page');
+          return caches.match('/static/offline.html');
+        })
+    );
+    return;
+  }
+
+  // Handle API requests - Network First, no offline fallback
+  if (event.request.url.includes('/api/') || event.request.url.includes('/db-test')) {
+    console.log('Handling API request');
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return new Response(JSON.stringify({ error: 'Offline', message: 'This feature requires internet connection' }), {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
+    );
+    return;
+  }
+
+  // Handle static assets - Cache First Strategy
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return cached version or fetch from network
         if (response) {
           console.log('Serving from cache:', event.request.url);
           return response;
@@ -41,7 +80,7 @@ self.addEventListener('fetch', event => {
         return fetch(event.request)
           .then(response => {
             // Cache successful responses for future use
-            if (response.status === 200 && response.type === 'basic') {
+            if (response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
               const responseClone = response.clone();
               caches.open(CACHE_NAME)
                 .then(cache => {
@@ -49,14 +88,12 @@ self.addEventListener('fetch', event => {
                 });
             }
             return response;
+          })
+          .catch(error => {
+            console.log('Fetch failed for:', event.request.url, error);
+            // For failed static asset requests, return a basic response
+            return new Response('', { status: 404, statusText: 'Not Found' });
           });
-      })
-      .catch(() => {
-        console.log('Network failed, serving offline page for:', event.request.url);
-        // If both cache and network fail, show offline page
-        if (event.request.mode === 'navigate' || event.request.destination === 'document') {
-          return caches.match('/static/offline.html');
-        }
       })
   );
 });
