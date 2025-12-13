@@ -27,7 +27,7 @@
     </nav>
 
     <!-- MAIN AREA -->
-    <main class="container-fluid pt-5 mt-3">
+    <main class="container-fluid" style="padding-top: 72px;">
       <div class="row">
 
         {% if session.get('user_role', '').lower() == 'admin' %}
@@ -44,7 +44,7 @@
               </a>
 
               <a href="{{ url_for('admin.list_users') }}"
-                 class="btn btn-primary btn-sm d-block" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; white-space: nowrap;">
+                 class="btn btn-primary btn-sm d-block mb-1" style="font-size: 0.7rem; padding: 0.3rem 0.5rem; white-space: nowrap;">
                 <i class="bi bi-people me-1"></i>
                 Manage Users
               </a>
@@ -60,7 +60,7 @@
 
         <!-- MAIN CONTENT AREA (still empty for now) -->
         <div class="col-{% if session.get('user_role', '').lower() == 'admin' %}6{% else %}12{% endif %}">
-          <!-- Empty for now -->
+          <small class="text-muted">Admin control</small>
         </div>
 
       </div>
