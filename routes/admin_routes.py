@@ -4,11 +4,16 @@ from werkzeug.security import generate_password_hash
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+
 @admin_bp.route('/create_user', methods=['GET', 'POST'])
 def create_user():
     if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
         flash('Access denied')
         return redirect(url_for('index'))
+
+    roles = ['Teacher', 'Parent', 'Secretary', 'HeadTeacher', 'Bursar']
+
+    password_msg = ''
 
     if request.method == 'POST':
         first_name = request.form.get('first_name')
@@ -18,14 +23,23 @@ def create_user():
         role = request.form.get('role', 'staff')
         is_active = request.form.get('is_active') == 'on'
 
+        # Check required fields
         if not all([first_name, last_name, email, password]):
             flash('All fields are required')
             return redirect(request.url)
 
+        # Password length validation
+        if len(password) < 6:
+            password_msg = 'Password should be 6 characters and above'
+            return render_template('admin/create_user.html', roles=roles, password_msg=password_msg,
+                                   first_name=first_name, last_name=last_name, email=email, role=role, is_active=is_active)
+
+        # Check if email exists
         if User.query.filter_by(email=email).first():
             flash('Email already exists')
             return redirect(request.url)
 
+        # Create user
         user = User(
             first_name=first_name,
             last_name=last_name,
@@ -37,10 +51,9 @@ def create_user():
         db.session.add(user)
         db.session.commit()
         flash('User created successfully')
-        return redirect(url_for('admin.list_users'))
+        return redirect(request.url)
 
-    roles = ['Teacher', 'Parent', 'Secretary', 'HeadTeacher', 'Bursar']
-    return render_template('admin/create_user.html', roles=roles)
+    return render_template('admin/create_user.html', roles=roles, password_msg=password_msg)
 
 
 @admin_bp.route('/list_users')
@@ -72,7 +85,7 @@ def edit_user(user_id):
         user.first_name = request.form.get('first_name')
         user.last_name = request.form.get('last_name')
         user.email = new_email
-        if user.role.lower() != 'admin':  # Only allow role change if not admin
+        if user.role.lower() != 'admin':
             user.role = request.form.get('role')
         user.is_active = request.form.get('is_active') == 'on'
 
@@ -85,7 +98,6 @@ def edit_user(user_id):
     else:
         roles = ['Teacher', 'Parent', 'Secretary', 'HeadTeacher', 'Bursar']
 
-    # Removed accidental deletion
     return render_template('admin/edit_user.html', user=user, roles=roles)
 
 
@@ -119,7 +131,6 @@ def delete_user(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    # Prevent deleting admin users
     if user.role.lower() == 'admin':
         flash('Cannot delete admin users')
         return redirect(url_for('admin.list_users'))
