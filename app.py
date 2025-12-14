@@ -17,8 +17,12 @@ load_dotenv()  # <-- Load .env automatically
 DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set in the environment")
+# Check if system is configured
+SYSTEM_CONFIGURED = bool(DATABASE_URL)
+
+if not SYSTEM_CONFIGURED:
+    print("⚠️  System not configured - showing setup prompts")
+    # Don't raise error - let the app show setup prompts instead
 
 # ---------------------------------------------------------------------------
 # Flask app setup
@@ -27,54 +31,58 @@ if not DATABASE_URL:
 app = Flask(__name__)
 
 app.config["SECRET_KEY"] = SECRET_KEY
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Serverless-safe SQLAlchemy options (NO fixed pool sizes)
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-}
+if SYSTEM_CONFIGURED:
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Serverless-safe SQLAlchemy options (NO fixed pool sizes)
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+    }
 
-# ---------------------------------------------------------------------------
-# Initialize database & migrations
-# ---------------------------------------------------------------------------
-
-db.init_app(app)
-migrate = Migrate(app, db)
+    # Initialize database & migrations
+    db.init_app(app)
+    migrate = Migrate(app, db)
+else:
+    # System not configured - skip database initialization
+    print("⚠️  Skipping database initialization - system not configured")
 
 # ---------------------------------------------------------------------------
 # Register blueprints
 # ---------------------------------------------------------------------------
 
-try:
-    from routes.user_routes import user_bp
-    app.register_blueprint(user_bp)
-except Exception as e:
-    print(f"⚠ Could not register user routes: {e}")
+if SYSTEM_CONFIGURED:
+    try:
+        from routes.user_routes import user_bp
+        app.register_blueprint(user_bp)
+    except Exception as e:
+        print(f"⚠ Could not register user routes: {e}")
 
-try:
-    from routes.secretary_routes import secretary_bp
-    app.register_blueprint(secretary_bp)
-except Exception as e:
-    print(f"⚠ Could not register secretary routes: {e}")
+    try:
+        from routes.secretary_routes import secretary_bp
+        app.register_blueprint(secretary_bp)
+    except Exception as e:
+        print(f"⚠ Could not register secretary routes: {e}")
 
-try:
-    from routes.admin_routes import admin_bp
-    app.register_blueprint(admin_bp)
-except Exception as e:
-    print(f"⚠ Could not register admin routes: {e}")
+    try:
+        from routes.admin_routes import admin_bp
+        app.register_blueprint(admin_bp)
+    except Exception as e:
+        print(f"⚠ Could not register admin routes: {e}")
 
-try:
-    from routes.headteacher_routes import headteacher_bp
-    app.register_blueprint(headteacher_bp)
-except Exception as e:
-    print(f"⚠ Could not register headteacher routes: {e}")
+    try:
+        from routes.headteacher_routes import headteacher_bp
+        app.register_blueprint(headteacher_bp)
+    except Exception as e:
+        print(f"⚠ Could not register headteacher routes: {e}")
 
-try:
-    from routes.teacher_routes import teacher_bp
-    app.register_blueprint(teacher_bp)
-except Exception as e:
-    print(f"⚠ Could not register teacher routes: {e}")
+    try:
+        from routes.teacher_routes import teacher_bp
+        app.register_blueprint(teacher_bp)
+    except Exception as e:
+        print(f"⚠ Could not register teacher routes: {e}")
+else:
+    print("⚠️  Skipping blueprint registration - system not configured")
 
 # ---------------------------------------------------------------------------
 # Routes
@@ -82,6 +90,9 @@ except Exception as e:
 
 @app.route("/")
 def index():
+    if not SYSTEM_CONFIGURED:
+        # Show setup/installation page for unconfigured systems
+        return render_template("setup.html")
     return render_template("index.html")
 
 
@@ -105,6 +116,9 @@ def favicon():
 @app.route("/db-test")
 def db_test():
     """Simple DB connectivity test"""
+    if not SYSTEM_CONFIGURED:
+        return jsonify({"db": "not_configured", "message": "Database not configured yet"}), 503
+
     try:
         with db.engine.connect() as conn:
             result = conn.execute(text("SELECT 1")).scalar()

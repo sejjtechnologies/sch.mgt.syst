@@ -436,28 +436,28 @@
         <button type="button" class="btn btn-primary btn-sm ms-auto" onclick="installPWA()">
           <i class="bi bi-plus-circle me-1"></i>Install App
         </button>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="dismissInstallPrompt()"></button>
       </div>
 
       <!-- PWA Install Modal -->
       <div class="modal fade" id="installModal" tabindex="-1" aria-labelledby="installModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-              <h5 class="modal-title" id="installModalLabel">
-                <i class="bi bi-download me-2"></i>Install School Manager
+        <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 500px;">
+          <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white border-0">
+              <h5 class="modal-title fw-bold mx-auto" id="installModalLabel">
+                <i class="bi bi-rocket-takeoff me-2"></i>Install School Manager
               </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-              <p class="text-muted">Experience School Manager as an App! Install our app for offline access.</p>
+            <div class="modal-body text-center p-3 bg-light" style="background-color: #e8f5e8 !important;">
+              <!-- Minimal content - just buttons below -->
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="bi bi-x-circle me-1"></i>Not Now
+            <div class="modal-footer border-0 d-flex justify-content-center gap-3" style="background-color: #e8f5e8 !important;">
+              <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill" data-bs-dismiss="modal">
+                <i class="bi bi-clock me-2"></i>Maybe Later
               </button>
-              <button type="button" id="installBtn" class="btn btn-primary" disabled onclick="installPWA(); document.getElementById('installModal').querySelector('.btn-close').click();">
-                <i class="bi bi-plus-circle me-1"></i>Install App
+              <button type="button" id="installBtn" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold" disabled onclick="installPWA(); document.getElementById('installModal').querySelector('.btn-close').click();">
+                <i class="bi bi-download me-2"></i>Install Now
               </button>
             </div>
           </div>
@@ -596,6 +596,16 @@
           installBtn.disabled = false;
           installBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Install App';
         }
+
+        // Show modal immediately when install prompt is available
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        if (!isStandalone) {
+          const modal = new bootstrap.Modal(document.getElementById('installModal'), {
+            backdrop: 'static',
+            keyboard: false
+          });
+          modal.show();
+        }
       });
 
       // Listen for the appinstalled event
@@ -615,11 +625,9 @@
         }
       }
 
-      function hideInstallPrompt() {
-        const installBanner = document.getElementById('install-banner');
-        if (installBanner) {
-          installBanner.style.display = 'none';
-        }
+      function dismissInstallPrompt() {
+        localStorage.setItem('installPromptDismissed', 'true');
+        hideInstallPrompt();
       }
 
       function installPWA() {
@@ -643,17 +651,11 @@
         const installDismissed = localStorage.getItem('installPromptDismissed');
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-        if (!isStandalone && !installDismissed && deferredPrompt) {
-          const modal = new bootstrap.Modal(document.getElementById('installModal'), {
-            backdrop: 'static',
-            keyboard: false
-          });
-          modal.show();
-
-          // Store dismissal when modal is closed
-          document.getElementById('installModal').addEventListener('hidden.bs.modal', function() {
-            localStorage.setItem('installPromptDismissed', 'true');
-          });
+        // Show banner after a short delay if not installed
+        if (!isStandalone && !installDismissed) {
+          setTimeout(() => {
+            showInstallPrompt();
+          }, 2000); // Show after 2 seconds
         }
       });
 
