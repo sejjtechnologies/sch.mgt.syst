@@ -79,8 +79,8 @@ self.addEventListener('fetch', event => {
 
         return fetch(event.request)
           .then(response => {
-            // Cache successful responses for future use
-            if (response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
+            // Cache successful GET responses for future use
+            if (response.status === 200 && event.request.method === 'GET' && (response.type === 'basic' || response.type === 'cors')) {
               const responseClone = response.clone();
               caches.open(CACHE_NAME)
                 .then(cache => {

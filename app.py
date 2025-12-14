@@ -61,6 +61,13 @@ try:
 except Exception as e:
     print(f"⚠ Could not register headteacher routes: {e}")
 
+try:
+    from routes.teacher_routes import teacher_bp
+    app.register_blueprint(teacher_bp)
+    # teacher routes registered
+except Exception as e:
+    print(f"⚠ Could not register teacher routes: {e}")
+
 # Create tables for all models when the app starts, but avoid running twice with the
 # Flask reloader (WERKZEUG_RUN_MAIN). Only run on the reloader main process or when
 # not in debug mode.

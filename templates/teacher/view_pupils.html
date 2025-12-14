@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pupils Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root { --bs-body-font-size: 0.95rem; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar-custom {
+      background-color: #dc3545;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      gap: 10px;
+    }
+    .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .back-btn-small {
+      background-color: white;
+      color: #dc3545;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .back-btn-small:hover {
+      background-color: #f5f5f5;
+    }
+    .back-btn-small i {
+      font-size: 0.8rem;
+      color: #dc3545;
+    }
+    .search-fixed {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      z-index: 1001;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 12px 15px;
+      box-shadow: none;
+      border-bottom: none;
+    }
+    .search-fixed .input-group {
+      display: flex;
+      gap: 6px;
+    }
+    .search-fixed .form-control {
+      border: 2px solid #dc3545;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      background: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(220, 53, 69, 0.1);
+    }
+    .search-fixed .form-control:focus {
+      border-color: #b71c1c;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+      outline: none;
+      background: #fff;
+    }
+    .search-fixed .form-control::placeholder {
+      color: #999;
+      font-weight: 500;
+    }
+    .search-fixed .btn-outline-secondary {
+      border: 2px solid #dc3545;
+      color: #dc3545;
+      background: white;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-fixed .btn-outline-secondary:hover {
+      background: #dc3545;
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    main {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin-top: 95px;
+      padding: 5px 12px 80px 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+    main::-webkit-scrollbar {
+      width: 6px;
+    }
+    main::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    main::-webkit-scrollbar-thumb {
+      background: #dc3545;
+      border-radius: 3px;
+    }
+    .card {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+    }
+    .card-header {
+      background-color: #dc3545;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      border-radius: 6px 6px 0 0;
+    }
+    .card-body {
+      padding: 12px;
+    }
+    .table-sm th, .table-sm td {
+      padding: 6px 4px;
+      font-size: 0.75rem;
+      border: 1px solid #e9ecef;
+    }
+    .table-sm th {
+      background-color: #dc3545;
+      color: white;
+      font-weight: 600;
+    }
+    .summary-card {
+      color: white;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    .summary-card h6 { margin: 0; font-size: 0.7rem; }
+    .summary-card p { margin: 4px 0 0 0; font-size: 1.2rem; font-weight: bold; }
+    .bg-total { background-color: #28a745; }
+    .bg-stream { background-color: #dc3545; }
+    .bg-class { background-color: #fd7e14; }
+    .bg-year { background-color: #0d6efd; }
+    footer {
+      margin-top: auto;
+      min-height: 50px;
+      background: white;
+      border-top: 1px solid #e9ecef;
+    }
+    @media (max-width: 576px) {
+      .navbar-custom { padding: 0 10px; }
+      .navbar-brand { font-size: 0.85rem; }
+      .back-btn-small { padding: 3px 6px; font-size: 0.65rem; }
+      .table-sm th, .table-sm td { font-size: 0.65rem; padding: 4px 2px; }
+      .summary-card { padding: 8px; margin-bottom: 6px; }
+      .summary-card h6 { font-size: 0.6rem; }
+      .summary-card p { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Red Navbar -->
+  <nav class="navbar-custom fixed-top">
+    <span class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
+      <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;"> Pupils Details
+    </span>
+    <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-small">
+      <i class="bi bi-box-arrow-left"></i> Back
+    </a>
+  </nav>
+
+  <!-- Fixed Search Bar -->
+  <div class="search-fixed">
+    <div class="input-group input-group-sm">
+      <input id="searchInput" type="text" class="form-control" placeholder="Search pupils..." />
+      <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ Main Content (scrollable) -->
+  </div>
+
+  <!-- ✅ Main Content -->
+  <main class="container main-scroll">
+    <h3 class="mb-3">All Pupils Records</h3>
+
+    <!-- ✅ Summary Cards -->
+    <div class="row mb-2">
+      <div class="col-6 mb-1">
+        <div class="summary-card bg-total">
+          <h6>Total Students</h6>
+          <p>{{ records|length }}</p>
+        </div>
+      </div>
+      <div class="col-6 mb-1">
+        <div class="summary-card bg-stream">
+          <h6>Streams</h6>
+          <p>{% if teacher_assignments %}{% for assignment in teacher_assignments %}{{ assignment.stream_name }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}-{% endif %}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-6 mb-1">
+        <div class="summary-card bg-class">
+          <h6>Classes</h6>
+          <p>{% if teacher_assignments %}{% for assignment in teacher_assignments %}{{ assignment.class_name }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}-{% endif %}</p>
+        </div>
+      </div>
+      <div class="col-6 mb-1">
+        <div class="summary-card bg-year">
+          <h6>Academic Year</h6>
+          <p>{% if current_year %}{{ current_year }}{% elif academic_years %}{% for y in academic_years %}{{ y }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}-{% endif %}</p>
+        </div>
+      </div>
+    </div>    <div class="card mb-4 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-people-fill me-2"></i>Pupils List</span>
+        <div>
+          <!-- Export buttons will be added later -->
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- search moved to fixed bar above -->
+
+        <div class="table-responsive-sm">
+          <table class="table table-sm table-striped" id="pupilsTable">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th>
+                <th>Admission No.</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Gender</th>
+                <th>DOB</th>
+                <th>Nationality</th>
+                <th>Status</th>
+                <th>Class</th>
+                <th>Stream</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in records %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ r.admission_number }}</td>
+                <td>{{ r.first_name }}</td>
+                <td>{{ r.last_name }}</td>
+                <td>{{ r.gender }}</td>
+                <td>{{ r.dob }}</td>
+                <td>{{ r.nationality }}</td>
+                <td>{{ r.enrollment_status }}</td>
+                <td>{{ r.class_name or '-' }}</td>
+                <td>{{ r.stream_name or '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  {% include 'base.html' %}
+
+  <script>
+    (function(){
+      try {
+        var input = document.getElementById('searchInput');
+        var clearBtn = document.getElementById('clearSearch');
+        var searchBtn = document.getElementById('searchBtn');
+
+        // Sort pupils table alphabetically by Last Name, then First Name, and renumber
+        function sortPupilsTable() {
+          var table = document.getElementById('pupilsTable');
+          if (!table) return;
+          var tbody = table.tBodies[0];
+          if (!tbody) return;
+          var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+          rows.sort(function(a, b) {
+            var aFirst = (a.querySelectorAll('td')[2] && a.querySelectorAll('td')[2].textContent || '').trim().toLowerCase();
+            var aLast = (a.querySelectorAll('td')[4] && a.querySelectorAll('td')[4].textContent || '').trim().toLowerCase();
+            var bFirst = (b.querySelectorAll('td')[2] && b.querySelectorAll('td')[2].textContent || '').trim().toLowerCase();
+            var bLast = (b.querySelectorAll('td')[4] && b.querySelectorAll('td')[4].textContent || '').trim().toLowerCase();
+            // Compare by last name first, then first name
+            var cmp = aLast.localeCompare(bLast);
+            if (cmp !== 0) return cmp;
+            return aFirst.localeCompare(bFirst);
+          });
+          // Re-append in sorted order and renumber the first cell
+          rows.forEach(function(row, idx){
+            tbody.appendChild(row);
+            var firstTd = row.querySelectorAll('td')[0];
+            if (firstTd) firstTd.textContent = String(idx + 1);
+          });
+        }
+
+        // Run initial sort so table is alphabetical on load
+        sortPupilsTable();
+
+        // Search across ALL columns for comprehensive filtering
+        function rowMatches(row, query) {
+          if (!query) return true;
+          // Get all cell content from the row
+          var rowText = row.textContent.trim().toLowerCase();
+          // Search using indexOf for any occurrence anywhere in the row
+          return rowText.indexOf(query) !== -1;
+        }
+
+        function applyFilter() {
+          var q = input ? input.value.trim().toLowerCase() : '';
+          var rows = document.querySelectorAll('#pupilsTable tbody tr');
+          rows.forEach(function(row){
+            if (!row.querySelectorAll('td').length) return;
+            row.style.display = rowMatches(row, q) ? '' : 'none';
+          });
+        }
+
+        window.applyPupilFilter = applyFilter;
+
+        function debounce(fn, delay){ var t=null; return function(){ var a=arguments; clearTimeout(t); t=setTimeout(function(){ fn.apply(null,a); }, delay); }; }
+
+        if (input) {
+          input.addEventListener('input', debounce(applyFilter, 160));
+          input.addEventListener('keydown', function(e){ if (e.key === 'Enter') applyFilter(); });
+        }
+        if (searchBtn) searchBtn.addEventListener('click', function(){ applyFilter(); input && input.focus(); });
+        if (clearBtn) clearBtn.addEventListener('click', function(){ if (input) { input.value=''; applyFilter(); input.focus(); } });
+      } catch (err) { console.error('Search init failed', err); }
+    })();
+  </script>
+</body>
+</html>

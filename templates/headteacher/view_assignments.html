@@ -236,30 +236,35 @@
               <thead>
                 <tr>
                   <th>Teacher</th>
-                  <th>Class</th>
-                  <th>Stream</th>
+                  <th>Class & Stream</th>
                   <th>Assigned Date</th>
                 </tr>
               </thead>
               <tbody>
+                {% set current_class = '' %}
                 {% for assignment in assignments %}
-                <tr>
-                  <td>
-                    <div class="teacher-info">
-                      <span class="teacher-name">{{ assignment.teacher_name }}</span>
-                      <span class="teacher-email">{{ assignment.teacher_email }}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="assignment-badge">{{ assignment.class_name }}</span>
-                  </td>
-                  <td>
-                    <span class="assignment-badge">{{ assignment.stream_name }}</span>
-                  </td>
-                  <td>
-                    <span class="text-muted">{{ assignment.assigned_date }}</span>
-                  </td>
-                </tr>
+                  {% if assignment.class_name != current_class %}
+                    {% set current_class = assignment.class_name %}
+                    <tr class="table-primary">
+                      <td colspan="3">
+                        <strong><i class="bi bi-house-door me-2"></i>Class {{ assignment.class_name }}</strong>
+                      </td>
+                    </tr>
+                  {% endif %}
+                  <tr>
+                    <td>
+                      <div class="teacher-info">
+                        <span class="teacher-name">{{ assignment.teacher_name }}</span>
+                        <span class="teacher-email">{{ assignment.teacher_email }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="assignment-badge">{{ assignment.class_name }} {{ assignment.stream_name }}</span>
+                    </td>
+                    <td>
+                      <span class="text-muted">{{ assignment.assigned_date }}</span>
+                    </td>
+                  </tr>
                 {% endfor %}
               </tbody>
             </table>

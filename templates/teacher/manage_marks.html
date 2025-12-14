@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Pupils Marks</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root { --bs-body-font-size: 0.95rem; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar-custom {
+      background-color: #dc3545;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      gap: 10px;
+    }
+    .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .back-btn-small {
+      background-color: white;
+      color: #dc3545;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .back-btn-small:hover {
+      background-color: #f5f5f5;
+    }
+    .back-btn-small i {
+      font-size: 0.8rem;
+    }
+    .btn-loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    .btn-loading i {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .card {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+      font-weight: 600;
+      padding: 12px 16px;
+    }
+    .table-responsive-sm {
+      max-height: calc(100vh - 300px);
+      overflow-y: auto;
+    }
+    .table th {
+      position: sticky;
+      top: 0;
+      background-color: #343a40;
+      color: white;
+      z-index: 10;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .table td {
+      padding: 6px 8px;
+      font-size: 0.85rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .marks-input {
+      width: 60px;
+      text-align: center;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 2px 4px;
+      font-size: 0.8rem;
+    }
+    .marks-input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+    .save-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .save-btn:hover {
+      background-color: #218838;
+    }
+    .position-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .position-stream {
+      background-color: #007bff;
+      color: white;
+    }
+    .position-class {
+      background-color: #6c757d;
+      color: white;
+    }
+    .marks-input {
+      width: 60px;
+      padding: 2px 4px;
+      font-size: 0.8rem;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+    }
+    .marks-input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+    .marks-input.is-invalid {
+      border-color: #dc3545;
+      background-color: #f8d7da;
+    }
+    .marks-input.is-invalid:focus {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    .filters-section {
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #dee2e6;
+    }
+    .filters-section .form-select {
+      font-size: 0.8rem;
+    }
+    .filters-section .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .summary-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 6px;
+      padding: 8px 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      min-height: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .summary-card h6 {
+      font-size: 0.7rem;
+      margin-bottom: 2px;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+    .summary-card p {
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Fixed Navbar -->
+  <nav class="navbar navbar-custom fixed-top">
+    <a class="navbar-brand" href="#">
+      <img src="/static/images/school_192.png" alt="Logo" style="height:36px; width:auto; margin-right:8px;">
+      Manage Pupils Marks
+    </a>
+    <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-small">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </nav>
+
+  <!-- ✅ Main Content -->
+  <main class="container-fluid main-scroll">
+    <h4 class="mb-2">Manage Examination Marks</h4>
+
+    <!-- ✅ Filters Section -->
+    <div class="filters-section">
+      <div class="row g-2">
+        <div class="col-12 col-md-3">
+          <label for="academicYearSelect" class="form-label">Academic Year</label>
+          <select class="form-select" id="academicYearSelect">
+            {% for ay in academic_years %}
+            <option value="{{ ay.id }}" {% if ay.id == current_academic_year.id %}selected{% endif %}>{{ ay.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label for="termSelect" class="form-label">Term</label>
+          <select class="form-select" id="termSelect">
+            <option value="1" {% if default_term == 1 %}selected{% endif %}>Term 1</option>
+            <option value="2" {% if default_term == 2 %}selected{% endif %}>Term 2</option>
+            <option value="3" {% if default_term == 3 %}selected{% endif %}>Term 3</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label for="examTypeSelect" class="form-label">Exam Type</label>
+          <select class="form-select" id="examTypeSelect">
+            <option value="Beginning of term" {% if default_exam_type == 'Beginning of term' %}selected{% endif %}>Beginning of Term</option>
+            <option value="Mid_term" {% if default_exam_type == 'Mid_term' %}selected{% endif %}>Mid Term</option>
+            <option value="End of term" {% if default_exam_type == 'End of term' %}selected{% endif %}>End of Term</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">&nbsp;</label>
+          <button type="button" class="btn btn-primary w-100" id="queryBtn">
+            <i class="bi bi-search me-1"></i>Query & Load Marks
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Summary Cards -->
+    <div class="row g-2 mb-2">
+      <div class="col-6 col-md-3">
+        <div class="summary-card">
+          <h6>Total Students</h6>
+          <p id="totalStudentsDisplay">{{ records|length }}</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card">
+          <h6>Academic Year</h6>
+          <p id="currentYearDisplay">{{ current_academic_year.name if current_academic_year else 'N/A' }}</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card">
+          <h6>Term</h6>
+          <p id="currentTermDisplay">Term {{ default_term }}</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="summary-card">
+          <h6>Exam Type</h6>
+          <p id="currentExamDisplay">{{ default_exam_type|replace('_', ' ')|title }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Marks Table -->
+    <div class="card">
+      <div class="card-header py-2">
+        <span><i class="bi bi-pencil-square me-2"></i>Examination Marks Entry</span>
+      </div>
+      <div class="card-body p-2">
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0" id="marksTable">
+            <thead class="table-dark">
+              <tr>
+                <th rowspan="2">#</th>
+                <th rowspan="2">Admission No.</th>
+                <th rowspan="2">First Name</th>
+                <th rowspan="2">Last Name</th>
+                <th colspan="4">Subject Marks (out of 100)</th>
+                <th rowspan="2">Total<br>(400)</th>
+                <th rowspan="2">Average<br>(%)</th>
+                <th colspan="2">Position</th>
+                <th rowspan="2">Actions</th>
+              </tr>
+              <tr>
+                <th>ENG</th>
+                <th>MTC</th>
+                <th>Scie</th>
+                <th>SST</th>
+                <th>In Stream</th>
+                <th>In Class</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in records %}
+              <tr data-pupil-id="{{ r.id }}">
+                <td>{{ loop.index }}</td>
+                <td>{{ r.admission_number }}</td>
+                <td>{{ r.first_name }}</td>
+                <td>{{ r.last_name }}</td>
+                <td>
+                  <input type="number" class="marks-input" id="eng_{{ r.id }}" min="0" max="100" placeholder="ENG">
+                </td>
+                <td>
+                  <input type="number" class="marks-input" id="mtc_{{ r.id }}" min="0" max="100" placeholder="MTC">
+                </td>
+                <td>
+                  <input type="number" class="marks-input" id="sci_{{ r.id }}" min="0" max="100" placeholder="SCI">
+                </td>
+                <td>
+                  <input type="number" class="marks-input" id="sst_{{ r.id }}" min="0" max="100" placeholder="SST">
+                </td>
+                <td id="total_{{ r.id }}">-</td>
+                <td id="average_{{ r.id }}">-</td>
+                <td id="pos_stream_{{ r.id }}">
+                  <span class="position-badge position-stream">-</span>
+                </td>
+                <td id="pos_class_{{ r.id }}">
+                  <span class="position-badge position-class">-</span>
+                </td>
+                <td>
+                  <button type="button" class="save-btn" onclick="saveMarks('{{ r.id }}')">
+                    <i class="bi bi-check-circle"></i> Save
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  {% include 'base.html' %}
+
+  <script>
+    let currentAcademicYear = {{ current_academic_year.id if current_academic_year else 'null' | tojson }};
+    let currentTerm = {{ default_term | tojson }};
+    let currentExamType = {{ default_exam_type | tojson }};
+
+    // Update display when filters change
+    document.getElementById('academicYearSelect').addEventListener('change', function() {
+      currentAcademicYear = this.value;
+      const selectedOption = this.options[this.selectedIndex];
+      document.getElementById('currentYearDisplay').textContent = selectedOption.text;
+    });
+
+    document.getElementById('termSelect').addEventListener('change', function() {
+      currentTerm = this.value;
+      document.getElementById('currentTermDisplay').textContent = 'Term ' + this.value;
+    });
+
+    document.getElementById('examTypeSelect').addEventListener('change', function() {
+      currentExamType = this.value;
+      document.getElementById('currentExamDisplay').textContent = this.value.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    });
+
+    // Query and load marks for selected criteria
+    document.getElementById('queryBtn').addEventListener('click', async function() {
+      const queryBtn = this;
+
+      // Show loading state
+      queryBtn.classList.add('btn-loading');
+      queryBtn.innerHTML = '<i class="bi bi-search me-1"></i>Loading...';
+
+      try {
+        // Update current variables from selections
+        currentAcademicYear = document.getElementById('academicYearSelect').value;
+        currentTerm = document.getElementById('termSelect').value;
+        currentExamType = document.getElementById('examTypeSelect').value;
+
+        // Update display elements
+        const selectedYearOption = document.getElementById('academicYearSelect').options[document.getElementById('academicYearSelect').selectedIndex];
+        document.getElementById('currentYearDisplay').textContent = selectedYearOption.text;
+        document.getElementById('currentTermDisplay').textContent = 'Term ' + currentTerm;
+        document.getElementById('currentExamDisplay').textContent = currentExamType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        // Load marks for the new criteria
+        await loadAllMarks();
+      } finally {
+        // Remove loading state
+        queryBtn.classList.remove('btn-loading');
+        queryBtn.innerHTML = '<i class="bi bi-search me-1"></i>Query & Load Marks';
+      }
+    });
+
+    function validateMarkInput(event) {
+      const input = event.target;
+      const value = input.value.trim();
+
+      // Remove existing validation classes
+      input.classList.remove('is-invalid');
+
+      if (value === '') {
+        // Empty is allowed
+        return true;
+      }
+
+      const numValue = parseInt(value);
+      if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+        input.classList.add('is-invalid');
+        return false;
+      }
+
+      return true;
+    }
+
+    function validatePupilMarks(pupilId) {
+      const inputs = [
+        document.getElementById(`eng_${pupilId}`),
+        document.getElementById(`mtc_${pupilId}`),
+        document.getElementById(`sci_${pupilId}`),
+        document.getElementById(`sst_${pupilId}`)
+      ];
+
+      let hasInvalidMarks = false;
+      inputs.forEach(input => {
+        if (input.value.trim() !== '') {
+          const numValue = parseInt(input.value);
+          if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+            input.classList.add('is-invalid');
+            hasInvalidMarks = true;
+          } else {
+            input.classList.remove('is-invalid');
+          }
+        } else {
+          input.classList.remove('is-invalid');
+        }
+      });
+
+      return !hasInvalidMarks;
+    }
+
+    async function saveMarks(pupilId) {
+      // Validate marks before saving
+      if (!validatePupilMarks(pupilId)) {
+        showAlert('Please correct invalid marks (must be between 0 and 100) before saving.', 'danger');
+        return;
+      }
+
+      const english = document.getElementById(`eng_${pupilId}`).value;
+      const mathematics = document.getElementById(`mtc_${pupilId}`).value;
+      const science = document.getElementById(`sci_${pupilId}`).value;
+      const socialStudies = document.getElementById(`sst_${pupilId}`).value;
+
+      const marks = {};
+      if (english) marks.english = parseInt(english);
+      if (mathematics) marks.mathematics = parseInt(mathematics);
+      if (science) marks.science = parseInt(science);
+      if (socialStudies) marks.social_studies = parseInt(socialStudies);
+
+      try {
+        const response = await fetch('/teacher/save_marks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pupil_id: pupilId,
+            academic_year_id: currentAcademicYear,
+            term: currentTerm,
+            exam_type: currentExamType,
+            marks: marks
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update display
+          document.getElementById(`total_${pupilId}`).textContent = result.total_marks || '-';
+          document.getElementById(`average_${pupilId}`).textContent = result.average ? result.average + '%' : '-';
+
+          const streamBadge = document.querySelector(`#pos_stream_${pupilId} .position-badge`);
+          const classBadge = document.querySelector(`#pos_class_${pupilId} .position-badge`);
+
+          if (result.position_in_stream && result.stream_student_count) {
+            streamBadge.textContent = `${result.position_in_stream}/${result.stream_student_count}`;
+          } else {
+            streamBadge.textContent = '-';
+          }
+
+          if (result.position_in_class && result.class_student_count) {
+            classBadge.textContent = `${result.position_in_class}/${result.class_student_count}`;
+          } else {
+            classBadge.textContent = '-';
+          }
+
+          // Show success message
+          showAlert('Marks saved successfully!', 'success');
+        } else {
+          showAlert('Error saving marks: ' + result.message, 'danger');
+        }
+      } catch (error) {
+        showAlert('Error saving marks: ' + error.message, 'danger');
+      }
+    }
+
+    async function loadAllMarks() {
+      const pupilRows = document.querySelectorAll('#marksTable tbody tr');
+
+      // Update total students count
+      document.getElementById('totalStudentsDisplay').textContent = pupilRows.length;
+
+      // Load marks in parallel for faster performance
+      const promises = Array.from(pupilRows).map(row => {
+        const pupilId = row.getAttribute('data-pupil-id');
+        return loadMarksForPupil(pupilId);
+      });
+
+      await Promise.all(promises);
+    }
+
+    async function loadMarksForPupil(pupilId) {
+      try {
+        const response = await fetch(`/teacher/get_marks?pupil_id=${pupilId}&academic_year_id=${currentAcademicYear}&term=${currentTerm}&exam_type=${encodeURIComponent(currentExamType)}`);
+        const result = await response.json();
+
+        if (result.success && result.marks) {
+          // Fill in the marks
+          if (result.marks.english !== null) {
+            document.getElementById(`eng_${pupilId}`).value = result.marks.english;
+          }
+          if (result.marks.mathematics !== null) {
+            document.getElementById(`mtc_${pupilId}`).value = result.marks.mathematics;
+          }
+          if (result.marks.science !== null) {
+            document.getElementById(`sci_${pupilId}`).value = result.marks.science;
+          }
+          if (result.marks.social_studies !== null) {
+            document.getElementById(`sst_${pupilId}`).value = result.marks.social_studies;
+          }
+
+          // Update display
+          document.getElementById(`total_${pupilId}`).textContent = result.total_marks || '-';
+          document.getElementById(`average_${pupilId}`).textContent = result.average ? result.average + '%' : '-';
+
+          const streamBadge = document.querySelector(`#pos_stream_${pupilId} .position-badge`);
+          const classBadge = document.querySelector(`#pos_class_${pupilId} .position-badge`);
+
+          if (result.position_in_stream && result.stream_student_count) {
+            streamBadge.textContent = `${result.position_in_stream}/${result.stream_student_count}`;
+          } else {
+            streamBadge.textContent = '-';
+          }
+
+          if (result.position_in_class && result.class_student_count) {
+            classBadge.textContent = `${result.position_in_class}/${result.class_student_count}`;
+          } else {
+            classBadge.textContent = '-';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading marks for pupil ' + pupilId + ':', error);
+      }
+    }
+
+    function showAlert(message, type) {
+      // Remove existing alerts
+      const existingAlerts = document.querySelectorAll('.alert');
+      existingAlerts.forEach(alert => alert.remove());
+
+      // Create new alert
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      alertDiv.style.cssText = 'top: 70px; right: 20px; z-index: 9999; min-width: 300px;';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+
+      document.body.appendChild(alertDiv);
+
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.remove();
+        }
+      }, 3000);
+    }
+
+    // Load marks on page load and setup validation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Setup validation for marks inputs
+      const marksInputs = document.querySelectorAll('.marks-input');
+      marksInputs.forEach(input => {
+        input.addEventListener('input', validateMarkInput);
+        input.addEventListener('blur', validateMarkInput);
+      });
+
+      loadAllMarks();
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

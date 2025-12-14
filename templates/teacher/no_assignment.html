@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>No Assignment Yet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #f1f8e9, #e8f5e9);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding-top: 70px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background-color: #283593;
+    }
+    .navbar-brand {
+      color: #fff !important;
+      font-weight: bold;
+    }
+    .logout-btn {
+      background-color: #d32f2f;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+    }
+    .logout-btn i {
+      color: #fff;
+      font-size: 1rem;
+    }
+    .logout-btn:hover {
+      background-color: #b71c1c;
+      color: #fff;
+    }
+    .main-message {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .alert-custom {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 12px;
+      background-color: #fff3cd;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .alert-custom i {
+      font-size: 1.5rem;
+      margin-right: 8px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Fixed Navbar -->
+  <nav class="navbar fixed-top">
+    <div class="container-fluid px-3 d-flex justify-content-between align-items-center">
+      <a class="navbar-brand" href="#" style="display:flex; align-items:center; gap:8px;">
+        <img src="/static/images/school_192.png" alt="Logo" style="height:36px; width:auto;"><span>Teacher Dashboard</span>
+      </a>
+      <!-- ✅ Small Logout Button -->
+      <form action="{{ url_for('user.logout') }}" method="get" class="d-inline">
+        <button type="submit" class="logout-btn">
+          <i class="bi bi-box-arrow-right me-1"></i>Logout
+        </button>
+      </form>
+    </div>
+  </nav>
+
+  <!-- ✅ Main Message -->
+  <div class="main-message">
+    <div class="alert-custom">
+      <i class="bi bi-info-circle"></i>
+      <p class="mb-2 fw-bold">Hello {{ teacher.email }}</p>
+      <p>You have not been assigned to any class or stream yet.</p>
+      <p class="text-muted">Please be patient, or contact the admin office for quick help 💜</p>
+    </div>
+  </div>
+
+  <!-- ✅ Shared Footer -->
+  {% include 'base.html' %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
