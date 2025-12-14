@@ -1,12 +1,18 @@
 import os
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, send_from_directory
 from flask_migrate import Migrate
 from sqlalchemy import text
 from models import db
+from dotenv import load_dotenv  # <-- Added
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Load environment variables from .env
+# ---------------------------------------------------------------------------
+load_dotenv()  # <-- Load .env automatically
+
+# ---------------------------------------------------------------------------
 # Environment configuration
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI")
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
@@ -14,9 +20,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set in the environment")
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Flask app setup
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 app = Flask(__name__)
 
@@ -29,16 +35,16 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Initialize database & migrations
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Register blueprints
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 try:
     from routes.user_routes import user_bp
@@ -70,9 +76,9 @@ try:
 except Exception as e:
     print(f"⚠ Could not register teacher routes: {e}")
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Routes
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 @app.route("/")
 def index():
@@ -81,15 +87,24 @@ def index():
 
 @app.route("/sw.js")
 def service_worker():
+    """Serve service worker from root"""
     try:
-        with open("sw.js", "r") as f:
-            return f.read(), 200, {"Content-Type": "application/javascript"}
+        return send_from_directory(app.root_path, "sw.js")
     except FileNotFoundError:
         return "Service worker not found", 404
 
 
+@app.route("/favicon.ico")
+def favicon():
+    """Serve favicon to avoid 404s"""
+    return send_from_directory(
+        os.path.join(app.root_path, "static", "images"), "school_192.png"
+    )
+
+
 @app.route("/db-test")
 def db_test():
+    """Simple DB connectivity test"""
     try:
         with db.engine.connect() as conn:
             result = conn.execute(text("SELECT 1")).scalar()
@@ -98,9 +113,9 @@ def db_test():
         return jsonify({"db": "error", "error": str(e)}), 500
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Local development only
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     host = "127.0.0.1"
