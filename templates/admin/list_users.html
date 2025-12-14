@@ -48,25 +48,61 @@
         }
       }
 
-      /* Back button (same design as other files) */
-      .btn-back {
-        background: linear-gradient(135deg, #FFD966, #FFC107);
-        color: #14532d;
+      /* Role count cards */
+      .role-card {
+        min-width: 70px;
+        max-width: 80px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
         font-weight: 600;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-        transition: all 0.2s ease-in-out;
+        font-size: 0.75rem;
+        margin: 0 2px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
-      .btn-back i {
-        color: #14532d;
+      .role-card.admin { background: linear-gradient(135deg, #0d6efd, #0a58ca); }
+      .role-card.teacher { background: linear-gradient(135deg, #198754, #146c43); }
+      .role-card.parent { background: linear-gradient(135deg, #fd7e14, #e8590c); }
+      .role-card.secretary { background: linear-gradient(135deg, #6f42c1, #5a32a3); }
+      .role-card.headteacher { background: linear-gradient(135deg, #dc3545, #b02a37); }
+      .role-card.bursar { background: linear-gradient(135deg, #20c997, #17a2b8); }
+
+      .role-count {
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1;
       }
 
-      .btn-back:hover {
-        background: linear-gradient(135deg, #FFC107, #FFB300);
-        color: #14532d;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+      .role-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        margin-top: 2px;
+      }
+
+      /* Mobile responsive for role cards */
+      @media (max-width: 768px) {
+        .role-card {
+          min-width: 55px;
+          max-width: 65px;
+          height: 45px;
+          font-size: 0.7rem;
+          margin: 0 1px;
+        }
+
+        .role-count {
+          font-size: 1rem;
+        }
+
+        .role-label {
+          font-size: 0.6rem;
+        }
       }
     </style>
   </head>
@@ -111,6 +147,34 @@
         </div>
 
         <div class="card-body p-0">
+          <!-- Role Count Cards -->
+          <div class="d-flex justify-content-center flex-wrap gap-1 py-3 border-bottom bg-light">
+            <div class="role-card admin">
+              <div class="role-count">{{ role_counts.get('admin', 0) }}</div>
+              <div class="role-label">ADM</div>
+            </div>
+            <div class="role-card teacher">
+              <div class="role-count">{{ role_counts.get('teacher', 0) }}</div>
+              <div class="role-label">TCH</div>
+            </div>
+            <div class="role-card parent">
+              <div class="role-count">{{ role_counts.get('parent', 0) }}</div>
+              <div class="role-label">PRT</div>
+            </div>
+            <div class="role-card secretary">
+              <div class="role-count">{{ role_counts.get('secretary', 0) }}</div>
+              <div class="role-label">SEC</div>
+            </div>
+            <div class="role-card headteacher">
+              <div class="role-count">{{ role_counts.get('headteacher', 0) }}</div>
+              <div class="role-label">HT</div>
+            </div>
+            <div class="role-card bursar">
+              <div class="role-count">{{ role_counts.get('bursar', 0) }}</div>
+              <div class="role-label">BUR</div>
+            </div>
+          </div>
+
           <div class="table-responsive">
             <table class="table table-striped align-middle mb-0">
               <thead class="table-light">

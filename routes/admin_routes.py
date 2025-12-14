@@ -63,7 +63,14 @@ def list_users():
         return redirect(url_for('index'))
 
     users = User.query.all()
-    return render_template('admin/list_users.html', users=users)
+
+    # Count users by role
+    role_counts = {}
+    for user in users:
+        role = user.role.lower()
+        role_counts[role] = role_counts.get(role, 0) + 1
+
+    return render_template('admin/list_users.html', users=users, role_counts=role_counts)
 
 
 @admin_bp.route('/edit_user/<user_id>', methods=['GET', 'POST'])
