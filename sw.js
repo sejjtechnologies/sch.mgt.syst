@@ -1,4 +1,4 @@
-const CACHE_NAME = 'school-manager-v4'; // Force cache refresh
+const CACHE_NAME = 'school-manager-v5'; // Force cache refresh - fixed API caching
 const urlsToCache = [
   '/static/manifest.json',
   '/static/images/school_192.png',
@@ -53,8 +53,14 @@ self.addEventListener('fetch', event => {
   }
 
   // Handle API requests - Network First, no offline fallback
-  if (event.request.url.includes('/api/') || event.request.url.includes('/db-test')) {
-    console.log('Handling API request');
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('/db-test') || 
+      event.request.url.includes('/teacher/') || 
+      event.request.url.includes('/secretary/') || 
+      event.request.url.includes('/headteacher/') || 
+      event.request.url.includes('/admin/') || 
+      event.request.url.includes('/bursar/')) {
+    console.log('Handling API request:', event.request.url);
     event.respondWith(
       fetch(event.request)
         .catch(() => {
@@ -79,8 +85,16 @@ self.addEventListener('fetch', event => {
 
         return fetch(event.request)
           .then(response => {
-            // Cache successful GET responses for future use
-            if (response.status === 200 && event.request.method === 'GET' && (response.type === 'basic' || response.type === 'cors')) {
+            // Cache successful GET responses for static assets only (not API calls)
+            if (response.status === 200 && 
+                event.request.method === 'GET' && 
+                !event.request.url.includes('/teacher/') &&
+                !event.request.url.includes('/secretary/') &&
+                !event.request.url.includes('/headteacher/') &&
+                !event.request.url.includes('/admin/') &&
+                !event.request.url.includes('/bursar/') &&
+                !event.request.url.includes('/api/') &&
+                (response.type === 'basic' || response.type === 'cors')) {
               const responseClone = response.clone();
               caches.open(CACHE_NAME)
                 .then(cache => {
