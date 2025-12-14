@@ -53,13 +53,14 @@ self.addEventListener('fetch', event => {
   }
 
   // Handle API requests - Network First, no offline fallback
-  if (event.request.url.includes('/api/') || 
-      event.request.url.includes('/db-test') || 
-      event.request.url.includes('/teacher/') || 
-      event.request.url.includes('/secretary/') || 
-      event.request.url.includes('/headteacher/') || 
-      event.request.url.includes('/admin/') || 
-      event.request.url.includes('/bursar/')) {
+  if (event.request.url.includes('/api/') ||
+      event.request.url.includes('/db-test') ||
+      event.request.url.includes('/teacher/') ||
+      event.request.url.includes('/secretary/') ||
+      event.request.url.includes('/headteacher/') ||
+      event.request.url.includes('/admin/') ||
+      event.request.url.includes('/bursar/') ||
+      event.request.url.includes('/parent/')) {
     console.log('Handling API request:', event.request.url);
     event.respondWith(
       fetch(event.request)
@@ -86,11 +87,12 @@ self.addEventListener('fetch', event => {
         return fetch(event.request)
           .then(response => {
             // Cache successful GET responses for static assets only (not API calls)
-            if (response.status === 200 && 
-                event.request.method === 'GET' && 
+            if (response.status === 200 &&
+                event.request.method === 'GET' &&
                 !event.request.url.includes('/teacher/') &&
                 !event.request.url.includes('/secretary/') &&
                 !event.request.url.includes('/headteacher/') &&
+                !event.request.url.includes('/parent/') &&
                 !event.request.url.includes('/admin/') &&
                 !event.request.url.includes('/bursar/') &&
                 !event.request.url.includes('/api/') &&
