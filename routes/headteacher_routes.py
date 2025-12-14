@@ -101,6 +101,7 @@ def save_assignments():
                 teacher_id=teacher_id,
                 class_id=class_id,
                 stream_id=stream_id,
+                assigned_date=datetime.utcnow(),
                 is_active=True
             )
             db.session.add(new_assignment)
