@@ -362,16 +362,22 @@
       currentAcademicYear = this.value;
       const selectedOption = this.options[this.selectedIndex];
       document.getElementById('currentYearDisplay').textContent = selectedOption.text;
+      // Auto-load marks when criteria changes
+      loadAllMarks();
     });
 
     document.getElementById('termSelect').addEventListener('change', function() {
       currentTerm = this.value;
       document.getElementById('currentTermDisplay').textContent = 'Term ' + this.value;
+      // Auto-load marks when criteria changes
+      loadAllMarks();
     });
 
     document.getElementById('examTypeSelect').addEventListener('change', function() {
       currentExamType = this.value;
       document.getElementById('currentExamDisplay').textContent = this.value.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      // Auto-load marks when criteria changes
+      loadAllMarks();
     });
 
     // Query and load marks for selected criteria
@@ -516,22 +522,45 @@
     }
 
     async function loadAllMarks() {
-      const pupilRows = document.querySelectorAll('#marksTable tbody tr');
+      // Show loading state
+      const marksTable = document.getElementById('marksTable');
+      const inputs = marksTable.querySelectorAll('input');
+      inputs.forEach(input => input.disabled = true);
 
-      // Update total students count
-      document.getElementById('totalStudentsDisplay').textContent = pupilRows.length;
+      try {
+        const pupilRows = document.querySelectorAll('#marksTable tbody tr');
 
-      // Load marks in parallel for faster performance
-      const promises = Array.from(pupilRows).map(row => {
-        const pupilId = row.getAttribute('data-pupil-id');
-        return loadMarksForPupil(pupilId);
-      });
+        // Update total students count
+        document.getElementById('totalStudentsDisplay').textContent = pupilRows.length;
 
-      await Promise.all(promises);
+        // Load marks in parallel for faster performance
+        const promises = Array.from(pupilRows).map(row => {
+          const pupilId = row.getAttribute('data-pupil-id');
+          return loadMarksForPupil(pupilId);
+        });
+
+        await Promise.all(promises);
+      } finally {
+        // Remove loading state
+        inputs.forEach(input => input.disabled = false);
+      }
     }
 
     async function loadMarksForPupil(pupilId) {
       try {
+        // Clear all fields first
+        document.getElementById(`eng_${pupilId}`).value = '';
+        document.getElementById(`mtc_${pupilId}`).value = '';
+        document.getElementById(`sci_${pupilId}`).value = '';
+        document.getElementById(`sst_${pupilId}`).value = '';
+        document.getElementById(`total_${pupilId}`).textContent = '-';
+        document.getElementById(`average_${pupilId}`).textContent = '-';
+
+        const streamBadge = document.querySelector(`#pos_stream_${pupilId} .position-badge`);
+        const classBadge = document.querySelector(`#pos_class_${pupilId} .position-badge`);
+        streamBadge.textContent = '-';
+        classBadge.textContent = '-';
+
         const response = await fetch(`/teacher/get_marks?pupil_id=${pupilId}&academic_year_id=${currentAcademicYear}&term=${currentTerm}&exam_type=${encodeURIComponent(currentExamType)}`);
         const result = await response.json();
 
@@ -554,9 +583,6 @@
           document.getElementById(`total_${pupilId}`).textContent = result.total_marks || '-';
           document.getElementById(`average_${pupilId}`).textContent = result.average ? result.average + '%' : '-';
 
-          const streamBadge = document.querySelector(`#pos_stream_${pupilId} .position-badge`);
-          const classBadge = document.querySelector(`#pos_class_${pupilId} .position-badge`);
-
           if (result.position_in_stream && result.stream_student_count) {
             streamBadge.textContent = `${result.position_in_stream}/${result.stream_student_count}`;
           } else {
@@ -571,6 +597,7 @@
         }
       } catch (error) {
         console.error('Error loading marks for pupil ' + pupilId + ':', error);
+        // Keep fields cleared on error
       }
     }
 
