@@ -456,3 +456,314 @@ def recalculate_positions():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
+
+
+@teacher_bp.route('/pupil_reports')
+def pupil_reports():
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    teacher_id = session.get('user_id')
+
+    # Get all classes and streams assigned to this teacher
+    teacher_assignments = TeacherAssignment.query.filter_by(
+        teacher_id=teacher_id,
+        is_active=True
+    ).all()
+
+    # If teacher has no assignments, show no assignment page
+    if not teacher_assignments:
+        from models.user import User
+        teacher = User.query.get(teacher_id)
+        return render_template('teacher/no_assignment.html', teacher=teacher)
+
+    # Get academic years for filter dropdown
+    academic_years = AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
+
+    return render_template('teacher/pupil_reports.html',
+                         teacher_assignments=teacher_assignments,
+                         academic_years=academic_years)
+
+
+@teacher_bp.route('/get_pupils_for_reports', methods=['GET'])
+def get_pupils_for_reports():
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        return jsonify({'success': False, 'message': 'Access denied'})
+
+    teacher_id = session.get('user_id')
+    year_id = request.args.get('year')
+    term = request.args.get('term')
+    exam_set = request.args.get('exam_set')
+
+    if not all([year_id, term, exam_set]):
+        return jsonify({'success': False, 'message': 'Missing required parameters'})
+
+    try:
+        # Get all classes and streams assigned to this teacher
+        teacher_assignments = TeacherAssignment.query.filter_by(
+            teacher_id=teacher_id,
+            is_active=True
+        ).all()
+
+        if not teacher_assignments:
+            return jsonify({'success': False, 'message': 'No class assignments found'})
+
+        # Collect all pupils from assigned classes/streams
+        pupils_data = []
+
+        for assignment in teacher_assignments:
+            # Get pupils in this class and stream
+            pupils = Pupil.query.filter_by(
+                class_admitted=str(assignment.class_id),
+                stream=str(assignment.stream_id),
+                enrollment_status='active'
+            ).order_by(Pupil.first_name, Pupil.last_name).all()
+
+            for pupil in pupils:
+                # Get class and stream names
+                class_obj = SchoolClass.query.get(assignment.class_id)
+                stream_obj = Stream.query.get(assignment.stream_id)
+
+                pupils_data.append({
+                    'id': pupil.id,
+                    'admission_number': pupil.admission_number,
+                    'first_name': pupil.first_name,
+                    'last_name': pupil.last_name,
+                    'class_name': class_obj.name if class_obj else 'Unknown',
+                    'stream_name': stream_obj.name if stream_obj else 'Unknown'
+                })
+
+        return jsonify({
+            'success': True,
+            'pupils': pupils_data,
+            'total': len(pupils_data)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@teacher_bp.route('/generate_pupil_report/<pupil_id>/<report_type>')
+def generate_pupil_report(pupil_id, report_type):
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    # Get pupil details
+    pupil = Pupil.query.get(pupil_id)
+    if not pupil:
+        flash('Pupil not found')
+        return redirect(url_for('teacher.pupil_reports'))
+
+    # Get class and stream names
+    class_name = 'N/A'
+    stream_name = 'N/A'
+
+    if pupil.class_admitted:
+        class_obj = SchoolClass.query.get(pupil.class_admitted)
+        if class_obj:
+            class_name = class_obj.name
+
+    if pupil.stream:
+        stream_obj = Stream.query.get(pupil.stream)
+        if stream_obj:
+            stream_name = stream_obj.name
+
+    # Get pupil's marks based on report type
+    marks_data = []
+
+    # Parse report type to determine term and exam type
+    if report_type.startswith('term1_'):
+        term = 1
+        if 'beginning' in report_type:
+            exam_type = 'Beginning of term'
+        elif 'mid' in report_type:
+            exam_type = 'Mid_term'
+        elif 'end' in report_type:
+            exam_type = 'End of term'
+        elif 'both' in report_type:
+            # For "both" option, we'll show all three exams: beginning, mid, and end of term
+            exam_type = 'Beginning of term'  # We'll handle this specially
+    elif report_type.startswith('term2_'):
+        term = 2
+        if 'beginning' in report_type:
+            exam_type = 'Beginning of term'
+        elif 'mid' in report_type:
+            exam_type = 'Mid_term'
+        elif 'end' in report_type:
+            exam_type = 'End of term'
+        elif 'both' in report_type:
+            exam_type = 'Beginning of term'
+    elif report_type.startswith('term3_'):
+        term = 3
+        if 'beginning' in report_type:
+            exam_type = 'Beginning of term'
+        elif 'mid' in report_type:
+            exam_type = 'Mid_term'
+        elif 'end' in report_type:
+            exam_type = 'End of term'
+        elif 'both' in report_type:
+            exam_type = 'Beginning of term'
+
+    # Fetch marks data
+    if 'term' in locals():
+        if 'both' in report_type:
+            # For "both" option, get all three exam types: beginning, mid, and end of term
+            beginning_marks = PupilMarks.query.filter_by(
+                pupil_id=pupil_id,
+                academic_year_id=pupil.academic_year_id,
+                term=term,
+                exam_type='Beginning of term'
+            ).first()
+
+            mid_marks = PupilMarks.query.filter_by(
+                pupil_id=pupil_id,
+                academic_year_id=pupil.academic_year_id,
+                term=term,
+                exam_type='Mid_term'
+            ).first()
+
+            end_marks = PupilMarks.query.filter_by(
+                pupil_id=pupil_id,
+                academic_year_id=pupil.academic_year_id,
+                term=term,
+                exam_type='End of term'
+            ).first()
+
+            print(f"DEBUG: 'Both' option - Looking for pupil_id={pupil_id}, academic_year_id={pupil.academic_year_id}, term={term}")
+            print(f"DEBUG: Beginning marks found: {beginning_marks is not None}")
+            print(f"DEBUG: Mid marks found: {mid_marks is not None}")
+            print(f"DEBUG: End marks found: {end_marks is not None}")
+
+            if beginning_marks:
+                print(f"DEBUG: Beginning marks remarks - english: '{beginning_marks.english_remark}', general: '{beginning_marks.general_comment}'")
+
+            if beginning_marks:
+                marks_data.append({
+                    'exam_type': 'Beginning of Term',
+                    'english': beginning_marks.english or 0,
+                    'mathematics': beginning_marks.mathematics or 0,
+                    'science': beginning_marks.science or 0,
+                    'social_studies': beginning_marks.social_studies or 0,
+                    'total': beginning_marks.total_marks or 0,
+                    'average': beginning_marks.average or 0,
+                    'position': beginning_marks.position_in_stream or 0,
+                    'stream_student_count': beginning_marks.stream_student_count or 0,
+                    'english_remark': beginning_marks.english_remark or '',
+                    'mathematics_remark': beginning_marks.mathematics_remark or '',
+                    'science_remark': beginning_marks.science_remark or '',
+                    'social_studies_remark': beginning_marks.social_studies_remark or '',
+                    'remarks': beginning_marks.general_comment or ''
+                })
+
+            if mid_marks:
+                marks_data.append({
+                    'exam_type': 'Mid Term',
+                    'english': mid_marks.english or 0,
+                    'mathematics': mid_marks.mathematics or 0,
+                    'science': mid_marks.science or 0,
+                    'social_studies': mid_marks.social_studies or 0,
+                    'total': mid_marks.total_marks or 0,
+                    'average': mid_marks.average or 0,
+                    'position': mid_marks.position_in_stream or 0,
+                    'stream_student_count': mid_marks.stream_student_count or 0,
+                    'english_remark': mid_marks.english_remark or '',
+                    'mathematics_remark': mid_marks.mathematics_remark or '',
+                    'science_remark': mid_marks.science_remark or '',
+                    'social_studies_remark': mid_marks.social_studies_remark or '',
+                    'remarks': mid_marks.general_comment or ''
+                })
+
+            if end_marks:
+                marks_data.append({
+                    'exam_type': 'End of Term',
+                    'english': end_marks.english or 0,
+                    'mathematics': end_marks.mathematics or 0,
+                    'science': end_marks.science or 0,
+                    'social_studies': end_marks.social_studies or 0,
+                    'total': end_marks.total_marks or 0,
+                    'average': end_marks.average or 0,
+                    'position': end_marks.position_in_stream or 0,
+                    'stream_student_count': end_marks.stream_student_count or 0,
+                    'english_remark': end_marks.english_remark or '',
+                    'mathematics_remark': end_marks.mathematics_remark or '',
+                    'science_remark': end_marks.science_remark or '',
+                    'social_studies_remark': end_marks.social_studies_remark or '',
+                    'remarks': end_marks.general_comment or ''
+                })
+                marks_data.append({
+                    'exam_type': 'Beginning of Term',
+                    'english': beginning_marks.english or 0,
+                    'mathematics': beginning_marks.mathematics or 0,
+                    'science': beginning_marks.science or 0,
+                    'social_studies': beginning_marks.social_studies or 0,
+                    'total': beginning_marks.total_marks or 0,
+                    'average': beginning_marks.average or 0,
+                    'position': beginning_marks.position_in_stream or 0,
+                    'stream_student_count': beginning_marks.stream_student_count or 0,
+                    'english_remark': beginning_marks.english_remark or '',
+                    'mathematics_remark': beginning_marks.mathematics_remark or '',
+                    'science_remark': beginning_marks.science_remark or '',
+                    'social_studies_remark': beginning_marks.social_studies_remark or '',
+                    'remarks': beginning_marks.general_comment or ''
+                })
+
+            if mid_marks:
+                marks_data.append({
+                    'exam_type': 'Mid Term',
+                    'english': mid_marks.english or 0,
+                    'mathematics': mid_marks.mathematics or 0,
+                    'science': mid_marks.science or 0,
+                    'social_studies': mid_marks.social_studies or 0,
+                    'total': mid_marks.total_marks or 0,
+                    'average': mid_marks.average or 0,
+                    'position': mid_marks.position_in_stream or 0,
+                    'stream_student_count': mid_marks.stream_student_count or 0,
+                    'english_remark': mid_marks.english_remark or '',
+                    'mathematics_remark': mid_marks.mathematics_remark or '',
+                    'science_remark': mid_marks.science_remark or '',
+                    'social_studies_remark': mid_marks.social_studies_remark or '',
+                    'remarks': mid_marks.general_comment or ''
+                })
+        else:
+            # Single exam type
+            marks = PupilMarks.query.filter_by(
+                pupil_id=pupil_id,
+                academic_year_id=pupil.academic_year_id,
+                term=term,
+                exam_type=exam_type
+            ).first()
+
+            print(f"DEBUG: Single exam - Looking for pupil_id={pupil_id}, academic_year_id={pupil.academic_year_id}, term={term}, exam_type='{exam_type}'")
+            print(f"DEBUG: Marks found: {marks is not None}")
+
+            if marks:
+                print(f"DEBUG: Single marks remarks - english: '{marks.english_remark}', math: '{marks.mathematics_remark}', science: '{marks.science_remark}', social: '{marks.social_studies_remark}', general: '{marks.general_comment}'")
+
+            if marks:
+                marks_data.append({
+                    'exam_type': exam_type,
+                    'english': marks.english or 0,
+                    'mathematics': marks.mathematics or 0,
+                    'science': marks.science or 0,
+                    'social_studies': marks.social_studies or 0,
+                    'total': marks.total_marks or 0,
+                    'average': marks.average or 0,
+                    'position': marks.position_in_stream or 0,
+                    'stream_student_count': marks.stream_student_count or 0,
+                    'english_remark': marks.english_remark or '',
+                    'mathematics_remark': marks.mathematics_remark or '',
+                    'science_remark': marks.science_remark or '',
+                    'social_studies_remark': marks.social_studies_remark or '',
+                    'remarks': marks.general_comment or ''
+                })
+
+    # For now, just return a simple HTML report
+    return render_template('teacher/pupil_report_template.html',
+                         pupil=pupil,
+                         report_type=report_type,
+                         marks_data=marks_data,
+                         datetime=datetime,
+                         class_name=class_name,
+                         stream_name=stream_name)

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pupil Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root { --bs-body-font-size: 0.95rem; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background-color: #f9f9f9;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar-custom {
+      background-color: #dc3545;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      gap: 10px;
+    }
+    .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .back-btn-small {
+      background-color: white;
+      color: #dc3545;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .back-btn-small:hover {
+      background-color: #f5f5f5;
+    }
+    .back-btn-small i {
+      font-size: 0.8rem;
+    }
+
+    /* Full viewport layout */
+    .app-shell {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      padding-top: 60px;
+      overflow: hidden;
+    }
+
+    /* Main content scrollable */
+    .main-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    /* Filters section */
+    .filters-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .filters-section .form-select,
+    .filters-section .btn {
+      border-radius: 6px;
+    }
+
+    /* Table styling */
+    .table-responsive {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .table thead th {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+      padding: 12px;
+    }
+
+    .table tbody td {
+      padding: 12px;
+      vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* Print button styling */
+    .btn-print {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-print:hover {
+      background-color: #218838;
+      transform: translateY(-1px);
+    }
+
+    .btn-print i {
+      font-size: 0.8rem;
+    }
+
+    /* Loading state */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #6c757d;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    /* Modal styling */
+    .modal-content {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      border-bottom: none;
+      padding: 20px;
+    }
+
+    .modal-body {
+      padding: 25px;
+    }
+
+    .print-option {
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .print-option:hover {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+
+    .print-option.selected {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+    }
+
+    .print-option input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    .print-option label {
+      margin-bottom: 0;
+      cursor: pointer;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Fixed Top Navigation -->
+  <nav class="navbar navbar-custom fixed-top">
+    <a class="navbar-brand" href="#">
+      <img src="/static/images/school_192.png" alt="Logo" style="height:36px; width:auto; margin-right:8px;">
+      Pupil Reports
+    </a>
+    <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-small">
+      <i class="bi bi-box-arrow-left"></i> Back
+    </a>
+  </nav>
+
+  <!-- ✅ Main Content -->
+  <div class="app-shell">
+    <main class="container-fluid main-scroll">
+      <h4 class="mb-3">Generate Pupil Reports</h4>
+
+      <!-- ✅ Filters Section -->
+      <div class="filters-section">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="academicYear" class="form-label fw-semibold">Academic Year</label>
+            <select class="form-select" id="academicYear">
+              <option value="">Select Year</option>
+              {% for year in academic_years %}
+              <option value="{{ year.id }}">{{ year.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="term" class="form-label fw-semibold">Term</label>
+            <select class="form-select" id="term">
+              <option value="">Select Term</option>
+              <option value="1">Term 1</option>
+              <option value="2">Term 2</option>
+              <option value="3">Term 3</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="examSet" class="form-label fw-semibold">Exam Set</label>
+            <select class="form-select" id="examSet">
+              <option value="">Select Exam Set</option>
+              <option value="beginning">Beginning of Term</option>
+              <option value="mid">Mid Term</option>
+              <option value="end">End of Term</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button type="button" class="btn btn-primary w-100" id="loadPupilsBtn">
+              <i class="bi bi-search me-2"></i>Load Pupils
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ Loading Indicator -->
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading pupils...</p>
+      </div>
+
+      <!-- ✅ Pupils Table -->
+      <div class="table-responsive" id="pupilsTableContainer" style="display: none;">
+        <table class="table table-hover mb-0" id="pupilsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Admission No</th>
+              <th>Pupil Name</th>
+              <th>Class</th>
+              <th>Stream</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pupilsTableBody">
+            <!-- Pupils will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- ✅ Print Options Modal -->
+  <div class="modal fade" id="printOptionsModal" tabindex="-1" aria-labelledby="printOptionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="printOptionsModalLabel">
+            <i class="bi bi-printer me-2"></i>Select Report Type
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">Choose what to include in the pupil's report:</p>
+
+          <div id="printOptionsContainer">
+            <!-- Options will be dynamically generated based on selected term -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-success" id="generateReportBtn">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Generate Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    let selectedPupilId = null;
+    let selectedYear = null;
+    let selectedTerm = null;
+    let selectedExamSet = null;
+
+    // Load pupils when filters are applied
+    document.getElementById('loadPupilsBtn').addEventListener('click', function() {
+      selectedYear = document.getElementById('academicYear').value;
+      selectedTerm = document.getElementById('term').value;
+      selectedExamSet = document.getElementById('examSet').value;
+
+      if (!selectedYear || !selectedTerm || !selectedExamSet) {
+        alert('Please select all filters (Year, Term, and Exam Set)');
+        return;
+      }
+
+      loadPupils();
+    });
+
+    async function loadPupils() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      const pupilsTableContainer = document.getElementById('pupilsTableContainer');
+      const pupilsTableBody = document.getElementById('pupilsTableBody');
+
+      // Show loading
+      loadingIndicator.classList.add('show');
+      pupilsTableContainer.style.display = 'none';
+
+      try {
+        const response = await fetch(`/teacher/get_pupils_for_reports?year=${selectedYear}&term=${selectedTerm}&exam_set=${selectedExamSet}`);
+        const data = await response.json();
+
+        if (data.success) {
+          console.log('Pupils loaded successfully:', data.pupils.length, 'pupils');
+          // Clear existing rows
+          pupilsTableBody.innerHTML = '';
+
+          // Add pupil rows
+          data.pupils.forEach((pupil, index) => {
+            console.log('Adding pupil:', pupil.first_name, pupil.last_name);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${pupil.admission_number}</td>
+              <td>${pupil.first_name} ${pupil.last_name}</td>
+              <td>${pupil.class_name}</td>
+              <td>${pupil.stream_name}</td>
+              <td>
+                <button class="btn btn-print btn-sm" data-pupil-id="${pupil.id}" data-pupil-name="${pupil.first_name} ${pupil.last_name}" onclick="openPrintModal(this)">
+                  <i class="bi bi-printer"></i> Print
+                </button>
+              </td>
+            `;
+            pupilsTableBody.appendChild(row);
+          });
+
+          // Show table
+          pupilsTableContainer.style.display = 'block';
+        } else {
+          console.error('Error loading pupils:', data.message);
+          alert('Error loading pupils: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading pupils. Please try again.');
+      } finally {
+        // Hide loading
+        loadingIndicator.classList.remove('show');
+      }
+    }
+
+    function openPrintModal(buttonElement) {
+      console.log('openPrintModal called with button element');
+      const pupilId = buttonElement.getAttribute('data-pupil-id');
+      const pupilName = buttonElement.getAttribute('data-pupil-name');
+
+      console.log('Extracted pupilId:', pupilId, 'pupilName:', pupilName);
+      selectedPupilId = pupilId;
+
+      // Get current filter values in case they weren't set during loadPupils
+      selectedYear = document.getElementById('academicYear').value;
+      selectedTerm = document.getElementById('term').value;
+      selectedExamSet = document.getElementById('examSet').value;
+
+      console.log('Current filters - Year:', selectedYear, 'Term:', selectedTerm, 'ExamSet:', selectedExamSet);
+
+      // Update modal title
+      document.getElementById('printOptionsModalLabel').innerHTML =
+        `<i class="bi bi-printer me-2"></i>Report for ${pupilName}`;
+
+      // Generate print options based on selected term
+      generatePrintOptions();
+
+      // Show modal
+      console.log('Attempting to show modal...');
+      const modalElement = document.getElementById('printOptionsModal');
+      console.log('Modal element:', modalElement);
+
+      if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        console.log('Modal show() called');
+      } else {
+        console.error('Modal element not found!');
+        alert('Modal not found!');
+      }
+    }
+
+    function generatePrintOptions() {
+      const container = document.getElementById('printOptionsContainer');
+      let optionsHtml = '';
+
+      console.log('Generating print options for term:', selectedTerm);
+
+      if (!selectedTerm) {
+        optionsHtml = `
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Please load pupils first by selecting filters and clicking "Load Pupils".
+          </div>
+        `;
+      } else if (selectedTerm === '1') {
+        optionsHtml = `
+          <div class="print-option" onclick="selectPrintOption('term1_beginning')">
+            <input type="radio" id="term1_beginning" name="print_option" value="term1_beginning">
+            <label for="term1_beginning">Term 1 - Beginning of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term1_mid')">
+            <input type="radio" id="term1_mid" name="print_option" value="term1_mid">
+            <label for="term1_mid">Term 1 - Mid Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term1_end')">
+            <input type="radio" id="term1_end" name="print_option" value="term1_end">
+            <label for="term1_end">Term 1 - End of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term1_both')">
+            <input type="radio" id="term1_both" name="print_option" value="term1_both">
+            <label for="term1_both">Term 1 - All Exams (Beginning, Mid & End of Term)</label>
+          </div>
+        `;
+      } else if (selectedTerm === '2') {
+        optionsHtml = `
+          <div class="print-option" onclick="selectPrintOption('term2_beginning')">
+            <input type="radio" id="term2_beginning" name="print_option" value="term2_beginning">
+            <label for="term2_beginning">Term 2 - Beginning of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term2_mid')">
+            <input type="radio" id="term2_mid" name="print_option" value="term2_mid">
+            <label for="term2_mid">Term 2 - Mid Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term2_end')">
+            <input type="radio" id="term2_end" name="print_option" value="term2_end">
+            <label for="term2_end">Term 2 - End of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term2_both')">
+            <input type="radio" id="term2_both" name="print_option" value="term2_both">
+            <label for="term2_both">Term 2 - All Exams (Beginning, Mid & End of Term)</label>
+          </div>
+        `;
+      } else if (selectedTerm === '3') {
+        optionsHtml = `
+          <div class="print-option" onclick="selectPrintOption('term3_beginning')">
+            <input type="radio" id="term3_beginning" name="print_option" value="term3_beginning">
+            <label for="term3_beginning">Term 3 - Beginning of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term3_mid')">
+            <input type="radio" id="term3_mid" name="print_option" value="term3_mid">
+            <label for="term3_mid">Term 3 - Mid Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term3_end')">
+            <input type="radio" id="term3_end" name="print_option" value="term3_end">
+            <label for="term3_end">Term 3 - End of Term Only</label>
+          </div>
+          <div class="print-option" onclick="selectPrintOption('term3_both')">
+            <input type="radio" id="term3_both" name="print_option" value="term3_both">
+            <label for="term3_both">Term 3 - All Exams (Beginning, Mid & End of Term)</label>
+          </div>
+        `;
+      }
+
+      container.innerHTML = optionsHtml;
+    }
+
+    function selectPrintOption(optionValue) {
+      // Remove selected class from all options
+      document.querySelectorAll('.print-option').forEach(option => {
+        option.classList.remove('selected');
+      });
+
+      // Add selected class to clicked option
+      event.currentTarget.classList.add('selected');
+
+      // Check the radio button
+      const radio = document.getElementById(optionValue);
+      if (radio) {
+        radio.checked = true;
+      }
+    }
+
+    // Generate report when button is clicked
+    document.getElementById('generateReportBtn').addEventListener('click', function() {
+      const selectedOption = document.querySelector('input[name="print_option"]:checked');
+
+      if (!selectedOption) {
+        alert('Please select a report type');
+        return;
+      }
+
+      // Close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('printOptionsModal'));
+      modal.hide();
+
+      // Generate report (you can implement the actual report generation logic here)
+      generateReport(selectedPupilId, selectedOption.value);
+    });
+
+    function generateReport(pupilId, reportType) {
+      // Open the report in a new window/tab
+      const reportUrl = `/teacher/generate_pupil_report/${pupilId}/${reportType}`;
+      window.open(reportUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    }
+  </script>
+</body>
+</html>
