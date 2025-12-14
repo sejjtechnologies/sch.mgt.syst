@@ -12,6 +12,35 @@
           font-size: 0.75rem;
           line-height: 1.2;
         }
+        .card-body {
+          padding: 0.5rem !important;
+        }
+        .card-header {
+          padding: 0.25rem 0.5rem !important;
+        }
+      }
+      .totals-card {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .class-total {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .stream-total {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+      .school-total {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: #333;
+        border: 2px solid #ff6b6b;
       }
     </style>
   </head>
@@ -31,6 +60,63 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Registered pupils</h3>
         <a href="{{ url_for('secretary.register_form') }}" class="btn btn-success">New registration</a>
+      </div>
+
+      <!-- Class and Stream Totals -->
+      <div class="row g-2 mb-3">
+        <!-- Total School Pupils -->
+        <div class="col-12 mb-2">
+          <div class="card border-warning">
+            <div class="card-body py-2 text-center">
+              <div class="totals-card school-total" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); max-width: 200px; margin: 0 auto;">
+                <div>
+                  <strong style="font-size: 0.9rem;">Total School Pupils</strong><br>
+                  <span style="font-size: 1.5em; font-weight: 900;">{{ total_school_pupils }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class Totals -->
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header bg-primary text-white py-1">
+              <small class="fw-bold">Pupils per Class</small>
+            </div>
+            <div class="card-body py-2">
+              <div class="row g-1">
+                {% for class_name, total in class_totals.items() %}
+                <div class="col-6 col-md-3 col-lg-2">
+                  <div class="totals-card class-total">
+                    {{ class_name }}<br><span style="font-size: 1.1em; font-weight: 700;">{{ total }}</span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stream Totals -->
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header bg-success text-white py-1">
+              <small class="fw-bold">Pupils per Stream</small>
+            </div>
+            <div class="card-body py-2">
+              <div class="row g-1">
+                {% for stream_name, total in stream_totals.items() %}
+                <div class="col-6 col-md-3 col-lg-2">
+                  <div class="totals-card stream-total">
+                    {{ stream_name }}<br><span style="font-size: 1.1em; font-weight: 700;">{{ total }}</span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="table-responsive">

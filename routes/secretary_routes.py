@@ -214,6 +214,35 @@ def manage_pupils():
     class_objs = {c.id: c.name for c in SchoolClass.query.all()}
     stream_objs = {s.id: s.name for s in Stream.query.all()}
 
+    # Calculate totals per class and stream
+    from sqlalchemy import func
+    
+    # Total pupils per class
+    class_totals = db.session.query(
+        Pupil.class_admitted,
+        func.count(Pupil.id).label('total_pupils')
+    ).filter(Pupil.enrollment_status == 'active').group_by(Pupil.class_admitted).all()
+    
+    # Total pupils per stream
+    stream_totals = db.session.query(
+        Pupil.stream,
+        func.count(Pupil.id).label('total_pupils')
+    ).filter(Pupil.enrollment_status == 'active').group_by(Pupil.stream).all()
+    
+    # Total pupils in the whole school
+    total_school_pupils = db.session.query(func.count(Pupil.id)).filter(Pupil.enrollment_status == 'active').scalar() or 0
+    
+    # Convert to dictionaries for template
+    class_totals_dict = {}
+    for class_id, total in class_totals:
+        if class_id and class_id in class_objs:
+            class_totals_dict[class_objs[class_id]] = total
+    
+    stream_totals_dict = {}
+    for stream_id, total in stream_totals:
+        if stream_id and stream_id in stream_objs:
+            stream_totals_dict[stream_objs[stream_id]] = total
+
     pupils_data = []
     for p in pupils:
         # Resolve class/stream names from stored ids (if present)
@@ -252,7 +281,11 @@ def manage_pupils():
         })
 
     # Render server-side table
-    return render_template('secretary/manage_pupils.html', pupils=pupils_data)
+    return render_template('secretary/manage_pupils.html', 
+                         pupils=pupils_data,
+                         class_totals=class_totals_dict,
+                         stream_totals=stream_totals_dict,
+                         total_school_pupils=total_school_pupils)
 
 
 @secretary_bp.route('/api/pupils', methods=['GET'])
