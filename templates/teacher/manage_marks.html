@@ -360,6 +360,7 @@
     // Update display when filters change
     document.getElementById('academicYearSelect').addEventListener('change', function() {
       currentAcademicYear = this.value;
+      localStorage.setItem('manageMarks_academicYear', this.value);
       const selectedOption = this.options[this.selectedIndex];
       document.getElementById('currentYearDisplay').textContent = selectedOption.text;
       // Auto-load marks when criteria changes
@@ -368,6 +369,7 @@
 
     document.getElementById('termSelect').addEventListener('change', function() {
       currentTerm = this.value;
+      localStorage.setItem('manageMarks_term', this.value);
       document.getElementById('currentTermDisplay').textContent = 'Term ' + this.value;
       // Auto-load marks when criteria changes
       loadAllMarks();
@@ -375,6 +377,7 @@
 
     document.getElementById('examTypeSelect').addEventListener('change', function() {
       currentExamType = this.value;
+      localStorage.setItem('manageMarks_examType', this.value);
       document.getElementById('currentExamDisplay').textContent = this.value.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
       // Auto-load marks when criteria changes
       loadAllMarks();
@@ -627,6 +630,26 @@
 
     // Load marks on page load and setup validation
     document.addEventListener('DOMContentLoaded', function() {
+      // Load saved filter values from localStorage
+      const savedAcademicYear = localStorage.getItem('manageMarks_academicYear');
+      const savedTerm = localStorage.getItem('manageMarks_term');
+      const savedExamType = localStorage.getItem('manageMarks_examType');
+
+      if (savedAcademicYear) {
+        document.getElementById('academicYearSelect').value = savedAcademicYear;
+        currentAcademicYear = savedAcademicYear;
+      }
+      if (savedTerm) {
+        document.getElementById('termSelect').value = savedTerm;
+        currentTerm = savedTerm;
+        document.getElementById('currentTermDisplay').textContent = 'Term ' + savedTerm;
+      }
+      if (savedExamType) {
+        document.getElementById('examTypeSelect').value = savedExamType;
+        currentExamType = savedExamType;
+        document.getElementById('currentExamDisplay').textContent = savedExamType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      }
+
       // Setup validation for marks inputs
       const marksInputs = document.querySelectorAll('.marks-input');
       marksInputs.forEach(input => {
