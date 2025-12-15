@@ -228,8 +228,8 @@ def save_marks():
     try:
         data = request.get_json()
         pupil_id = data.get('pupil_id')
-        academic_year_id = data.get('academic_year_id')
-        term = data.get('term')
+        academic_year_id = int(data.get('academic_year_id'))  # Convert to int
+        term = int(data.get('term'))  # Convert to int
         exam_type = data.get('exam_type')
         marks = data.get('marks', {})
 
@@ -344,8 +344,8 @@ def get_marks():
 
     try:
         pupil_id = request.args.get('pupil_id')
-        academic_year_id = request.args.get('academic_year_id')
-        term = request.args.get('term')
+        academic_year_id = int(request.args.get('academic_year_id'))  # Convert to int
+        term = int(request.args.get('term'))  # Convert to int
         exam_type = request.args.get('exam_type')
 
         if not all([pupil_id, academic_year_id, term, exam_type]):
@@ -354,7 +354,7 @@ def get_marks():
         marks_record = PupilMarks.query.filter_by(
             pupil_id=pupil_id,
             academic_year_id=academic_year_id,
-            term=int(term),
+            term=term,
             exam_type=exam_type
         ).first()
 
