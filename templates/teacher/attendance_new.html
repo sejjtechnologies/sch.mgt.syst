@@ -10,11 +10,11 @@
     :root { --bs-body-font-size: 0.95rem; }
     html, body { height: 100%; margin: 0; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; display: flex; flex-direction: column; }
-    .navbar-custom { background: #dc3545; height: 60px; min-height: 60px; display: flex; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; width: 100%; }
+    .navbar-custom { background: #4a90e2; height: 56px; min-height: 56px; display: flex; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; width: 100%; }
     .navbar-custom .navbar-brand { font-size: 1rem; color: white !important; }
     .navbar-content { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: space-between; }
     .navbar-label { color: white !important; font-weight: 600; font-size: 0.95rem !important; margin: 0 !important; white-space: nowrap !important; }
-    .back-btn-custom { color: #dc3545 !important; background-color: white !important; border: none !important; border-radius: 4px; padding: 6px 12px !important; font-size: 1.2rem; }
+    .back-btn-custom { color: #4a90e2 !important; background-color: white !important; border: none !important; border-radius: 6px; padding: 4px 8px !important; font-size: 0.9rem; height: 32px; min-width: 32px; display: flex; align-items: center; justify-content: center; }
     .back-btn-custom:hover { background-color: #f5f5f5 !important; }
     /* Mark-all buttons style - balanced size for desktop and mobile */
     .mark-all-btn { padding: 8px 10px; font-size: 0.95rem; min-height: 40px; }
@@ -30,8 +30,8 @@
     .checkbox-cell { text-align: center; }
     .btn-check + .btn-check-label { cursor: pointer; user-select: none; }
     .alert-toast { position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 280px; }
-    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 105px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
-    .top-search { background: #fff; padding: 12px; border-bottom: 1px solid #e9ecef; position: sticky; top: 60px; z-index: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 101px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
+    .top-search { background: #fff; padding: 12px; border-bottom: 1px solid #e9ecef; position: sticky; top: 56px; z-index: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .search-input-group { max-width: 400px; margin: 0 auto; }
     .fixed-back { position: absolute; left: 12px; top: 12px; z-index: 1100; }
     .fixed-back .btn { height: 36px; padding: 6px 10px; }
@@ -89,7 +89,7 @@
     }
 
     /* Adjust main content to account for search bar */
-    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 105px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
+    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 101px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
   </style>
 </head>
 <body>
@@ -250,15 +250,7 @@
         const q = searchTerm.toLowerCase();
         return (p.first_name && p.first_name.toLowerCase().includes(q)) || (p.last_name && p.last_name.toLowerCase().includes(q));
       });
-      // Sort alphabetically by last name, then first name for stable ordering on the client
-      filtered.sort(function(a, b) {
-        const aLast = (a.last_name || '').toLowerCase();
-        const bLast = (b.last_name || '').toLowerCase();
-        if (aLast !== bLast) return aLast.localeCompare(bLast);
-        const aFirst = (a.first_name || '').toLowerCase();
-        const bFirst = (b.first_name || '').toLowerCase();
-        return aFirst.localeCompare(bFirst);
-      });
+      // Preserve the admission number sorting from the backend
       return filtered;
     }
 
