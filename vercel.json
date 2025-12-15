@@ -1,5 +1,4 @@
 {
   "buildCommand": "pip install -r requirements.txt",
-  "installCommand": "pip install -r requirements.txt",
-  "pythonVersion": "3.11"
+  "installCommand": "pip install -r requirements.txt"
 }
