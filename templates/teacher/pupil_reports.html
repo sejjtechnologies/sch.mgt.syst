@@ -269,53 +269,6 @@
       display: block;
     }
 
-    /* Modal styling */
-    .modal-content {
-      border-radius: 12px;
-      border: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 12px 12px 0 0;
-      border-bottom: none;
-      padding: 20px;
-    }
-
-    .modal-body {
-      padding: 25px;
-    }
-
-    .print-option {
-      border: 2px solid #e9ecef;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .print-option:hover {
-      border-color: #007bff;
-      background-color: #f8f9ff;
-    }
-
-    .print-option.selected {
-      border-color: #007bff;
-      background-color: #e7f3ff;
-    }
-
-    .print-option input[type="radio"] {
-      margin-right: 10px;
-    }
-
-    .print-option label {
-      margin-bottom: 0;
-      cursor: pointer;
-      font-weight: 500;
-    }
   </style>
 </head>
 <body>
@@ -363,6 +316,7 @@
               <option value="beginning">Beginning of Term</option>
               <option value="mid">Mid Term</option>
               <option value="end">End of Term</option>
+              <option value="both">All Exams (Beginning, Mid & End of Term)</option>
             </select>
           </div>
           <div class="col-md-3 d-flex align-items-end">
@@ -400,35 +354,6 @@
         </table>
       </div>
     </main>
-  </div>
-
-  <!-- ✅ Print Options Modal -->
-  <div class="modal fade" id="printOptionsModal" tabindex="-1" aria-labelledby="printOptionsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="printOptionsModalLabel">
-            <i class="bi bi-printer me-2"></i>Select Report Type
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-muted mb-3">Choose what to include in the pupil's report:</p>
-
-          <div id="printOptionsContainer">
-            <!-- Options will be dynamically generated based on selected term -->
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-1"></i>Cancel
-          </button>
-          <button type="button" class="btn btn-success" id="generateReportBtn">
-            <i class="bi bi-file-earmark-pdf me-1"></i>Generate Report
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ✅ Bootstrap JS -->
@@ -507,149 +432,40 @@
     }
 
     function openPrintModal(buttonElement) {
-      console.log('openPrintModal called with button element');
+      console.log('🎯 openPrintModal called with button element');
       const pupilId = buttonElement.getAttribute('data-pupil-id');
       const pupilName = buttonElement.getAttribute('data-pupil-name');
 
-      console.log('Extracted pupilId:', pupilId, 'pupilName:', pupilName);
-      selectedPupilId = pupilId;
+      console.log('🎯 Extracted pupilId:', pupilId, 'pupilName:', pupilName);
 
-      // Get current filter values in case they weren't set during loadPupils
-      selectedYear = document.getElementById('academicYear').value;
-      selectedTerm = document.getElementById('term').value;
-      selectedExamSet = document.getElementById('examSet').value;
+      // Get current filter values
+      const currentYear = document.getElementById('academicYear').value;
+      const currentTerm = document.getElementById('term').value;
+      const currentExamSet = document.getElementById('examSet').value;
 
-      console.log('Current filters - Year:', selectedYear, 'Term:', selectedTerm, 'ExamSet:', selectedExamSet);
+      console.log('🎯 Current filters - Year:', currentYear, 'Term:', currentTerm, 'ExamSet:', currentExamSet);
 
-      // Update modal title
-      document.getElementById('printOptionsModalLabel').innerHTML =
-        `<i class="bi bi-printer me-2"></i>Report for ${pupilName}`;
+      // Map exam set to report type
+      let reportType = '';
+      if (currentExamSet === 'beginning') {
+        reportType = `term${currentTerm}_beginning`;
+      } else if (currentExamSet === 'mid') {
+        reportType = `term${currentTerm}_mid`;
+      } else if (currentExamSet === 'end') {
+        reportType = `term${currentTerm}_end`;
+      } else if (currentExamSet === 'both') {
+        reportType = `term${currentTerm}_both`;
+      }
 
-      // Generate print options based on selected term
-      generatePrintOptions();
+      console.log('🎯 Generated reportType:', reportType);
 
-      // Show modal
-      console.log('Attempting to show modal...');
-      const modalElement = document.getElementById('printOptionsModal');
-      console.log('Modal element:', modalElement);
-
-      if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-        console.log('Modal show() called');
+      // Directly generate the report without showing modal
+      if (reportType) {
+        generateReport(pupilId, reportType);
       } else {
-        console.error('Modal element not found!');
-        alert('Modal not found!');
+        alert('Please select an exam set first.');
       }
     }
-
-    function generatePrintOptions() {
-      const container = document.getElementById('printOptionsContainer');
-      let optionsHtml = '';
-
-      console.log('Generating print options for term:', selectedTerm);
-
-      if (!selectedTerm) {
-        optionsHtml = `
-          <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            Please load pupils first by selecting filters and clicking "Load Pupils".
-          </div>
-        `;
-      } else if (selectedTerm === '1') {
-        optionsHtml = `
-          <div class="print-option" onclick="selectPrintOption('term1_beginning')">
-            <input type="radio" id="term1_beginning" name="print_option" value="term1_beginning">
-            <label for="term1_beginning">Term 1 - Beginning of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term1_mid')">
-            <input type="radio" id="term1_mid" name="print_option" value="term1_mid">
-            <label for="term1_mid">Term 1 - Mid Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term1_end')">
-            <input type="radio" id="term1_end" name="print_option" value="term1_end">
-            <label for="term1_end">Term 1 - End of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term1_both')">
-            <input type="radio" id="term1_both" name="print_option" value="term1_both">
-            <label for="term1_both">Term 1 - All Exams (Beginning, Mid & End of Term)</label>
-          </div>
-        `;
-      } else if (selectedTerm === '2') {
-        optionsHtml = `
-          <div class="print-option" onclick="selectPrintOption('term2_beginning')">
-            <input type="radio" id="term2_beginning" name="print_option" value="term2_beginning">
-            <label for="term2_beginning">Term 2 - Beginning of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term2_mid')">
-            <input type="radio" id="term2_mid" name="print_option" value="term2_mid">
-            <label for="term2_mid">Term 2 - Mid Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term2_end')">
-            <input type="radio" id="term2_end" name="print_option" value="term2_end">
-            <label for="term2_end">Term 2 - End of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term2_both')">
-            <input type="radio" id="term2_both" name="print_option" value="term2_both">
-            <label for="term2_both">Term 2 - All Exams (Beginning, Mid & End of Term)</label>
-          </div>
-        `;
-      } else if (selectedTerm === '3') {
-        optionsHtml = `
-          <div class="print-option" onclick="selectPrintOption('term3_beginning')">
-            <input type="radio" id="term3_beginning" name="print_option" value="term3_beginning">
-            <label for="term3_beginning">Term 3 - Beginning of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term3_mid')">
-            <input type="radio" id="term3_mid" name="print_option" value="term3_mid">
-            <label for="term3_mid">Term 3 - Mid Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term3_end')">
-            <input type="radio" id="term3_end" name="print_option" value="term3_end">
-            <label for="term3_end">Term 3 - End of Term Only</label>
-          </div>
-          <div class="print-option" onclick="selectPrintOption('term3_both')">
-            <input type="radio" id="term3_both" name="print_option" value="term3_both">
-            <label for="term3_both">Term 3 - All Exams (Beginning, Mid & End of Term)</label>
-          </div>
-        `;
-      }
-
-      container.innerHTML = optionsHtml;
-    }
-
-    function selectPrintOption(optionValue) {
-      // Remove selected class from all options
-      document.querySelectorAll('.print-option').forEach(option => {
-        option.classList.remove('selected');
-      });
-
-      // Add selected class to clicked option
-      event.currentTarget.classList.add('selected');
-
-      // Check the radio button
-      const radio = document.getElementById(optionValue);
-      if (radio) {
-        radio.checked = true;
-      }
-    }
-
-    // Generate report when button is clicked
-    document.getElementById('generateReportBtn').addEventListener('click', function() {
-      const selectedOption = document.querySelector('input[name="print_option"]:checked');
-
-      if (!selectedOption) {
-        alert('Please select a report type');
-        return;
-      }
-
-      // Close modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById('printOptionsModal'));
-      modal.hide();
-
-      // Generate report (you can implement the actual report generation logic here)
-      generateReport(selectedPupilId, selectedOption.value);
-    });
 
     function generateReport(pupilId, reportType) {
       // Open the report in a new window/tab
