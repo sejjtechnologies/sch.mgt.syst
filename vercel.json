@@ -1,4 +1,4 @@
 {
-  "buildCommand": "pip install --user --no-warn-script-location -r requirements.txt",
-  "installCommand": "pip install --user --no-warn-script-location -r requirements.txt"
+  "buildCommand": "pip install -r requirements.txt",
+  "installCommand": "pip install -r requirements.txt"
 }
