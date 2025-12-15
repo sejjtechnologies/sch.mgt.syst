@@ -1,6 +1,6 @@
 {
   "name": "School Manager",
-  "short_name": "SchoolMgr",
+  "short_name": "Sch. Manager",
   "description": "Manage school operations efficiently",
   "start_url": "/",
   "display": "standalone",
