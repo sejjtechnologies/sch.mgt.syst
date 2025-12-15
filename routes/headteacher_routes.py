@@ -92,8 +92,10 @@ def save_assignments():
         db.session.begin()
 
         TeacherAssignment.query.update({'is_active': False})
+        print(f"DEBUG: Deactivated all existing assignments")
 
         for assignment in assignments_data:
+            print(f"DEBUG: Creating assignment - teacher_id: {assignment.get('teacher_id')}, class_id: {assignment.get('class_id')}, stream_id: {assignment.get('stream_id')}")
             new_assignment = TeacherAssignment(
                 teacher_id=assignment.get('teacher_id'),
                 class_id=assignment.get('class_id'),
@@ -104,6 +106,7 @@ def save_assignments():
             db.session.add(new_assignment)
 
         db.session.commit()
+        print(f"DEBUG: Successfully saved {len(assignments_data)} assignments")
 
         return jsonify({'success': True, 'message': 'Assignments saved successfully'})
 

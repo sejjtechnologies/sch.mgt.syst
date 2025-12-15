@@ -4,8 +4,9 @@ from models.school_class import SchoolClass
 from models.stream import Stream
 from models.teacher_assignment import TeacherAssignment
 from models.register_pupil import Pupil, AcademicYear, PupilMarks
+from models.attendance import Attendance
 from models import db
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import pytz
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
@@ -27,12 +28,17 @@ def view_pupils():
         return redirect(url_for('index'))
 
     teacher_id = session.get('user_id')
+    print(f"DEBUG view_pupils: teacher_id from session: {teacher_id}, type: {type(teacher_id)}")
 
     # Get all classes and streams assigned to this teacher
     teacher_assignments = TeacherAssignment.query.filter_by(
         teacher_id=teacher_id,
         is_active=True
     ).all()
+
+    print(f"DEBUG view_pupils: Found {len(teacher_assignments)} assignments for teacher {teacher_id}")
+    for assignment in teacher_assignments:
+        print(f"DEBUG view_pupils: Assignment - teacher_id: {assignment.teacher_id}, class_id: {assignment.class_id}, stream_id: {assignment.stream_id}, is_active: {assignment.is_active}")
 
     # If teacher has no assignments, show no assignment page
     if not teacher_assignments:
@@ -58,8 +64,8 @@ def view_pupils():
     pupils = []
     for assignment in teacher_classes_streams:
         class_pupils = Pupil.query.filter_by(
-            class_admitted=assignment['class_id'],
-            stream=assignment['stream_id'],
+            class_admitted=assignment['class_id'],  # Use class ID, not name
+            stream=assignment['stream_id'],         # Use stream ID, not name
             enrollment_status='active'
         ).all()
         pupils.extend(class_pupils)
@@ -158,8 +164,8 @@ def manage_marks():
     pupils = []
     for assignment in teacher_classes_streams:
         class_pupils = Pupil.query.filter_by(
-            class_admitted=assignment['class_id'],
-            stream=assignment['stream_id'],
+            class_admitted=assignment['class_id'],  # Use class ID, not name
+            stream=assignment['stream_id'],         # Use stream ID, not name
             enrollment_status='active'
         ).all()
         pupils.extend(class_pupils)
@@ -561,18 +567,21 @@ def get_pupils_for_reports():
         pupils_data = []
 
         for assignment in teacher_assignments:
-            # Get pupils in this class and stream
+            # Get class and stream names first
+            class_obj = SchoolClass.query.get(assignment.class_id)
+            stream_obj = Stream.query.get(assignment.stream_id)
+
+            if not class_obj or not stream_obj:
+                continue
+
+            # Get pupils in this class and stream using names, not IDs
             pupils = Pupil.query.filter_by(
-                class_admitted=str(assignment.class_id),
-                stream=str(assignment.stream_id),
+                class_admitted=class_obj.name,  # Use class name, not ID
+                stream=stream_obj.name,         # Use stream name, not ID
                 enrollment_status='active'
             ).order_by(Pupil.admission_number.asc()).all()
 
             for pupil in pupils:
-                # Get class and stream names
-                class_obj = SchoolClass.query.get(assignment.class_id)
-                stream_obj = Stream.query.get(assignment.stream_id)
-
                 pupils_data.append({
                     'id': pupil.id,
                     'admission_number': pupil.admission_number,
@@ -815,3 +824,461 @@ def generate_pupil_report(pupil_id, report_type):
                          datetime=datetime,
                          class_name=class_name,
                          stream_name=stream_name)
+
+
+@teacher_bp.route('/attendance')
+def attendance_view():
+    """View and manage attendance for assigned classes"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    teacher_id = session.get('user_id')
+    print(f"DEBUG attendance_view: teacher_id from session: {teacher_id}, type: {type(teacher_id)}")
+
+    # Get all classes and streams assigned to this teacher
+    teacher_assignments = TeacherAssignment.query.filter_by(
+        teacher_id=teacher_id,
+        is_active=True
+    ).all()
+
+    print(f"DEBUG attendance_view: Found {len(teacher_assignments)} assignments for teacher {teacher_id}")
+    for assignment in teacher_assignments:
+        print(f"DEBUG attendance_view: Assignment - teacher_id: {assignment.teacher_id}, class_id: {assignment.class_id}, stream_id: {assignment.stream_id}, is_active: {assignment.is_active}")
+
+    # If teacher has no assignments, show no assignment page
+    if not teacher_assignments:
+        from models.user import User
+        teacher = User.query.get(teacher_id)
+        return render_template('teacher/no_assignment.html', teacher=teacher)
+
+    # Collect all class-stream combinations for this teacher
+    teacher_classes_streams = []
+    for assignment in teacher_assignments:
+        class_obj = SchoolClass.query.get(assignment.class_id)
+        stream_obj = Stream.query.get(assignment.stream_id)
+        if class_obj and stream_obj:
+            teacher_classes_streams.append({
+                'class_name': class_obj.name,
+                'stream_name': stream_obj.name,
+                'class_id': assignment.class_id,
+                'stream_id': assignment.stream_id
+            })
+
+    # Get current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+    if not current_academic_year:
+        flash('No active academic year found')
+        return redirect(url_for('teacher.dashboard'))
+
+    # Get all pupils in the teacher's assigned classes and streams
+    pupils = []
+    for assignment in teacher_classes_streams:
+        class_pupils = Pupil.query.filter_by(
+            class_admitted=assignment['class_id'],  # Use class ID, not name
+            stream=assignment['stream_id'],         # Use stream ID, not name
+            enrollment_status='active'
+        ).filter(
+            # Include pupils with current academic year or no academic year set
+            db.or_(
+                Pupil.academic_year_id == current_academic_year.id,
+                Pupil.academic_year_id.is_(None)
+            )
+        ).all()
+        pupils.extend(class_pupils)
+
+    # Remove duplicates
+    seen_ids = set()
+    unique_pupils = []
+    for pupil in pupils:
+        if pupil.id not in seen_ids:
+            seen_ids.add(pupil.id)
+            unique_pupils.append(pupil)
+
+    # Sort pupils by admission number
+    sorted_pupils = sorted(unique_pupils, key=lambda p: p.admission_number)
+
+    # Create pupil records with class and stream names
+    pupil_records = []
+    for pupil in sorted_pupils:
+        # Find the assignment for this pupil to get the names
+        pupil_class_name = None
+        pupil_stream_name = None
+        for assignment in teacher_classes_streams:
+            if assignment['class_id'] == pupil.class_admitted and assignment['stream_id'] == pupil.stream:
+                pupil_class_name = assignment['class_name']
+                pupil_stream_name = assignment['stream_name']
+                break
+
+        pupil_records.append({
+            'id': pupil.id,
+            'admission_number': pupil.admission_number or '',
+            'first_name': pupil.first_name or '',
+            'last_name': pupil.last_name or '',
+            'class_name': pupil_class_name or '',
+            'stream_name': pupil_stream_name or '',
+            'class_id': pupil.class_admitted or '',
+            'stream_id': pupil.stream or ''
+        })
+
+    # Get today's date for default
+    today = date.today()
+    selected_date = request.args.get('date', today.isoformat())
+
+    # Get all unique streams for this teacher
+    all_streams = []
+    seen_stream_ids = set()
+    for assignment in teacher_classes_streams:
+        stream_id = assignment['stream_id']
+        stream_name = assignment['stream_name']
+        if stream_id and stream_name and stream_id not in seen_stream_ids:
+            all_streams.append({
+                'id': str(stream_id),
+                'name': str(stream_name)
+            })
+            seen_stream_ids.add(stream_id)
+
+    # Get existing attendance records for the selected date
+    attendance_map = {}
+    if selected_date:
+        try:
+            attendance_date = date.fromisoformat(selected_date)
+            existing_attendance = Attendance.query.filter_by(
+                attendance_date=attendance_date,
+                academic_year_id=current_academic_year.id
+            ).filter(
+                Attendance.pupil_id.in_([p['id'] for p in pupil_records])
+            ).all()
+
+            for attendance in existing_attendance:
+                attendance_map[str(attendance.pupil_id)] = str(attendance.status)
+        except ValueError:
+            pass  # Invalid date format, use empty map
+
+    return render_template('teacher/attendance_new.html',
+                         pupils=pupil_records,
+                         teacher_classes_streams=teacher_classes_streams,
+                         today=today,
+                         all_streams=all_streams,
+                         attendance_map=attendance_map,
+                         selected_date=selected_date)
+
+
+@teacher_bp.route('/attendance', methods=['POST'])
+def save_attendance():
+    """Save attendance records"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        return jsonify({'error': 'Access denied'}), 403
+
+    teacher_id = session.get('user_id')
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    attendance_date = data.get('date')
+    class_id = data.get('class_id')
+    stream_id = data.get('stream_id')
+    entries = data.get('entries', [])
+
+    if not attendance_date or not class_id or not stream_id:
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    try:
+        attendance_date_obj = datetime.strptime(attendance_date, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
+
+    # Get current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+    if not current_academic_year:
+        return jsonify({'error': 'No active academic year found'}), 400
+
+    # Check if attendance for this date, class, and stream already exists
+    existing_records = Attendance.query.filter_by(
+        attendance_date=attendance_date_obj,
+        class_id=class_id,
+        stream_id=stream_id,
+        academic_year_id=current_academic_year.id
+    ).all()
+
+    if existing_records:
+        return jsonify({'already_saved': True, 'error': 'Attendance for this date has already been marked'}), 409
+
+    # Save attendance records
+    saved_count = 0
+    for entry in entries:
+        pupil_id = entry.get('pupil_id')
+        status = entry.get('status')
+
+        if not pupil_id or status not in ['present', 'absent']:
+            continue
+
+        # Create attendance record
+        attendance_record = Attendance(
+            pupil_id=pupil_id,
+            class_id=class_id,
+            stream_id=stream_id,
+            attendance_date=attendance_date_obj,
+            status=status,
+            teacher_id=teacher_id,
+            academic_year_id=current_academic_year.id
+        )
+
+        db.session.add(attendance_record)
+        saved_count += 1
+
+    try:
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'Attendance saved successfully for {saved_count} pupils',
+            'saved_count': saved_count
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to save attendance: {str(e)}'}), 500
+
+
+@teacher_bp.route('/attendance/roster')
+def attendance_roster():
+    """View attendance roster for a specific class and date range"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    teacher_id = session.get('user_id')
+
+    # Get query parameters
+    class_id = request.args.get('class_id')
+    start_date = request.args.get('start')
+    days = int(request.args.get('days', 7))
+
+    if not class_id or not start_date:
+        flash('Missing required parameters')
+        return redirect(url_for('teacher.attendance_view'))
+
+    try:
+        start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format')
+        return redirect(url_for('teacher.attendance_view'))
+
+    # Verify teacher is assigned to this class
+    assignment = TeacherAssignment.query.filter_by(
+        teacher_id=teacher_id,
+        class_id=class_id,
+        is_active=True
+    ).first()
+
+    if not assignment:
+        flash('Access denied - not assigned to this class')
+        return redirect(url_for('teacher.dashboard'))
+
+    # Get class and stream info
+    class_obj = SchoolClass.query.get(class_id)
+    stream_obj = Stream.query.get(assignment.stream_id)
+
+    if not class_obj or not stream_obj:
+        flash('Class or stream not found')
+        return redirect(url_for('teacher.attendance_view'))
+
+    # Get current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+    if not current_academic_year:
+        flash('No active academic year found')
+        return redirect(url_for('teacher.dashboard'))
+
+    # Get pupils in this class and stream
+    pupils = Pupil.query.filter_by(
+        class_admitted=class_obj.name,  # Use class name, not ID
+        stream=stream_obj.name,         # Use stream name, not ID
+        enrollment_status='active'
+    ).filter(
+        # Include pupils with current academic year or no academic year set
+        db.or_(
+            Pupil.academic_year_id == current_academic_year.id,
+            Pupil.academic_year_id.is_(None)
+        )
+    ).order_by(Pupil.admission_number).all()
+
+    # Generate date range
+    date_range = []
+    current_date = start_date_obj
+    for i in range(days):
+        date_range.append(current_date)
+        current_date = current_date.replace(day=current_date.day + 1)
+
+    # Get attendance data for the date range
+    attendance_data = {}
+    for pupil in pupils:
+        pupil_attendance = {}
+        for attendance_date in date_range:
+            record = Attendance.query.filter_by(
+                pupil_id=pupil.id,
+                attendance_date=attendance_date
+            ).first()
+            pupil_attendance[attendance_date.isoformat()] = record.status if record else None
+        attendance_data[pupil.id] = pupil_attendance
+
+    return render_template('teacher/attendance_roaster.html',
+                         pupils=pupils,
+                         class_info={'name': class_obj.name, 'id': class_id},
+                         stream_info={'name': stream_obj.name, 'id': assignment.stream_id},
+                         date_range=date_range,
+                         attendance_data=attendance_data,
+                         start_date=start_date,
+                         days=days)
+
+
+@teacher_bp.route('/attendance/confirm', methods=['POST'])
+def attendance_confirm():
+    """Confirm attendance actions (used by roster view)"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        return jsonify({'error': 'Access denied'}), 403
+
+    # This route handles confirmation actions from the roster view
+    # For now, just return success
+    return jsonify({'success': True, 'message': 'Action confirmed'})
+
+
+@teacher_bp.route('/attendance/summary')
+def attendance_summary():
+    """View attendance summary reports"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    teacher_id = session.get('user_id')
+
+    # Get query parameters
+    class_id = request.args.get('class_id')
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    # Get all classes and streams assigned to this teacher
+    teacher_assignments = TeacherAssignment.query.filter_by(
+        teacher_id=teacher_id,
+        is_active=True
+    ).all()
+
+    # If teacher has no assignments, show no assignment page
+    if not teacher_assignments:
+        from models.user import User
+        teacher = User.query.get(teacher_id)
+        return render_template('teacher/no_assignment.html', teacher=teacher)
+
+    # Collect all class-stream combinations for this teacher
+    teacher_classes_streams = []
+    for assignment in teacher_assignments:
+        class_obj = SchoolClass.query.get(assignment.class_id)
+        stream_obj = Stream.query.get(assignment.stream_id)
+        if class_obj and stream_obj:
+            teacher_classes_streams.append({
+                'class_name': class_obj.name,
+                'stream_name': stream_obj.name,
+                'class_id': assignment.class_id,
+                'stream_id': assignment.stream_id
+            })
+
+    # Get current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+    if not current_academic_year:
+        flash('No active academic year found')
+        return redirect(url_for('teacher.dashboard'))
+
+    # Default to current month if no dates provided
+    if not start_date or not end_date:
+        today = date.today()
+        start_date = today.replace(day=1).isoformat()
+        end_date = today.isoformat()
+
+    try:
+        start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format')
+        return redirect(url_for('teacher.attendance_summary'))
+
+    # Get attendance summary data
+    summary_data = []
+
+    for assignment in teacher_classes_streams:
+        # Get pupils in this class/stream
+        pupils = Pupil.query.filter_by(
+            class_admitted=assignment['class_id'],  # Use class ID, not name
+            stream=assignment['stream_id'],         # Use stream ID, not name
+            enrollment_status='active'
+        ).filter(
+            # Include pupils with current academic year or no academic year set
+            db.or_(
+                Pupil.academic_year_id == current_academic_year.id,
+                Pupil.academic_year_id.is_(None)
+            )
+        ).order_by(Pupil.admission_number).all()
+
+        for pupil in pupils:
+            # Get attendance records for this pupil in the date range
+            attendance_records = Attendance.query.filter(
+                Attendance.pupil_id == pupil.id,
+                Attendance.attendance_date >= start_date_obj,
+                Attendance.attendance_date <= end_date_obj
+            ).all()
+
+            # Create attendance_by_date dictionary
+            attendance_by_date = {}
+            present_count = 0
+            absent_count = 0
+            late_count = 0
+            leave_count = 0
+
+            for record in attendance_records:
+                date_str = record.attendance_date.isoformat()
+                attendance_by_date[date_str] = record.status
+
+                if record.status == 'present':
+                    present_count += 1
+                elif record.status == 'absent':
+                    absent_count += 1
+                elif record.status == 'late':
+                    late_count += 1
+                elif record.status == 'leave':
+                    leave_count += 1
+
+            summary_data.append({
+                'name': f"{pupil.first_name} {pupil.last_name}",
+                'stream_name': assignment['stream_name'],
+                'attendance_by_date': attendance_by_date,
+                'counts': {
+                    'present': present_count,
+                    'absent': absent_count,
+                    'late': late_count,
+                    'leave': leave_count
+                }
+            })
+
+    # Create dates list for template
+    dates = []
+    current_date = start_date_obj
+    while current_date <= end_date_obj:
+        dates.append({
+            'iso': current_date.isoformat(),
+            'short': current_date.strftime('%d/%m'),
+            'full': current_date.strftime('%a %d')
+        })
+        current_date += timedelta(days=1)
+
+    # Create summary object for template
+    summary = {
+        'start': start_date,
+        'end': end_date,
+        'period': request.args.get('period', 'month'),  # Default to month
+        'data': summary_data,
+        'total_days': len(dates)
+    }
+
+    return render_template('teacher/attendance_summary.html',
+                         summary=summary,
+                         dates=dates,
+                         teacher_classes_streams=teacher_classes_streams,
+                         selected_class=class_id)

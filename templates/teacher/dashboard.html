@@ -117,7 +117,7 @@
             <!-- Manage Pupils Attendance -->
             <button class="btn btn-warning dashboard-btn"
                     style="box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);"
-                    onclick="window.location.href='#'">
+                    onclick="window.location.href='{{ url_for('teacher.attendance_view') }}'">
               <i class="bi bi-calendar-check"></i>
               <span class="fw-semibold">Manage Pupils Attendance</span>
             </button>
@@ -125,7 +125,7 @@
             <!-- Attendance Summary -->
             <button class="btn btn-secondary dashboard-btn"
                     style="box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);"
-                    onclick="window.location.href='#'">
+                    onclick="window.location.href='{{ url_for('teacher.attendance_summary') }}'">
               <i class="bi bi-bar-chart"></i>
               <span class="fw-semibold">Attendance Summary</span>
             </button>

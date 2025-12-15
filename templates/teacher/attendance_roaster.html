@@ -180,12 +180,12 @@
   <!-- Fixed Red Navbar -->
   <nav class="navbar">
     <span class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
-      <img src="/static/logo.png" alt="Logo" style="height:32px; width:auto;"> Attendance Roster
+      <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;"> Attendance Roster
       {% if selected_class_id %}
         <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ selected_class_id }}{% if selected_stream %} {{ selected_stream | truncate(1, end='') }}{% endif %}</span>
       {% endif %}
     </span>
-    <a href="{{ url_for('teacher_routes.dashboard') }}" class="back-btn-top">
+    <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-top">
       <i class="bi bi-box-arrow-right"></i> Back
     </a>
   </nav>
@@ -283,7 +283,7 @@
     </div>
   </main>
 
-  {% include 'footer.html' %}
+  {% include 'base.html' %}
 
   <script>
     // client-side search filter for attendance roster
@@ -343,7 +343,7 @@
       });
 
       const payload = { class_id: classId, entries, days };
-      const resp = await fetch("{{ url_for('teacher_routes.attendance_view') }}", {
+      const resp = await fetch("{{ url_for('teacher.attendance_view') }}", {
         method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(payload)
       });
       if (resp.ok) { alert('Attendance saved'); location.reload(); }
@@ -355,7 +355,7 @@
       const cls = document.getElementById('classIdHidden') ? document.getElementById('classIdHidden').value : '';
       const days = document.getElementById('daysSelect').value || '6';
       if (!cls) return alert('You have no class assignments');
-      window.location.href = `{{ url_for('teacher_routes.attendance_view') }}?class_id=${cls}&start=${start}&days=${days}`;
+      window.location.href = `{{ url_for('teacher.attendance_view') }}?class_id=${cls}&start=${start}&days=${days}`;
     });
 
     const confirmBtn = document.getElementById('confirmBtn');
@@ -366,7 +366,7 @@
       if (!classId) return alert('You have no class assignments');
       const currentlyConfirmed = JSON.parse(confirmBtn.getAttribute('data-confirmed') || 'false');
       const payload = { class_id: classId, start: start, period: 'week', days: days, confirm: !currentlyConfirmed };
-      const resp = await fetch("{{ url_for('teacher_routes.attendance_confirm') }}", {
+      const resp = await fetch("{{ url_for('teacher.attendance_confirm') }}", {
         method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(payload)
       });
       if (resp.ok) {

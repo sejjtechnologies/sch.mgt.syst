@@ -328,12 +328,12 @@
     <nav class="navbar navbar-expand-lg navbar-custom" style="height:50px;">
         <div class="container-fluid p-0 d-flex align-items-center justify-content-between">
             <span class="navbar-brand" style="font-size:0.95rem; color: white !important; display:flex; align-items:center; gap:8px;">
-                <img src="/static/logo.png" alt="Logo" style="height:32px; width:auto;"> Attendance Summary
+                <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;"> Attendance Summary
                 {% if class_name %}
                   <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ class_name }}{% if stream_name %} {{ stream_name | truncate(1, end='') }}{% endif %}</span>
                 {% endif %}
             </span>
-            <a href="{{ url_for('teacher_routes.attendance_view') }}" class="btn back-btn-custom ms-2">
+            <a href="{{ url_for('teacher.attendance_view') }}" class="btn back-btn-custom ms-2">
                 <i class="bi bi-box-arrow-right"></i> Back
             </a>
         </div>
@@ -345,7 +345,7 @@
         <div class="top-controls" style="position:sticky; top:0; z-index:1100; background:#fff; padding:6px 0; border-bottom:1px solid #e9ecef;">
             <div class="container d-flex gap-2 align-items-center">
             <!-- back button moved into navbar -->
-                <form id="summaryForm" class="d-flex align-items-center" method="get" action="{{ url_for('teacher_routes.attendance_summary') }}">
+                <form id="summaryForm" class="d-flex align-items-center" method="get" action="{{ url_for('teacher.attendance_summary') }}">
                     <input type="hidden" name="class_id" value="{{ request.args.get('class_id', '') }}" />
                     <label class="me-2 mb-0" for="startDate">Start</label>
                     <input id="startDate" name="start" type="date" class="form-control form-control-sm me-2" value="{{ request.args.get('start', summary.start) }}" />
@@ -455,8 +455,7 @@
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                                {% set pupil_stream = pupil_record.stream_name|default(pupil_record.stream|default('')) %}
-                                <tr data-stream="{{ pupil_stream }}">
+                                <tr>
                                     <td colspan="100%" style="text-align: center; padding: 20px; color: #999;">
                                         No records found
                                     </td>
@@ -528,7 +527,7 @@
         </div>
     </main>
 
-    {% include 'footer.html' %}
+    {% include 'base.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script id="assigned-stream" type="application/json">{{ (stream_name|default(None))|tojson }}</script>
