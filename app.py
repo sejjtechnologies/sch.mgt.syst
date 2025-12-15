@@ -88,6 +88,17 @@ else:
 # Routes
 # ---------------------------------------------------------------------------
 
+@app.route("/debug")
+def debug():
+    return {
+        "SYSTEM_CONFIGURED": SYSTEM_CONFIGURED,
+        "DATABASE_URL_SET": bool(os.getenv("DATABASE_URL")),
+        "SECRET_KEY_SET": bool(os.getenv("SECRET_KEY")),
+        "DATABASE_URL_PREFIX": os.getenv("DATABASE_URL", "")[:20] + "..." if os.getenv("DATABASE_URL") else "Not set",
+        "FLASK_ENV": os.getenv("FLASK_ENV", "Not set"),
+        "VERCEL_ENV": os.getenv("VERCEL_ENV", "Not set")
+    }
+
 @app.route("/")
 def index():
     if not SYSTEM_CONFIGURED:
