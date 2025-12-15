@@ -232,6 +232,27 @@ def manage_pupils():
     # Total pupils in the whole school
     total_school_pupils = db.session.query(func.count(Pupil.id)).filter(Pupil.enrollment_status == 'active').scalar() or 0
     
+    # Group streams by class for better display
+    class_stream_totals = {}
+    for class_id, class_name in class_objs.items():
+        streams_in_class = []
+        for stream_id, stream_name in stream_objs.items():
+            # Count pupils in this specific class and stream combination
+            count = db.session.query(func.count(Pupil.id)).filter(
+                Pupil.class_admitted == class_id,
+                Pupil.stream == stream_id,
+                Pupil.enrollment_status == 'active'
+            ).scalar() or 0
+            
+            if count > 0:
+                streams_in_class.append({
+                    'stream': stream_name,
+                    'total': count
+                })
+        
+        if streams_in_class:
+            class_stream_totals[class_name] = streams_in_class
+    
     # Convert to dictionaries for template
     class_totals_dict = {}
     for class_id, total in class_totals:
@@ -285,7 +306,8 @@ def manage_pupils():
                          pupils=pupils_data,
                          class_totals=class_totals_dict,
                          stream_totals=stream_totals_dict,
-                         total_school_pupils=total_school_pupils)
+                         total_school_pupils=total_school_pupils,
+                         class_stream_totals=class_stream_totals)
 
 
 @secretary_bp.route('/api/pupils', methods=['GET'])

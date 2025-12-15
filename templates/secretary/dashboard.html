@@ -4,9 +4,81 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Secretary Dashboard</title>
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" integrity="sha384-XGjOV2dgXz/tcPf1mZQQTXoXBFMzY4pdM5X8n1Jc6KjITp4K1aGJ7zGG7X8f4tI" crossorigin="anonymous">
+
+    <!-- Bootstrap Icons (FIXED: integrity removed) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+      /* Card styling */
+      .dashboard-card {
+        background: #e9f7ef; /* light green */
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        border: 1px solid #cfe9dc;
+      }
+
+      /* Button styling */
+      .dashboard-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: 50px;
+        padding-right: 15px;
+        height: 50px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .dashboard-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      /* Icon positioning */
+      .dashboard-btn i {
+        position: absolute;
+        left: 15px;
+        font-size: 1.25rem;
+      }
+
+      /* Responsive text */
+      .dashboard-btn span {
+        white-space: nowrap;
+      }
+
+      /* Mobile-specific adjustments */
+      @media (max-width: 768px) {
+        .dashboard-btn {
+          height: 45px;
+          padding-left: 45px;
+          padding-right: 12px;
+        }
+
+        .dashboard-btn i {
+          font-size: 1.1rem;
+        }
+
+        .dashboard-btn span {
+          font-size: 0.9rem;
+        }
+
+        h2 {
+          font-size: 1.25rem;
+          margin-bottom: 1rem;
+        }
+
+        .container {
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+        }
+      }
+    </style>
   </head>
+
   <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
       <div class="container-fluid">
@@ -20,19 +92,39 @@
       </div>
     </nav>
 
-    <main class="container py-5 d-flex align-items-center" style="min-height:60vh;">
-      <div class="w-100 d-flex flex-column flex-sm-row justify-content-center gap-3">
-        <a href="{{ url_for('secretary.register_form') }}" class="btn btn-success btn-md text-white d-flex align-items-center px-4 py-3">
-          <i class="bi bi-person-plus me-2"></i>
-          Register pupil
-        </a>
-        <a href="{{ url_for('secretary.manage_pupils') }}" class="btn btn-primary btn-md text-white d-flex align-items-center px-4 py-3">
-          <i class="bi bi-people-fill me-2"></i>
-          Manage pupils
-        </a>
+    <main class="container py-3" style="min-height: calc(100vh - 120px);">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+          <div class="text-center mb-3">
+            <h2 class="fw-bold mb-3" style="color: #198754;">
+              Manage pupil registration and records
+            </h2>
+          </div>
+
+          <!-- Light green card -->
+          <div class="dashboard-card">
+            <div class="d-flex flex-column gap-3">
+              <a href="{{ url_for('secretary.register_form') }}"
+                 class="btn btn-success dashboard-btn text-white">
+                <i class="bi bi-person-plus"></i>
+                <span class="fw-semibold">Register Pupil</span>
+              </a>
+
+              <a href="{{ url_for('secretary.manage_pupils') }}"
+                 class="btn btn-primary dashboard-btn text-white">
+                <i class="bi bi-people-fill"></i>
+                <span class="fw-semibold">Manage Pupils</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
       </div>
     </main>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'base.html' %}
   </body>
 </html>

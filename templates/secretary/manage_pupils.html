@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Manage Pupils — Secretary</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons (FIXED: integrity removed) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
       @media (max-width: 576px) {
         .table td, .table th {
@@ -29,18 +33,44 @@
         border-radius: 6px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
-      .class-total {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      .total-circular {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #007bff;
         color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 auto;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
       }
-      .stream-total {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
+      .stream-group {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+        border: 1px solid #dee2e6;
       }
-      .school-total {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-        color: #333;
-        border: 2px solid #ff6b6b;
+      .stream-item {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin: 2px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .search-container {
+        position: sticky;
+        top: 76px; /* Adjust based on navbar height */
+        z-index: 100;
+        background: white;
+        padding: 10px 0;
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
     </style>
   </head>
@@ -64,56 +94,50 @@
 
       <!-- Class and Stream Totals -->
       <div class="row g-2 mb-3">
-        <!-- Total School Pupils -->
+        <!-- Total Pupils - Circular Blue -->
         <div class="col-12 mb-2">
-          <div class="card border-warning">
-            <div class="card-body py-2 text-center">
-              <div class="totals-card school-total" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); max-width: 200px; margin: 0 auto;">
-                <div>
-                  <strong style="font-size: 0.9rem;">Total School Pupils</strong><br>
-                  <span style="font-size: 1.5em; font-weight: 900;">{{ total_school_pupils }}</span>
-                </div>
+          <div class="text-center">
+            <div class="total-circular">
+              <div>
+                <div style="font-size: 0.8rem; opacity: 0.9;">Total</div>
+                <div style="font-size: 1.8rem; font-weight: 900;">{{ total_school_pupils }}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Class Totals -->
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header bg-primary text-white py-1">
-              <small class="fw-bold">Pupils per Class</small>
-            </div>
-            <div class="card-body py-2">
-              <div class="row g-1">
-                {% for class_name, total in class_totals.items() %}
-                <div class="col-6 col-md-3 col-lg-2">
-                  <div class="totals-card class-total">
-                    {{ class_name }}<br><span style="font-size: 1.1em; font-weight: 700;">{{ total }}</span>
-                  </div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stream Totals -->
+        <!-- Stream Totals by Class -->
         <div class="col-12">
           <div class="card">
             <div class="card-header bg-success text-white py-1">
-              <small class="fw-bold">Pupils per Stream</small>
+              <small class="fw-bold">Pupils per Class & Stream</small>
             </div>
             <div class="card-body py-2">
-              <div class="row g-1">
-                {% for stream_name, total in stream_totals.items() %}
-                <div class="col-6 col-md-3 col-lg-2">
-                  <div class="totals-card stream-total">
-                    {{ stream_name }}<br><span style="font-size: 1.1em; font-weight: 700;">{{ total }}</span>
-                  </div>
-                </div>
+              {% for class_name, streams in class_stream_totals.items() %}
+              <div class="stream-group">
+                <strong class="text-primary" style="font-size: 0.9rem;">{{ class_name }}:</strong>
+                {% for stream_info in streams %}
+                <span class="stream-item">
+                  {{ stream_info.stream }} ({{ stream_info.total }})
+                </span>
                 {% endfor %}
               </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fixed Search Bar -->
+      <div class="search-container">
+        <div class="row">
+          <div class="col-12">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" id="pupilSearch" class="form-control" placeholder="Search by name, admission number, class, stream, nationality, or district...">
+              <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                <i class="bi bi-x-circle"></i> Clear
+              </button>
             </div>
           </div>
         </div>
@@ -174,5 +198,52 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Search functionality
+      document.getElementById('pupilSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        tableRows.forEach(row => {
+          if (row.cells.length > 1) { // Skip "No pupils registered" row
+            const textContent = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+            const isVisible = textContent.includes(searchTerm);
+            row.style.display = isVisible ? '' : 'none';
+          }
+        });
+      });
+
+      function clearSearch() {
+        document.getElementById('pupilSearch').value = '';
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+          if (row.cells.length > 1) {
+            row.style.display = '';
+          }
+        });
+      }
+
+      // Make search bar sticky on scroll
+      window.addEventListener('scroll', function() {
+        const searchContainer = document.querySelector('.search-container');
+        const navbar = document.querySelector('.navbar');
+        const navbarHeight = navbar.offsetHeight;
+
+        if (window.scrollY > navbarHeight) {
+          searchContainer.style.position = 'fixed';
+          searchContainer.style.top = '0';
+          searchContainer.style.width = '100%';
+          searchContainer.style.background = 'white';
+          searchContainer.style.zIndex = '1030';
+          searchContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        } else {
+          searchContainer.style.position = 'static';
+          searchContainer.style.boxShadow = 'none';
+        }
+      });
+    </script>
+
+    {% include 'base.html' %}
   </body>
 </html>
