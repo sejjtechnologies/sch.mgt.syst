@@ -82,53 +82,179 @@
       border-radius: 6px;
     }
 
-    /* Table styling */
+    /* Enhanced table borders for better visibility */
     .table-responsive {
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid #dee2e6;
+    }
+
+    .table {
+      margin-bottom: 0;
+      font-size: 0.85rem;
+      border-collapse: separate;
+      border-spacing: 0;
     }
 
     .table thead th {
-      background-color: #f8f9fa;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       border-bottom: 2px solid #dee2e6;
+      border-top: 1px solid #dee2e6;
+      border-left: 1px solid #dee2e6;
+      border-right: 1px solid #dee2e6;
       font-weight: 600;
       color: #495057;
-      padding: 12px;
+      padding: 8px 6px;
+      font-size: 0.8rem;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .table thead th:first-child {
+      border-left: none;
+      border-top-left-radius: 9px;
+    }
+
+    .table thead th:last-child {
+      border-right: none;
+      border-top-right-radius: 9px;
     }
 
     .table tbody td {
-      padding: 12px;
+      padding: 6px 4px;
       vertical-align: middle;
+      border-bottom: 1px solid #dee2e6;
+      border-left: 1px solid #dee2e6;
+      border-right: 1px solid #dee2e6;
+      font-size: 0.8rem;
+      text-align: center;
+      line-height: 1.2;
+      background-color: white;
+    }
+
+    .table tbody td:first-child {
+      border-left: none;
+    }
+
+    .table tbody td:last-child {
+      border-right: none;
+    }
+
+    .table tbody tr {
+      height: 45px;
+      transition: background-color 0.2s ease;
     }
 
     .table tbody tr:hover {
       background-color: #f8f9fa;
+      box-shadow: inset 0 0 0 1px #dee2e6;
     }
 
-    /* Print button styling */
+    .table tbody tr:last-child td {
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .table tbody tr:last-child td:first-child {
+      border-bottom-left-radius: 9px;
+    }
+
+    .table tbody tr:last-child td:last-child {
+      border-bottom-right-radius: 9px;
+    }
+
+    /* Zebra striping for better readability */
+    .table tbody tr:nth-child(even) {
+      background-color: #fafbfc;
+    }
+
+    .table tbody tr:nth-child(even):hover {
+      background-color: #f1f3f4;
+    }
+
+    /* Mobile-specific table adjustments */
+    @media (max-width: 768px) {
+      .table {
+        font-size: 0.75rem;
+        min-width: 600px; /* Prevent table from getting too narrow */
+      }
+
+      .table thead th,
+      .table tbody td {
+        padding: 4px 2px;
+        font-size: 0.75rem;
+      }
+
+      .table tbody tr {
+        height: 40px;
+      }
+
+      .main-scroll {
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .table {
+        font-size: 0.7rem;
+        min-width: 550px;
+      }
+
+      .table thead th,
+      .table tbody td {
+        padding: 3px 2px;
+        font-size: 0.7rem;
+      }
+
+      .table tbody tr {
+        height: 35px;
+      }
+    }
+
+    /* Print button styling - Mobile optimized */
     .btn-print {
       background-color: #28a745;
       color: white;
-      border: none;
-      padding: 4px 8px;
+      border: 1px solid #28a745;
+      padding: 3px 6px;
       border-radius: 4px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       transition: all 0.2s;
+      white-space: nowrap;
+      min-width: fit-content;
     }
 
     .btn-print:hover {
       background-color: #218838;
+      border-color: #218838;
       transform: translateY(-1px);
     }
 
     .btn-print i {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
+    }
+
+    /* Mobile button adjustments */
+    @media (max-width: 768px) {
+      .btn-print {
+        padding: 2px 4px;
+        font-size: 0.65rem;
+      }
+
+      .btn-print i {
+        font-size: 0.65rem;
+      }
     }
 
     /* Loading state */
