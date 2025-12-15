@@ -267,6 +267,8 @@ def debug_db():
             'error_type': type(e).__name__,
             'database_url': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...' if app.config.get('SQLALCHEMY_DATABASE_URI') else 'Not set'
         })
+
+@teacher_bp.route('/save_marks', methods=['POST'])
 def save_marks():
     if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
         return jsonify({'success': False, 'message': 'Access denied'})
