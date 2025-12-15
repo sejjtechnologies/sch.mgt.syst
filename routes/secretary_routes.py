@@ -216,22 +216,22 @@ def manage_pupils():
 
     # Calculate totals per class and stream
     from sqlalchemy import func
-    
+
     # Total pupils per class
     class_totals = db.session.query(
         Pupil.class_admitted,
         func.count(Pupil.id).label('total_pupils')
     ).filter(Pupil.enrollment_status == 'active').group_by(Pupil.class_admitted).all()
-    
+
     # Total pupils per stream
     stream_totals = db.session.query(
         Pupil.stream,
         func.count(Pupil.id).label('total_pupils')
     ).filter(Pupil.enrollment_status == 'active').group_by(Pupil.stream).all()
-    
+
     # Total pupils in the whole school
     total_school_pupils = db.session.query(func.count(Pupil.id)).filter(Pupil.enrollment_status == 'active').scalar() or 0
-    
+
     # Group streams by class for better display
     class_stream_totals = {}
     for class_id, class_name in class_objs.items():
@@ -243,22 +243,22 @@ def manage_pupils():
                 Pupil.stream == stream_id,
                 Pupil.enrollment_status == 'active'
             ).scalar() or 0
-            
+
             if count > 0:
                 streams_in_class.append({
                     'stream': stream_name,
                     'total': count
                 })
-        
+
         if streams_in_class:
             class_stream_totals[class_name] = streams_in_class
-    
+
     # Convert to dictionaries for template
     class_totals_dict = {}
     for class_id, total in class_totals:
         if class_id and class_id in class_objs:
             class_totals_dict[class_objs[class_id]] = total
-    
+
     stream_totals_dict = {}
     for stream_id, total in stream_totals:
         if stream_id and stream_id in stream_objs:
@@ -302,7 +302,7 @@ def manage_pupils():
         })
 
     # Render server-side table
-    return render_template('secretary/manage_pupils.html', 
+    return render_template('secretary/manage_pupils.html',
                          pupils=pupils_data,
                          class_totals=class_totals_dict,
                          stream_totals=stream_totals_dict,
