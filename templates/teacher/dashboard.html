@@ -17,18 +17,45 @@
         display: flex;
         align-items: center;
         justify-content: center; /* center text */
-        padding-left: 60px; /* space for icon */
-        padding-right: 20px;
-        height: 60px;
-        border-radius: 12px;
+        padding-left: 50px; /* space for icon - reduced for mobile */
+        padding-right: 15px;
+        height: 50px; /* reduced height for mobile */
+        border-radius: 10px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      }
+
+      /* Mobile-specific adjustments */
+      @media (max-width: 768px) {
+        .dashboard-btn {
+          height: 45px; /* even smaller on mobile */
+          padding-left: 45px;
+          padding-right: 12px;
+        }
+
+        .dashboard-btn i {
+          font-size: 1.1rem; /* slightly smaller icons */
+        }
+
+        .dashboard-btn span {
+          font-size: 0.9rem; /* smaller text */
+        }
+
+        h2 {
+          font-size: 1.25rem; /* smaller heading on mobile */
+          margin-bottom: 1rem;
+        }
+
+        .container {
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+        }
       }
 
       /* Icon positioning */
       .dashboard-btn i {
         position: absolute;
-        left: 20px; /* fixed left position */
+        left: 15px; /* adjusted for mobile */
         font-size: 1.25rem;
       }
 
@@ -53,14 +80,14 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="container py-5" style="min-height: calc(100vh - 120px);">
+    <main class="container py-3" style="min-height: calc(100vh - 120px);">
       <div class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
-          <div class="text-center mb-4">
-            <h2 class="fw-bold text-success mb-4">Manage your classes and student activities</h2>
+          <div class="text-center mb-3">
+            <h2 class="fw-bold text-success mb-3">Manage your classes and student activities</h2>
           </div>
 
-          <div class="d-flex flex-column gap-3">
+          <div class="d-flex flex-column gap-2">
             <!-- View Pupils Details -->
             <button class="btn btn-primary dashboard-btn"
                     style="box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);"
