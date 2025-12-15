@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Weekly Attendance Summary</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 0;
+            font-size: 14px;
+        }
+        .navbar-custom {
+            background-color: #dc3545;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white !important;
+            font-size: 14px;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            margin: 0 !important;
+        }
+        .navbar-text {
+            font-size: 12px;
+        }
+        .back-btn-custom {
+            color: #dc3545 !important;
+            background-color: white !important;
+            border: none !important;
+            padding: 4px 8px !important;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .back-btn-custom:hover {
+            background-color: #f5f5f5 !important;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            margin: 0;
+        }
+        .card {
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            margin-bottom: 12px;
+            border: none;
+        }
+        .card-body {
+            padding: 12px;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .summary-table thead {
+            background-color: #dc3545;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .summary-table thead th {
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            font-size: 11px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .summary-table tbody td {
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+        .summary-table tbody tr:hover {
+            background-color: #fafafa;
+        }
+        .pupil-name {
+            text-align: left;
+            font-weight: 500;
+            color: #333;
+            min-width: 100px;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mark-present {
+            color: #28a745;
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+        .mark-absent {
+            color: #dc3545;
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+        .mark-empty {
+            color: #aaa;
+            font-size: 12px;
+            display: block;
+            line-height: 1;
+        }
+        .summary-info {
+            color: #666;
+            font-size: 12px;
+            margin: 0 0 12px 0;
+            padding: 0;
+        }
+        .summary-info p {
+            margin: 0;
+            line-height: 1.4;
+        }
+        .btn-back {
+            background-color: white;
+            color: #dc3545;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .btn-back:hover {
+            background-color: #f5f5f5;
+            color: #dc3545;
+            text-decoration: none;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 0 0 12px 0;
+        }
+        .stat-box {
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            line-height: 1.2;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0;
+        }
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .table-responsive-wrapper::-webkit-scrollbar {
+            height: 4px;
+        }
+        .table-responsive-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .table-responsive-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 2px;
+        }
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+        }
+        .card-title i {
+            margin-right: 4px;
+        }
+        .card-body p {
+            margin: 0;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        @media (max-width: 576px) {
+            body {
+                font-size: 13px;
+            }
+            .container {
+                padding: 8px;
+            }
+            .navbar-custom {
+                padding: 8px 12px;
+            }
+            .navbar-brand {
+                font-size: 13px;
+            }
+            .navbar-text {
+                font-size: 11px;
+            }
+            .summary-table {
+                font-size: 11px;
+            }
+            .summary-table thead th {
+                padding: 6px 3px;
+                font-size: 10px;
+            }
+            .summary-table tbody td {
+                padding: 6px 3px;
+                font-size: 11px;
+            }
+            .pupil-name {
+                min-width: 80px;
+                max-width: 100px;
+                font-size: 11px;
+            }
+            .mark-present,
+            .mark-absent {
+                font-size: 14px;
+            }
+            .mark-empty {
+                font-size: 10px;
+            }
+            .stats-row {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+            .stat-box {
+                padding: 8px;
+            }
+            .stat-label {
+                font-size: 9px;
+            }
+            .stat-value {
+                font-size: 16px;
+            }
+            .card {
+                margin-bottom: 10px;
+            }
+            .card-body {
+                padding: 10px;
+            }
+            .btn-back {
+                padding: 6px 12px;
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+            .summary-info {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+        }
+        @media (max-width: 400px) {
+            .summary-table {
+                font-size: 10px;
+            }
+            .summary-table thead th {
+                padding: 4px 2px;
+                font-size: 9px;
+            }
+            .summary-table tbody td {
+                padding: 4px 2px;
+                font-size: 10px;
+            }
+            .pupil-name {
+                min-width: 70px;
+                max-width: 85px;
+                font-size: 10px;
+            }
+            .mark-present,
+            .mark-absent {
+                font-size: 13px;
+            }
+            .stats-row {
+                gap: 6px;
+            }
+            .stat-label {
+                font-size: 8px;
+            }
+            .stat-value {
+                font-size: 14px;
+            }
+        }
+        /* main area that will scroll leaving space above the fixed footer */
+        main.main-scroll {
+            height: calc(100vh - 50px); /* account for navbar height */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom" style="height:50px;">
+        <div class="container-fluid p-0 d-flex align-items-center justify-content-between">
+            <span class="navbar-brand" style="font-size:0.95rem; color: white !important; display:flex; align-items:center; gap:8px;">
+                <img src="/static/logo.png" alt="Logo" style="height:32px; width:auto;"> Attendance Summary
+                {% if class_name %}
+                  <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ class_name }}{% if stream_name %} {{ stream_name | truncate(1, end='') }}{% endif %}</span>
+                {% endif %}
+            </span>
+            <a href="{{ url_for('teacher_routes.attendance_view') }}" class="btn back-btn-custom ms-2">
+                <i class="bi bi-box-arrow-right"></i> Back
+            </a>
+        </div>
+    </nav>
+
+    <main class="container main-scroll">
+        <!-- Back Button and Controls (fixed search) -->
+        <div style="height:10px;"></div>
+        <div class="top-controls" style="position:sticky; top:0; z-index:1100; background:#fff; padding:6px 0; border-bottom:1px solid #e9ecef;">
+            <div class="container d-flex gap-2 align-items-center">
+            <!-- back button moved into navbar -->
+                <form id="summaryForm" class="d-flex align-items-center" method="get" action="{{ url_for('teacher_routes.attendance_summary') }}">
+                    <input type="hidden" name="class_id" value="{{ request.args.get('class_id', '') }}" />
+                    <label class="me-2 mb-0" for="startDate">Start</label>
+                    <input id="startDate" name="start" type="date" class="form-control form-control-sm me-2" value="{{ request.args.get('start', summary.start) }}" />
+                    <label class="me-2 mb-0" for="periodSelect">Period</label>
+                    <select id="periodSelect" name="period" class="form-select form-select-sm me-2">
+                        <option value="week" {% if summary.period == 'week' %}selected{% endif %}>Week</option>
+                        <option value="month" {% if summary.period == 'month' %}selected{% endif %}>Month</option>
+                        <option value="term" {% if summary.period == 'term' %}selected{% endif %}>Term (3.5 months)</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary me-2">Go</button>
+                </form>
+                <div class="ms-auto">
+                    <input id="searchBox" type="search" class="form-control form-control-sm" placeholder="Search pupil by name" />
+                </div>
+            </div>
+        </div>
+
+        <div style="height:8px;"></div>
+        <div class="container">
+            <!-- Summary Info -->
+            <div class="summary-info">
+                <p>
+                    <strong>{{ summary.start|default('N/A', true) }}</strong> - <strong>{{ summary.end|default('N/A', true) }}</strong>
+                    | <strong>Pupils:</strong> {{ summary.data|length|default(0) }}
+                    {% if stream_name %}
+                        | <strong>Stream:</strong> {{ stream_name }}
+                    {% endif %}
+                </p>
+            </div>
+
+        <!-- Statistics -->
+        {% if summary.data and summary.data|length > 0 %}
+        {% set total_present = summary.data|map(attribute='counts')|map(attribute='present')|sum %}
+        {% set total_absent = summary.data|map(attribute='counts')|map(attribute='absent')|sum %}
+        {% set total_records = total_present + total_absent %}
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">Present</div>
+                <div class="stat-value" style="color: #28a745;">{{ total_present }}</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Absent</div>
+                <div class="stat-value" style="color: #dc3545;">{{ total_absent }}</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Rate</div>
+                <div class="stat-value">
+                    {% if total_records > 0 %}
+                        {{ ((total_present / total_records) * 100)|round(0)|int }}%
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Summary Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div id="summaryWrapper" class="table-responsive-wrapper">
+                    {% if summary.period in ['week','month'] %}
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th style="min-width: 80px; text-align: left;">Name</th>
+                                {% for date in dates %}
+                                <th style="min-width: 35px;">
+                                    <div>{{ date.short }}</div>
+                                    <div style="font-size: 9px;">{{ date.full }}</div>
+                                </th>
+                                {% endfor %}
+                                <th style="min-width: 30px;">P</th>
+                                <th style="min-width: 30px;">A</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody">
+                            {% if summary.data %}
+                                {% for pupil_record in summary.data %}
+                                {% set pupil_stream = pupil_record.stream_name|default(pupil_record.stream|default('')) %}
+                                <tr data-stream="{{ pupil_stream }}">
+                                    <td>{{ loop.index }}</td>
+                                    <td class="pupil-name">{{ pupil_record.name|default('Unknown', true) }}</td>
+                                    {% for date in dates %}
+                                        <td>
+                                            {% if date.iso in pupil_record.attendance_by_date %}
+                                                {% set status = pupil_record.attendance_by_date[date.iso] %}
+                                                {% if status == 'present' %}
+                                                    <span class="mark-present" title="Present">✓</span>
+                                                {% elif status == 'absent' %}
+                                                    <span class="mark-absent" title="Absent">✗</span>
+                                                {% elif status == 'late' %}
+                                                    <span class="mark-present" title="Late" style="color: #ffc107;">L</span>
+                                                {% elif status == 'leave' %}
+                                                    <span style="color: #0dcaf0; font-weight: bold;" title="Leave">V</span>
+                                                {% else %}
+                                                    <span class="mark-empty" title="No record">—</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="mark-empty" title="No record">—</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td><strong>{{ pupil_record.counts.present|default(0) }}</strong></td>
+                                    <td><strong>{{ pupil_record.counts.absent|default(0) }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                {% set pupil_stream = pupil_record.stream_name|default(pupil_record.stream|default('')) %}
+                                <tr data-stream="{{ pupil_stream }}">
+                                    <td colspan="100%" style="text-align: center; padding: 20px; color: #999;">
+                                        No records found
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <!-- Term view: show aggregated counts and attendance percentage -->
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th style="text-align:left; min-width:140px;">Name</th>
+                                <th>Presents</th>
+                                <th>Absents</th>
+                                <th>Late</th>
+                                <th>Leave</th>
+                                <th>Total Days</th>
+                                <th>Attendance %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody">
+                            {% if summary.data %}
+                                {% for pupil_record in summary.data %}
+                                {% set present = pupil_record.counts.present|default(0) %}
+                                {% set absent = pupil_record.counts.absent|default(0) %}
+                                {% set late = pupil_record.counts.late|default(0) %}
+                                {% set leave = pupil_record.counts.leave|default(0) %}
+                                {% set total = summary.total_days %}
+                                {% set perc = ((present + late) / total * 100) if total > 0 else 0 %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td class="pupil-name">{{ pupil_record.name|default('Unknown', true) }}</td>
+                                    <td><strong style="color: #28a745;">{{ present }}</strong></td>
+                                    <td><strong style="color: #dc3545;">{{ absent }}</strong></td>
+                                    <td><strong style="color: #ffc107;">{{ late }}</strong></td>
+                                    <td><strong style="color: #0dcaf0;">{{ leave }}</strong></td>
+                                    <td>{{ total }}</td>
+                                    <td><strong>{{ perc|round(1) }}%</strong></td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="100%" style="text-align: center; padding: 20px; color: #999;">
+                                        No records found
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle"></i> Legend</h6>
+                <p>
+                    <span class="mark-present">✓</span> = Present |
+                    <span class="mark-absent">✗</span> = Absent |
+                    <span style="color: #ffc107; font-weight: bold;">L</span> = Late |
+                    <span style="color: #0dcaf0; font-weight: bold;">V</span> = Leave |
+                    <span class="mark-empty">—</span> = No Record
+                </p>
+            </div>
+        </div>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script id="assigned-stream" type="application/json">{{ (stream_name|default(None))|tojson }}</script>
+    <script>
+        // assigned stream passed from the route (if any) is stored as JSON in #assigned-stream
+        const assignedStream = JSON.parse(document.getElementById('assigned-stream').textContent || 'null');
+        // compute available height for the main scrolling area so it reaches the last line of the table
+        // leaving a 20px gap above the fixed footer
+        function computeSummaryHeight() {
+            const navbar = document.querySelector('.navbar-custom');
+            const footer = document.querySelector('.site-footer') || document.querySelector('footer');
+            const main = document.querySelector('main.main-scroll');
+            const wrapper = document.getElementById('summaryWrapper');
+            const navbarH = navbar ? navbar.offsetHeight : 60;
+            const footerH = footer ? footer.offsetHeight : 0;
+            // available height for main (below navbar) leaving 20px gap above footer
+            const avail = window.innerHeight - navbarH - footerH - 20;
+            if (main) {
+                main.style.maxHeight = Math.max(200, avail) + 'px';
+            }
+            // ensure inner wrapper doesn't constrain height (we want main to scroll)
+            if (wrapper) {
+                wrapper.style.maxHeight = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            computeSummaryHeight();
+            window.addEventListener('resize', computeSummaryHeight);
+
+            // Sort summary rows alphabetically by pupil name (client-side) and
+            // renumber the leading index. This keeps the display ordered even
+            // if the server sent rows in a different order.
+            function sortAndRenumberSummary() {
+                const tbody = document.getElementById('summaryTableBody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                // sort by .pupil-name text (case-insensitive)
+                rows.sort(function(a, b) {
+                    const aName = (a.querySelector('.pupil-name')?.textContent || '').trim().toLowerCase();
+                    const bName = (b.querySelector('.pupil-name')?.textContent || '').trim().toLowerCase();
+                    return aName.localeCompare(bName);
+                });
+                // re-append in sorted order
+                rows.forEach(r => tbody.appendChild(r));
+                // renumber visible rows only
+                let idx = 1;
+                rows.forEach(r => {
+                    if (r.style.display === 'none') return;
+                    const firstTd = r.querySelector('td');
+                    if (firstTd) firstTd.textContent = String(idx++);
+                });
+            }
+
+            // Run initial sort after initial filters applied below
+
+            // simple client-side search filter
+            const searchBox = document.getElementById('searchBox');
+            searchBox && searchBox.addEventListener('input', function(e){
+                const q = e.target.value.trim().toLowerCase();
+                const rows = document.querySelectorAll('#summaryTableBody tr');
+                rows.forEach(r => {
+                    const name = r.querySelector('.pupil-name') ? r.querySelector('.pupil-name').textContent.toLowerCase() : '';
+                    let visible = (!q || name.includes(q));
+                    // if the route provided an assigned stream, only show pupils from that stream
+                    if (assignedStream) {
+                        const rowStream = (r.dataset.stream || '').toString().toLowerCase();
+                        visible = visible && rowStream === (assignedStream || '').toString().toLowerCase();
+                    }
+                    r.style.display = visible ? '' : 'none';
+                });
+                // After filtering, renumber the visible rows to keep numbering sequential
+                sortAndRenumberSummary();
+            });
+
+            // apply initial stream filter (if any) even before typing into search
+            if (assignedStream) {
+                const rows = document.querySelectorAll('#summaryTableBody tr');
+                rows.forEach(r => {
+                    const rowStream = (r.dataset.stream || '').toString().toLowerCase();
+                    const keep = rowStream === (assignedStream || '').toString().toLowerCase();
+                    r.style.display = keep ? '' : 'none';
+                });
+            }
+            // Finally, ensure rows are sorted and numbered on initial load
+            sortAndRenumberSummary();
+        });
+    </script>
+</body>
+</html>

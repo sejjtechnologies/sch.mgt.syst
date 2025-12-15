@@ -79,8 +79,8 @@ def view_pupils():
             seen_ids.add(pupil.id)
             unique_pupils.append(pupil)
 
-    # Sort pupils alphabetically by last name, then first name
-    sorted_pupils = sorted(unique_pupils, key=lambda p: (p.last_name.lower(), p.first_name.lower()))
+    # Sort pupils by admission number in ascending order
+    sorted_pupils = sorted(unique_pupils, key=lambda p: p.admission_number)
 
     # Create pupil records with class and stream names
     pupil_records = []
@@ -179,8 +179,8 @@ def manage_marks():
             seen_ids.add(pupil.id)
             unique_pupils.append(pupil)
 
-    # Sort pupils alphabetically by last name, then first name
-    sorted_pupils = sorted(unique_pupils, key=lambda p: (p.last_name.lower(), p.first_name.lower()))
+    # Sort pupils by admission number in ascending order
+    sorted_pupils = sorted(unique_pupils, key=lambda p: p.admission_number)
 
     # Create pupil records with class and stream names
     pupil_records = []
@@ -566,7 +566,7 @@ def get_pupils_for_reports():
                 class_admitted=str(assignment.class_id),
                 stream=str(assignment.stream_id),
                 enrollment_status='active'
-            ).order_by(Pupil.first_name, Pupil.last_name).all()
+            ).order_by(Pupil.admission_number.asc()).all()
 
             for pupil in pupils:
                 # Get class and stream names

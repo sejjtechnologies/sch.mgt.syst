@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Mark Attendance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root { --bs-body-font-size: 0.95rem; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; display: flex; flex-direction: column; }
+    .navbar-custom { background: #dc3545; height: 60px; min-height: 60px; display: flex; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; width: 100%; }
+    .navbar-custom .navbar-brand { font-size: 1rem; color: white !important; }
+    .navbar-content { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: space-between; }
+    .navbar-label { color: white !important; font-weight: 600; font-size: 0.95rem !important; margin: 0 !important; white-space: nowrap !important; }
+    .back-btn-custom { color: #dc3545 !important; background-color: white !important; border: none !important; border-radius: 4px; padding: 6px 12px !important; font-size: 1.2rem; }
+    .back-btn-custom:hover { background-color: #f5f5f5 !important; }
+    /* Mark-all buttons style - balanced size for desktop and mobile */
+    .mark-all-btn { padding: 8px 10px; font-size: 0.95rem; min-height: 40px; }
+    .card-header-custom { background-color: #dc3545; color: white; }
+    .btn-check:checked + .btn { background-color: #28a745; border-color: #28a745; }
+    .btn-check:not(:checked) + .btn { background-color: #dc3545; border-color: #dc3545; }
+    .roster-table { width: 100%; }
+    .roster-table thead th { background-color: #dc3545; color: white; padding: 8px 6px; font-weight: 600; }
+    .roster-table tbody tr { border-bottom: 1px solid #e9ecef; }
+    .roster-table tbody tr:hover { background-color: #f5f5f5; }
+    .roster-table td { padding: 8px 6px; }
+    .pupil-name { font-weight: 500; }
+    .checkbox-cell { text-align: center; }
+    .btn-check + .btn-check-label { cursor: pointer; user-select: none; }
+    .alert-toast { position: fixed; top: 80px; right: 20px; z-index: 1050; min-width: 280px; }
+    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 105px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
+    .top-search { background: #fff; padding: 12px; border-bottom: 1px solid #e9ecef; position: sticky; top: 60px; z-index: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .search-input-group { max-width: 400px; margin: 0 auto; }
+    .fixed-back { position: absolute; left: 12px; top: 12px; z-index: 1100; }
+    .fixed-back .btn { height: 36px; padding: 6px 10px; }
+    .scroll-last-btn { position: fixed; right: 14px; bottom: 90px; z-index: 1100; }
+
+    /* Improved search bar right after navbar */
+    .search-bar-fixed {
+      position: fixed;
+      top: 65px;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 5px 10px;
+      z-index: 999;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .search-bar-fixed .search-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+    }
+    .search-bar-fixed .form-control {
+      height: 32px;
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 4px;
+      flex: 1;
+    }
+    .search-bar-fixed .btn-clear {
+      height: 32px;
+      width: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: #e9ecef;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #666;
+    }
+    .search-bar-fixed .btn-clear:hover {
+      background: #dee2e6;
+      color: #333;
+    }
+
+    /* Responsive tweaks for nav/back and action buttons on small screens */
+    @media (max-width: 576px) {
+      .back-btn-custom { padding: 4px 8px !important; font-size: 0.95rem !important; height: 34px; }
+      .back-btn-custom .bi { font-size: 1rem; }
+      .mark-all-btn { padding: 6px 8px !important; font-size: 0.9rem !important; min-height: 34px; }
+      .navbar-label { font-size: 0.9rem !important; }
+    }
+
+    /* Adjust main content to account for search bar */
+    main { flex: 1; overflow-y: auto; overflow-x: hidden; margin-top: 105px; padding-bottom: calc(var(--footer-height, 68px) + 20px); -webkit-overflow-scrolling: touch; }
+  </style>
+</head>
+<body>
+  <!-- Navbar (fixed) -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+    <div class="container-fluid navbar-content">
+      <a href="{{ url_for('teacher_routes.dashboard') }}" class="navbar-brand d-flex align-items-center" style="gap:8px; text-decoration: none;">
+        <img src="/static/logo.png" alt="Logo" style="height:32px; width:auto;" />
+        <span class="navbar-label">
+          <i class="bi bi-file-earmark-text"></i> Mark Attendance
+          {% if class_name %}
+            <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ class_name }}{% if stream_name %} {{ stream_name | truncate(1, end='') }}{% endif %}</span>
+          {% endif %}
+        </span>
+      </a>
+      <a href="{{ url_for('teacher_routes.dashboard') }}" class="btn back-btn-custom" title="Back to dashboard">
+        <i class="bi bi-box-arrow-right"></i> Back
+      </a>
+    </div>
+  </nav>
+
+  <!-- Fixed Search Bar (right after navbar with 5px gap) -->
+  <div class="search-bar-fixed">
+    <div class="search-wrapper">
+      <input id="searchBox" type="search" class="form-control" placeholder="🔍 Search by name..." />
+      <button class="btn-clear" id="clearSearchBtn" title="Clear search" style="display: none;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main scrollable content -->
+  <main class="container-fluid py-2">
+    <!-- Date Picker & Controls -->
+    <div class="card mb-2" style="margin-top: 15px;">
+      <div class="card-header card-header-custom">
+        <h6 class="mb-0">📅 Select Date & Mark Attendance</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label for="attendanceDate" class="form-label fw-bold">Attendance Date</label>
+            <input type="date" id="attendanceDate" class="form-control" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label fw-bold">Show For Stream</label>
+            <select id="streamFilter" class="form-select">
+              <option value="">All Streams</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4 d-flex gap-2">
+            <button id="markAllPresentBtn" class="btn btn-success w-100 mark-all-btn">
+              <i class="bi bi-check-circle"></i> Mark All Present
+            </button>
+            <button id="markAllAbsentBtn" class="btn btn-danger w-100 mark-all-btn">
+              <i class="bi bi-x-circle"></i> Mark All Absent
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons (Save & Summary) -->
+    <div style="background: #fff; padding: 10px; border-bottom: 1px solid #e9ecef; display: flex; gap: 8px; justify-content: center;">
+      <button id="saveAttendanceBtn" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+      <button id="viewSummaryBtn" class="btn btn-info" style="display:none;"><i class="bi bi-eye"></i> Summary</button>
+    </div>
+
+    <!-- Pupils Table (scrollable area) -->
+    <div class="card mt-2">
+      <div class="card-header card-header-custom">
+        <h6 class="mb-0">👥 Students (<span id="pupilCount">0</span>)</h6>
+      </div>
+      <div class="card-body p-0">
+        <div id="pupilsWrapper" class="table-responsive" style="overflow-y:auto;">
+          <table class="table roster-table mb-0">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th>Name</th>
+                <th>Stream</th>
+                <th class="text-center">Present</th>
+                <th class="text-center">Absent</th>
+              </tr>
+            </thead>
+            <tbody id="pupilsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <button id="scrollLastBtn" class="btn btn-sm btn-secondary scroll-last-btn" title="Scroll to last">
+      <i class="bi bi-arrow-down-circle"></i>
+    </button>
+
+  </main>
+
+  {% include 'footer.html' %}
+
+  <div id="alertContainer"></div>
+
+  <script>
+    // Ensure footer height measurement and scrolling works on all devices
+    (function(){
+      function updateFooterHeight(){
+        const footer = document.querySelector('footer');
+        const main = document.querySelector('main');
+        if (!footer || !main) return;
+        const footerH = footer.offsetHeight || 48;
+        document.documentElement.style.setProperty('--footer-height', footerH + 'px');
+        main.style.setProperty('padding-bottom', (footerH + 20) + 'px', 'important');
+      }
+      document.addEventListener('DOMContentLoaded', function(){
+        updateFooterHeight();
+        window.addEventListener('resize', updateFooterHeight);
+        window.addEventListener('orientationchange', updateFooterHeight);
+        setTimeout(updateFooterHeight, 500);
+      });
+    })();
+  </script>
+
+  <script id="pupils-data" type="application/json">{{ pupils|tojson }}</script>
+  <script id="streams-data" type="application/json">{{ all_streams|tojson }}</script>
+  <script id="attendance-map-data" type="application/json">{{ attendance_map|tojson }}</script>
+  <script id="selected-date-data" type="application/json">{{ selected_date|tojson }}</script>
+
+  <script>
+    const pupils = JSON.parse(document.getElementById('pupils-data').textContent || '[]');
+    const allStreams = JSON.parse(document.getElementById('streams-data').textContent || '[]');
+    const attendanceMapFromBackend = JSON.parse(document.getElementById('attendance-map-data').textContent || '{}');
+    const selectedDateFromBackend = JSON.parse(document.getElementById('selected-date-data').textContent || null);
+    const todayIso = new Date().toISOString().split('T')[0];
+    let currentAttendance = {};
+    let selectedDate = selectedDateFromBackend || todayIso;
+    let selectedStream = '';
+    let searchTerm = '';
+    let classId = null;
+    let dayAlreadySaved = false;
+
+    // initialize stream filter options
+    function populateStreams() {
+      const sel = document.getElementById('streamFilter');
+      // clear except default
+      sel.innerHTML = '<option value="">All Streams</option>';
+      allStreams.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function getVisiblePupils() {
+      const filtered = pupils.filter(p => {
+        if (selectedStream && p.stream_id != selectedStream) return false;
+        if (!searchTerm) return true;
+        const q = searchTerm.toLowerCase();
+        return (p.first_name && p.first_name.toLowerCase().includes(q)) || (p.last_name && p.last_name.toLowerCase().includes(q));
+      });
+      // Sort alphabetically by last name, then first name for stable ordering on the client
+      filtered.sort(function(a, b) {
+        const aLast = (a.last_name || '').toLowerCase();
+        const bLast = (b.last_name || '').toLowerCase();
+        if (aLast !== bLast) return aLast.localeCompare(bLast);
+        const aFirst = (a.first_name || '').toLowerCase();
+        const bFirst = (b.first_name || '').toLowerCase();
+        return aFirst.localeCompare(bFirst);
+      });
+      return filtered;
+    }
+
+    function checkIfDayAlreadySaved() {
+      if (pupils.length === 0) return false;
+      // If all pupils have records in attendance_map for this date, day is saved
+      const allHaveRecords = pupils.every(p => attendanceMapFromBackend[p.id] !== undefined);
+      return allHaveRecords && pupils.length > 0;
+    }
+
+    function updateSaveButtonState() {
+      const saveBtn = document.getElementById('saveAttendanceBtn');
+      dayAlreadySaved = checkIfDayAlreadySaved();
+      if (dayAlreadySaved) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Already Marked';
+        saveBtn.classList.add('btn-secondary');
+        saveBtn.classList.remove('btn-primary');
+        showAlert('info', `✓ Attendance already marked for ${selectedDate}`);
+      } else {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save';
+        saveBtn.classList.remove('btn-secondary');
+        saveBtn.classList.add('btn-primary');
+      }
+    }
+
+    function renderTable() {
+      const visible = getVisiblePupils();
+      const html = visible.map(function(p, idx) {
+        const status = currentAttendance[p.id] || '';
+        const alreadySaved = attendanceMapFromBackend[p.id] !== undefined;
+        const inputDisabled = alreadySaved ? 'disabled' : '';
+        return `\
+          <tr id="pupil_row_${p.id}">\
+            <td>${idx + 1}</td>\
+            <td class="pupil-name">${p.first_name} ${p.last_name}</td>\
+            <td> ${p.stream_name || ('Stream ' + (p.stream_id||''))} </td>\
+            <td class="checkbox-cell text-center">\
+              <input class="form-check-input attendance-check" type="radio" name="attendance_${p.id}" id="present_${p.id}" value="present" ${status === 'present' ? 'checked' : ''} ${inputDisabled} />\
+            </td>\
+            <td class="checkbox-cell text-center">\
+              <input class="form-check-input attendance-check" type="radio" name="attendance_${p.id}" id="absent_${p.id}" value="absent" ${status === 'absent' ? 'checked' : ''} ${inputDisabled} />\
+            </td>\
+          </tr>`;
+      }).join('');
+      document.getElementById('pupilsTableBody').innerHTML = html;
+      document.getElementById('pupilCount').textContent = visible.length;
+
+      document.querySelectorAll('.attendance-check').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const pupilId = parseInt(e.target.name.split('_')[1]);
+          currentAttendance[pupilId] = e.target.value;
+        });
+      });
+
+      updateSaveButtonState();
+    }
+
+    function computeWrapperHeight() {
+      const wrapper = document.getElementById('pupilsWrapper');
+      const navbarHeight = document.querySelector('.navbar-custom').offsetHeight || 60;
+      const topSearch = document.querySelector('.top-search').offsetHeight || 56;
+      const footerEl = document.querySelector('footer');
+      const footerHeight = footerEl ? footerEl.offsetHeight : 0;
+      const available = window.innerHeight - navbarHeight - topSearch - footerHeight - 40; // leave 20px gap
+      wrapper.style.maxHeight = Math.max(150, available) + 'px';
+    }
+
+    async function saveAttendance() {
+      if (!selectedDate) { showAlert('warning','Please select a date'); return; }
+      if (pupils.length === 0) { showAlert('warning','No pupils found'); return; }
+      if (dayAlreadySaved) { showAlert('warning','Attendance already marked for this date. Cannot save twice.'); return; }
+
+      classId = pupils[0].class_id;
+      const entries = Object.entries(currentAttendance).map(([pid, status]) => {
+        const p = pupils.find(x => x.id == pid);
+        return {
+          pupil_id: parseInt(pid),
+          status: status,
+          reason: ''
+        };
+      });
+
+      if (entries.length === 0) { showAlert('warning','No attendance marked'); return; }
+
+      // Determine stream_id for this save. Prefer selectedStream (dropdown) if set, otherwise infer from pupils list.
+      let streamId = selectedStream || (pupils.length ? pupils[0].stream_id : null);
+      const payload = {
+        class_id: classId,
+        stream_id: streamId,
+        date: selectedDate,
+        entries: entries
+      };
+
+      try {
+        showAlert('info','Saving attendance...');
+        const resp = await fetch("{{ url_for('teacher_routes.attendance_view') }}", {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          showAlert('success', data.message || 'Attendance saved successfully');
+          document.getElementById('viewSummaryBtn').style.display='inline-block';
+          // Update attendance_map with saved records
+          Object.entries(currentAttendance).forEach(([pid, status]) => {
+            attendanceMapFromBackend[parseInt(pid)] = status;
+          });
+          currentAttendance = {};
+          renderTable();
+        }
+        else if (data.already_saved) {
+          showAlert('warning', 'Attendance for this date has already been marked. Cannot save twice.');
+          dayAlreadySaved = true;
+          updateSaveButtonState();
+        }
+        else { showAlert('danger', data.error || 'Failed to save'); }
+      } catch (err) { showAlert('danger', 'Error: ' + err.message); }
+    }
+
+    function scrollToLast() {
+      const wrapper = document.getElementById('pupilsWrapper');
+      const rows = wrapper.querySelectorAll('tbody tr');
+      if (!rows.length) return;
+      const last = rows[rows.length-1];
+      // scroll so last row is visible with 20px gap from footer
+      wrapper.scrollTop = last.offsetTop - 20;
+    }
+
+    function showAlert(type, message) {
+      const alertId = 'alert-' + Date.now();
+      const alertHtml = `<div id="${alertId}" class="alert alert-${type} alert-dismissible fade show alert-toast" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+      document.getElementById('alertContainer').insertAdjacentHTML('beforeend', alertHtml);
+      setTimeout(()=>{ const el = document.getElementById(alertId); if (el) { const bs = new bootstrap.Alert(el); bs.close(); } }, 4000);
+    }
+
+    // Wire events
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('attendanceDate').value = selectedDate;
+      populateStreams();
+
+      // Handle date change - reload with new date parameter
+      document.getElementById('attendanceDate').addEventListener('change', (e) => {
+        const newDate = e.target.value;
+        if (newDate) {
+          // Redirect to reload attendance data for new date
+          window.location.href = `{{ url_for('teacher_routes.attendance_view') }}?date=${newDate}`;
+        }
+      });
+
+      // set selectedStream default
+      document.getElementById('streamFilter').addEventListener('change', (e)=>{ selectedStream = e.target.value; renderTable(); });
+      document.getElementById('markAllPresentBtn').addEventListener('click', ()=>{ getVisiblePupils().forEach(p=> currentAttendance[p.id]='present'); renderTable(); });
+      document.getElementById('markAllAbsentBtn').addEventListener('click', ()=>{ getVisiblePupils().forEach(p=> currentAttendance[p.id]='absent'); renderTable(); });
+      document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
+      document.getElementById('viewSummaryBtn').addEventListener('click', ()=>{
+        if (classId) {
+          window.location.href = `{{ url_for('teacher_routes.attendance_summary') }}?class_id=${classId}&start=${selectedDate}&period=week`;
+        } else {
+          showAlert('info','Please save attendance first');
+        }
+      });
+      document.getElementById('searchBox').addEventListener('input', (e)=>{
+        searchTerm = e.target.value.trim();
+        // Show/hide clear button
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) {
+          clearBtn.style.display = searchTerm ? 'flex' : 'none';
+        }
+        renderTable();
+      });
+      document.getElementById('scrollLastBtn').addEventListener('click', scrollToLast);
+
+      // Clear search button handler
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.getElementById('searchBox').value = '';
+          searchTerm = '';
+          clearBtn.style.display = 'none';
+          renderTable();
+        });
+      }
+
+      // set streams into select (and preselect if stream_name provided)
+      populateStreams();
+      if ('{{ stream_name }}') {
+        // try to preselect the stream matching the provided stream_name
+        const opt = Array.from(document.getElementById('streamFilter').options).find(o=> o.textContent.trim() === '{{ stream_name }}' || o.textContent.includes('{{ stream_name }}'));
+        if (opt) opt.selected = true;
+      }
+      renderTable();
+      computeWrapperHeight();
+      window.addEventListener('resize', computeWrapperHeight);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

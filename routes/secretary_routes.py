@@ -208,7 +208,7 @@ def api_classes():
 
 @secretary_bp.route('/secretary/manage', methods=['GET'])
 def manage_pupils():
-    pupils = Pupil.query.order_by(Pupil.created_at.desc()).all()
+    pupils = Pupil.query.order_by(Pupil.admission_number.asc()).all()
 
     # Build lookup maps to avoid N+1 queries
     class_objs = {c.id: c.name for c in SchoolClass.query.all()}

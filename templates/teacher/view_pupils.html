@@ -8,7 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <style>
     :root { --bs-body-font-size: 0.95rem; }
-    html, body { height: 100%; margin: 0; overflow: hidden; }
+    html, body { height: 100%; margin: 0; }
     body {
       background-color: #f9f9f9;
       font-family: 'Segoe UI', sans-serif;
@@ -293,33 +293,8 @@
         var clearBtn = document.getElementById('clearSearch');
         var searchBtn = document.getElementById('searchBtn');
 
-        // Sort pupils table alphabetically by Last Name, then First Name, and renumber
-        function sortPupilsTable() {
-          var table = document.getElementById('pupilsTable');
-          if (!table) return;
-          var tbody = table.tBodies[0];
-          if (!tbody) return;
-          var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
-          rows.sort(function(a, b) {
-            var aFirst = (a.querySelectorAll('td')[2] && a.querySelectorAll('td')[2].textContent || '').trim().toLowerCase();
-            var aLast = (a.querySelectorAll('td')[4] && a.querySelectorAll('td')[4].textContent || '').trim().toLowerCase();
-            var bFirst = (b.querySelectorAll('td')[2] && b.querySelectorAll('td')[2].textContent || '').trim().toLowerCase();
-            var bLast = (b.querySelectorAll('td')[4] && b.querySelectorAll('td')[4].textContent || '').trim().toLowerCase();
-            // Compare by last name first, then first name
-            var cmp = aLast.localeCompare(bLast);
-            if (cmp !== 0) return cmp;
-            return aFirst.localeCompare(bFirst);
-          });
-          // Re-append in sorted order and renumber the first cell
-          rows.forEach(function(row, idx){
-            tbody.appendChild(row);
-            var firstTd = row.querySelectorAll('td')[0];
-            if (firstTd) firstTd.textContent = String(idx + 1);
-          });
-        }
-
-        // Run initial sort so table is alphabetical on load
-        sortPupilsTable();
+        // Pupils are now sorted by admission number on the server side
+        // No client-side sorting needed
 
         // Search across ALL columns for comprehensive filtering
         function rowMatches(row, query) {
