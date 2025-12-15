@@ -220,7 +220,53 @@ def manage_marks():
                          default_exam_type=default_exam_type)
 
 
-@teacher_bp.route('/save_marks', methods=['POST'])
+@teacher_bp.route('/debug_db', methods=['GET'])
+def debug_db():
+    """Debug endpoint to test database connection"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
+        return jsonify({'success': False, 'message': 'Access denied'})
+
+    try:
+        # Test basic connection
+        result = db.session.execute(text('SELECT 1 as test'))
+        test_result = result.fetchone()[0]
+
+        # Check pupil_marks table
+        result = db.session.execute(text("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'pupil_marks');"))
+        table_exists = result.fetchone()[0]
+
+        response_data = {
+            'success': True,
+            'database_connection': 'OK',
+            'test_query_result': test_result,
+            'pupil_marks_table_exists': table_exists,
+            'database_url': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...' if app.config.get('SQLALCHEMY_DATABASE_URI') else 'Not set'
+        }
+
+        if table_exists:
+            # Get record count
+            result = db.session.execute(text('SELECT COUNT(*) FROM pupil_marks;'))
+            count = result.fetchone()[0]
+            response_data['pupil_marks_count'] = count
+
+            if count > 0:
+                # Get recent records
+                result = db.session.execute(text('SELECT id, pupil_id, term, exam_type FROM pupil_marks ORDER BY created_at DESC LIMIT 2;'))
+                recent = result.fetchall()
+                response_data['recent_records'] = [
+                    {'id': r[0], 'pupil_id': r[1], 'term': r[2], 'exam_type': r[3]}
+                    for r in recent
+                ]
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__,
+            'database_url': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...' if app.config.get('SQLALCHEMY_DATABASE_URI') else 'Not set'
+        })
 def save_marks():
     if 'user_id' not in session or session.get('user_role', '').lower() != 'teacher':
         return jsonify({'success': False, 'message': 'Access denied'})
