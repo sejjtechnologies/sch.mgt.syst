@@ -232,7 +232,7 @@ def manage_pupils():
     # Total pupils in the whole school
     total_school_pupils = db.session.query(func.count(Pupil.id)).filter(Pupil.enrollment_status == 'active').scalar() or 0
 
-    # Group streams by class for better display
+    # Group streams by class for better display - show all classes and all streams
     class_stream_totals = {}
     for class_id, class_name in class_objs.items():
         streams_in_class = []
@@ -244,14 +244,14 @@ def manage_pupils():
                 Pupil.enrollment_status == 'active'
             ).scalar() or 0
 
-            if count > 0:
-                streams_in_class.append({
-                    'stream': stream_name,
-                    'total': count
-                })
+            # Include all streams, even with 0 pupils
+            streams_in_class.append({
+                'stream': stream_name,
+                'total': count
+            })
 
-        if streams_in_class:
-            class_stream_totals[class_name] = streams_in_class
+        # Include all classes, even if all streams have 0 pupils
+        class_stream_totals[class_name] = streams_in_class
 
     # Convert to dictionaries for template
     class_totals_dict = {}

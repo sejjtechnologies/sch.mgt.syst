@@ -961,7 +961,9 @@ def attendance_view():
                          today=today,
                          all_streams=all_streams,
                          attendance_map=attendance_map,
-                         selected_date=selected_date)
+                         selected_date=selected_date,
+                         class_name=teacher_classes_streams[0]['class_name'] if teacher_classes_streams else None,
+                         stream_name=teacher_classes_streams[0]['stream_name'] if teacher_classes_streams else None)
 
 
 @teacher_bp.route('/attendance', methods=['POST'])

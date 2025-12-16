@@ -22,6 +22,16 @@
         .card-header {
           padding: 0.25rem 0.5rem !important;
         }
+        /* Stack columns vertically on mobile */
+        .stream-group {
+          margin-bottom: 0.25rem;
+        }
+        .badge {
+          font-size: 0.7rem !important;
+          padding: 0.15rem 0.3rem !important;
+          margin-right: 0.25rem !important;
+          margin-bottom: 0.25rem !important;
+        }
       }
       .totals-card {
         min-height: 40px;
@@ -48,20 +58,7 @@
         box-shadow: 0 4px 8px rgba(0,123,255,0.3);
       }
       .stream-group {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 8px;
-        margin-bottom: 8px;
-        border: 1px solid #dee2e6;
-      }
-      .stream-item {
-        display: inline-block;
-        background: #e9ecef;
-        padding: 4px 8px;
-        border-radius: 6px;
-        margin: 2px;
-        font-size: 0.8rem;
-        font-weight: 600;
+        margin-bottom: 0.5rem;
       }
       .search-container {
         position: sticky;
@@ -133,21 +130,45 @@
 
         <!-- Stream Totals by Class -->
         <div class="col-12">
-          <div class="card">
-            <div class="card-header bg-success text-white py-1">
+          <div class="card" style="background-color: #ffebee; border: 1px solid #f8bbd9; min-height: auto;">
+            <div class="card-header bg-danger text-white py-1">
               <small class="fw-bold">Pupils per Class & Stream</small>
             </div>
-            <div class="card-body py-2">
-              {% for class_name, streams in class_stream_totals.items() %}
-              <div class="stream-group">
-                <strong class="text-primary" style="font-size: 0.9rem;">{{ class_name }}:</strong>
-                {% for stream_info in streams %}
-                <span class="stream-item">
-                  {{ stream_info.stream }} ({{ stream_info.total }})
-                </span>
-                {% endfor %}
+            <div class="card-body py-2 px-3">
+              <div class="row">
+                <!-- Left Column: P1-P4 -->
+                <div class="col-6">
+                  {% for class_name, streams in class_stream_totals.items() %}
+                    {% if class_name in ['P1', 'P2', 'P3', 'P4'] %}
+                    <div class="stream-group mb-2">
+                      <strong class="text-danger" style="font-size: 0.85rem; font-weight: 600;">{{ class_name }}:</strong>
+                      {% for stream_info in streams %}
+                        {% set stream_abbrev = {'BLUE': 'B', 'GREEN': 'G', 'RED': 'R', 'ORANGE': 'O'}[stream_info.stream] %}
+                        <span class="badge bg-light text-dark me-1 mb-1" style="font-size: 0.75rem; padding: 0.2rem 0.4rem;">
+                          {{ stream_abbrev }}:{{ stream_info.total }}
+                        </span>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <!-- Right Column: P5-P7 -->
+                <div class="col-6">
+                  {% for class_name, streams in class_stream_totals.items() %}
+                    {% if class_name in ['P5', 'P6', 'P7'] %}
+                    <div class="stream-group mb-2">
+                      <strong class="text-danger" style="font-size: 0.85rem; font-weight: 600;">{{ class_name }}:</strong>
+                      {% for stream_info in streams %}
+                        {% set stream_abbrev = {'BLUE': 'B', 'GREEN': 'G', 'RED': 'R', 'ORANGE': 'O'}[stream_info.stream] %}
+                        <span class="badge bg-light text-dark me-1 mb-1" style="font-size: 0.75rem; padding: 0.2rem 0.4rem;">
+                          {{ stream_abbrev }}:{{ stream_info.total }}
+                        </span>
+                      {% endfor %}
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
               </div>
-              {% endfor %}
             </div>
           </div>
         </div>

@@ -97,7 +97,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
     <div class="container-fluid navbar-content">
       <a href="{{ url_for('teacher.dashboard') }}" class="navbar-brand d-flex align-items-center" style="gap:8px; text-decoration: none;">
-        <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;" />
+        <img src="/static/images/school_192.png" alt="Logo" style="height:44px; width:auto;" />
         <span class="navbar-label">
           <i class="bi bi-file-earmark-text"></i> Mark Attendance
           {% if class_name %}
@@ -136,7 +136,7 @@
           </div>
           <div class="col-12 col-md-4">
             <label class="form-label fw-bold">Show For Stream</label>
-            <select id="streamFilter" class="form-select">
+            <select id="streamFilter" class="form-select" disabled>
               <option value="">All Streams</option>
             </select>
           </div>
@@ -233,13 +233,24 @@
     // initialize stream filter options
     function populateStreams() {
       const sel = document.getElementById('streamFilter');
-      // clear except default
+      if (!sel) return;
+
+      // clear all options
       sel.innerHTML = '<option value="">All Streams</option>';
+
+      // Ensure allStreams is loaded
+      if (!allStreams || !Array.isArray(allStreams)) {
+        console.warn('allStreams not loaded properly:', allStreams);
+        return;
+      }
+
       allStreams.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        sel.appendChild(opt);
+        if (s && s.id && s.name) {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          sel.appendChild(opt);
+        }
       });
     }
 
@@ -444,7 +455,10 @@
       if ('{{ stream_name }}') {
         // try to preselect the stream matching the provided stream_name
         const opt = Array.from(document.getElementById('streamFilter').options).find(o=> o.textContent.trim() === '{{ stream_name }}' || o.textContent.includes('{{ stream_name }}'));
-        if (opt) opt.selected = true;
+        if (opt) {
+          opt.selected = true;
+          selectedStream = opt.value;  // Set the selectedStream variable
+        }
       }
       renderTable();
       computeWrapperHeight();
