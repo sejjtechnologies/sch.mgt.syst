@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payment Methods - Bursar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
+          Bursar
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <a href="{{ url_for('bursar.dashboard') }}" class="btn btn-light btn-sm text-dark d-flex align-items-center px-2 py-1 me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-house me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5z"/>
+            </svg>
+            Dashboard
+          </a>
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white d-flex align-items-center px-2 py-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-right me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-2h-1v2H2V2h8v2h1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8z"/>
+              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H6.5a.5.5 0 0 0 0 1h7.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+            </svg>
+            Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show mt-3" role="alert" id="flash-alert-{{ loop.index }}">
+            <small>{{ message }}</small>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <main class="container-fluid px-2 px-md-3 py-3">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+        <h2 class="mb-0" style="font-size: 1.5rem;">
+          <i class="fas fa-credit-card me-2"></i>
+          Payment Methods Management
+        </h2>
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addMethodModal">
+          <i class="fas fa-plus me-1"></i>Add Method
+        </button>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-2 p-md-3">
+          {% if payment_methods %}
+            <div class="table-responsive">
+              <table class="table table-striped table-hover table-sm">
+                <thead class="table-dark">
+                  <tr>
+                    <th style="font-size: 0.9rem;">Method Name</th>
+                    <th style="font-size: 0.9rem;">Status</th>
+                    <th style="font-size: 0.9rem;">Usage Count</th>
+                    <th style="font-size: 0.9rem;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for method in payment_methods %}
+                  <tr>
+                    <td style="font-size: 0.85rem;">{{ method.name }}</td>
+                    <td>
+                      <span class="badge {% if method.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ 'Active' if method.is_active else 'Inactive' }}
+                      </span>
+                    </td>
+                    <td style="font-size: 0.85rem;">
+                      {{ method.usage_count }}
+                    </td>
+                    <td>
+                      <button class="btn btn-outline-primary btn-sm px-2 py-1 me-1" onclick="editMethod({{ method.id }}, '{{ method.name }}', {{ method.is_active|lower }})">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      {% if method.usage_count == 0 %}
+                      <form method="POST" action="{{ url_for('bursar.delete_payment_method', method_id=method.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payment method?')">
+                        <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-3">
+              <i class="fas fa-credit-card fa-2x text-muted mb-2"></i>
+              <h6 class="text-muted mb-1" style="font-size: 1rem;">No Payment Methods Found</h6>
+              <p class="text-muted mb-0" style="font-size: 0.9rem;">Add your first payment method to get started.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+
+    <!-- Add/Edit Method Modal -->
+    <div class="modal fade" id="addMethodModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Add Payment Method</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="methodForm" method="POST" action="{{ url_for('bursar.save_payment_method') }}">
+              <input type="hidden" name="method_id" id="methodId">
+              <div class="mb-3">
+                <label class="form-label">Method Name</label>
+                <input type="text" class="form-control" name="name" id="methodName" required>
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="is_active" id="methodActive" checked>
+                  <label class="form-check-label" for="methodActive">
+                    Active (available for new payments)
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="methodForm" class="btn btn-success">Save Method</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function editMethod(id, name, isActive) {
+        document.getElementById('modalTitle').textContent = 'Edit Payment Method';
+        document.getElementById('methodId').value = id;
+        document.getElementById('methodName').value = name;
+        document.getElementById('methodActive').checked = isActive;
+
+        const modal = new bootstrap.Modal(document.getElementById('addMethodModal'));
+        modal.show();
+      }
+
+      // Reset modal when closed
+      document.getElementById('addMethodModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('modalTitle').textContent = 'Add Payment Method';
+        document.getElementById('methodForm').reset();
+        document.getElementById('methodId').value = '';
+      });
+
+      // Auto-hide flash messages after 2 seconds
+      document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+          setTimeout(() => {
+            alert.style.display = 'none';
+          }, 2000);
+        });
+      });
+    </script>
+  </body>
+</html>

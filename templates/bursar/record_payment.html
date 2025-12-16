@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Record Payment - Bursar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
+          Bursar
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <a href="{{ url_for('bursar.dashboard') }}" class="btn btn-light btn-sm text-dark d-flex align-items-center px-2 py-1 me-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-house me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5z"/>
+            </svg>
+            Dashboard
+          </a>
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white d-flex align-items-center px-2 py-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-right me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-2h-1v2H2V2h8v2h1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8z"/>
+              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H6.5a.5.5 0 0 0 0 1h7.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+            </svg>
+            Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div id="flashMessages" class="container mt-3">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+              <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <main class="container py-4">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+              <h5 class="mb-0">
+                <i class="fas fa-cash-register me-2"></i>
+                Record Payment
+              </h5>
+            </div>
+            <div class="card-body">
+              <form method="POST" action="{{ url_for('bursar.save_payment') }}" id="paymentForm">
+                <!-- Student Selection -->
+                <div class="mb-3">
+                  <label class="form-label">Select Student</label>
+                  <select name="pupil_id" class="form-select" id="studentSelect" required>
+                    <option value="">Choose a student...</option>
+                    {% for student in students %}
+                    <option value="{{ student.id }}"
+                            data-admission="{{ student.admission_number }}"
+                            data-class="{{ classes.get(student.class_admitted, 'Unknown') }}"
+                            data-stream="{{ streams.get(student.stream, 'Unknown') }}">
+                      {{ student.first_name }} {{ student.last_name }} ({{ student.admission_number }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Student Details (Auto-filled) -->
+                <div class="row g-3 mb-3" id="studentDetails" style="display: none;">
+                  <div class="col-md-4">
+                    <label class="form-label">Admission Number</label>
+                    <input type="text" class="form-control" id="admissionNumber" readonly>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Class</label>
+                    <input type="text" class="form-control" id="studentClass" readonly>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Stream</label>
+                    <input type="text" class="form-control" id="studentStream" readonly>
+                  </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Academic Year</label>
+                    <select name="academic_year_id" class="form-select" required>
+                      <option value="">Select Academic Year</option>
+                      {% for year in academic_years %}
+                      <option value="{{ year.id }}" {% if current_academic_year and year.id == current_academic_year.id %}selected{% endif %}>{{ year.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Amount (UGX)</label>
+                    <input type="number" name="amount" class="form-control" step="0.01" min="0" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Term</label>
+                    <select name="term" class="form-select" required>
+                      <option value="">Select Term</option>
+                      {% for term in terms %}
+                      <option value="{{ term.term_number }}">{{ term.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Payment Date</label>
+                    <input type="date" name="payment_date" class="form-control" value="{{ date.today().strftime('%Y-%m-%d') }}" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Payment Method</label>
+                    <select name="payment_method" class="form-select" required>
+                      <option value="">Select Method</option>
+                      {% for method in payment_methods %}
+                      <option value="{{ method.name }}">{{ method.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="Additional payment notes..."></textarea>
+                  </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                  <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save me-2"></i>
+                    Record Payment
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Recent Payments -->
+          <div class="card shadow-sm mt-4">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-history me-2"></i>
+                Recent Payments (Today)
+              </h6>
+            </div>
+            <div class="card-body">
+              <div id="recentPayments" class="text-center text-muted py-3">
+                <i class="fas fa-spinner fa-spin me-2"></i>
+                Loading recent payments...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Student selection functionality
+      document.getElementById('studentSelect').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+          const admissionNumber = selectedOption.getAttribute('data-admission');
+          const studentClass = selectedOption.getAttribute('data-class');
+          const studentStream = selectedOption.getAttribute('data-stream');
+
+          // Auto-fill student details
+          document.getElementById('admissionNumber').value = admissionNumber;
+          document.getElementById('studentClass').value = studentClass;
+          document.getElementById('studentStream').value = studentStream;
+
+          // Show student details section
+          document.getElementById('studentDetails').style.display = 'block';
+        } else {
+          // Hide student details if no student selected
+          document.getElementById('studentDetails').style.display = 'none';
+        }
+      });
+
+      // Load recent payments
+      function loadRecentPayments() {
+        fetch(`{{ url_for('bursar.get_today_payments') }}`)
+          .then(response => response.json())
+          .then(data => {
+            const container = document.getElementById('recentPayments');
+
+            if (data.error) {
+              container.innerHTML = `<small class="text-danger">${data.error}</small>`;
+              return;
+            }
+
+            if (data.length === 0) {
+              container.innerHTML = '<small class="text-muted">No payments recorded today</small>';
+              return;
+            }
+
+            const tableHtml = `
+              <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                  <thead>
+                    <tr>
+                      <th>Receipt</th>
+                      <th>Student</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Date & Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.map(payment => `
+                      <tr>
+                        <td><small>${payment.receipt_number}</small></td>
+                        <td><small>${payment.student_name}</small></td>
+                        <td><small>UGX ${payment.amount.toLocaleString()}</small></td>
+                        <td><small>${payment.payment_method}</small></td>
+                        <td><small>${payment.recorded_at}</small></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `;
+            container.innerHTML = tableHtml;
+          })
+          .catch(error => {
+            console.error('Error loading payments:', error);
+            document.getElementById('recentPayments').innerHTML = '<small class="text-danger">Error loading payments</small>';
+          });
+      }
+
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function() {
+        loadRecentPayments();
+
+        // Auto-hide flash messages after 2 seconds
+        const flashMessages = document.querySelectorAll('.alert');
+        flashMessages.forEach(function(alert) {
+          setTimeout(function() {
+            // Fade out the alert
+            alert.style.transition = 'opacity 0.5s ease-out';
+            alert.style.opacity = '0';
+
+            // Remove the alert after fade out
+            setTimeout(function() {
+              alert.remove();
+            }, 500);
+          }, 2000); // 2 seconds
+        });
+
+        // Add form submission logging and validation
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+          console.log('Form is being submitted...');
+          const formData = new FormData(this);
+          console.log('Form data:');
+          for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+          }
+
+          // Check required fields
+          const pupilId = document.getElementById('studentSelect').value;
+          const amount = document.querySelector('input[name="amount"]').value;
+          const term = document.querySelector('select[name="term"]').value;
+          const paymentDate = document.querySelector('input[name="payment_date"]').value;
+          const paymentMethod = document.querySelector('select[name="payment_method"]').value;
+
+          if (!pupilId || !amount || !term || !paymentDate || !paymentMethod) {
+            e.preventDefault();
+            alert('Please fill in all required fields');
+            return false;
+          }
+        });
+
+        // Refresh payments after form submission
+        document.getElementById('paymentForm').addEventListener('submit', function() {
+          // Refresh payments after a short delay to allow for processing
+          setTimeout(loadRecentPayments, 1000);
+        });
+      });
+    </script>
+  </body>
+</html>
