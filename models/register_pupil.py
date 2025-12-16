@@ -135,6 +135,13 @@ class PupilMarks(db.Model):
     social_studies_remark = db.Column(db.String(255), nullable=True)
     general_comment = db.Column(db.Text, nullable=True)
 
+    # Grades (calculated and stored)
+    english_grade = db.Column(db.String(5), nullable=True)
+    mathematics_grade = db.Column(db.String(5), nullable=True)
+    science_grade = db.Column(db.String(5), nullable=True)
+    social_studies_grade = db.Column(db.String(5), nullable=True)
+    overall_grade = db.Column(db.String(5), nullable=True)
+
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -157,6 +164,61 @@ class PupilMarks(db.Model):
         else:
             self.total_marks = None
             self.average = None
+
+    def calculate_grades(self):
+        """Calculate and store grades for each subject and overall"""
+        def get_grade(mark):
+            if mark is None:
+                return None
+            elif mark >= 80:
+                return 'A'
+            elif mark >= 70:
+                return 'B+'
+            elif mark >= 65:
+                return 'B'
+            elif mark >= 60:
+                return 'C+'
+            elif mark >= 55:
+                return 'C'
+            elif mark >= 50:
+                return 'D+'
+            elif mark >= 45:
+                return 'D'
+            elif mark >= 40:
+                return 'E'
+            else:
+                return 'F'
+
+        def get_overall_grade(average):
+            if average is None:
+                return None
+            elif average >= 80:
+                return 'A'
+            elif average >= 70:
+                return 'B+'
+            elif average >= 65:
+                return 'B'
+            elif average >= 60:
+                return 'C+'
+            elif average >= 55:
+                return 'C'
+            elif average >= 50:
+                return 'D+'
+            elif average >= 45:
+                return 'D'
+            elif average >= 40:
+                return 'E'
+            else:
+                return 'F'
+
+        # Calculate individual subject grades
+        self.english_grade = get_grade(self.english)
+        self.mathematics_grade = get_grade(self.mathematics)
+        self.science_grade = get_grade(self.science)
+        self.social_studies_grade = get_grade(self.social_studies)
+
+        # Calculate overall grade based on average
+        self.overall_grade = get_overall_grade(self.average)
 
     def generate_remarks(self):
         """Generate remarks based on marks"""

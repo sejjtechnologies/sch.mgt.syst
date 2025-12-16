@@ -5,75 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pupil Report - {{ pupil.first_name }} {{ pupil.last_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-            .page-break { page-break-before: always; }
-        }
-
         body {
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.4;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.3;
+            margin: 0;
+            padding: 10px;
+            background: white;
         }
 
-        .report-header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+        /* Print styles - optimized for single page */
+        @media print {
+            body {
+                margin: 0;
+                padding: 5mm;
+                font-size: 10px;
+                transform: scale(0.9);
+                transform-origin: top center;
+            }
+            .no-print { display: none !important; }
+            .card { break-inside: avoid; }
         }
 
-        .school-info {
-            margin-bottom: 20px;
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
         }
 
-        .pupil-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            padding: 8px 12px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .card-body {
+            padding: 10px;
+            overflow: visible;
+            height: auto !important;
+            max-height: none !important;
+        }
+
+        .exam-section {
+            overflow: visible;
+            height: auto !important;
+            max-height: none !important;
+            margin-bottom: 15px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .info-item {
+            background: #f8f9fa;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 11px;
+            color: #333;
         }
 
         .marks-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            font-size: 11px;
+            margin-top: 8px;
+            overflow: visible;
+            height: auto !important;
+            max-height: none !important;
         }
 
         .marks-table th,
         .marks-table td {
-            border: 1px solid #dee2e6;
-            padding: 8px;
+            border: 1px solid #ddd;
+            padding: 4px 6px;
             text-align: left;
+            overflow: visible;
+            height: auto;
         }
 
         .marks-table th {
-            background-color: #f8f9fa;
+            background: #f8f9fa;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .table-highlight {
+            background: #e3f2fd;
             font-weight: bold;
         }
 
-        .marks-table td:last-child {
-            max-width: 200px;
-            word-wrap: break-word;
+        .grade-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            overflow: visible;
+            height: auto;
+            max-height: none;
+        }
+
+        .grade-a { background: #4caf50; }
+        .grade-b { background: #2196f3; }
+        .grade-c { background: #ff9800; }
+        .grade-d { background: #f44336; }
+        .grade-f { background: #9e9e9e; }
+
+        .position-display {
+            background: #fff3cd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 4px 0;
+            font-size: 11px;
+        }
+
+        .comments-card {
+            background: #d4edda;
+            border-left: 3px solid #28a745;
+            margin-top: 8px;
         }
 
         .report-footer {
-            margin-top: 50px;
-            border-top: 1px solid #dee2e6;
-            padding-top: 20px;
             text-align: center;
-            font-size: 10pt;
-            color: #6c757d;
+            padding: 8px;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            margin-top: 15px;
         }
 
         .print-button {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             z-index: 1000;
         }
+
+        .btn {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+
+        h5, h6 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .text-gradient { color: #007bff; }
     </style>
 </head>
 <body>
@@ -102,131 +199,200 @@
         {% else %}F{% endif %}
     {% endmacro %}
 
+    {% macro get_grade_class(grade) %}
+        {% if grade == 'A' %}grade-a
+        {% elif grade in ['B+', 'B'] %}grade-b
+        {% elif grade in ['C+', 'C'] %}grade-c
+        {% elif grade in ['D+', 'D'] %}grade-d
+        {% else %}grade-f{% endif %}
+    {% endmacro %}
+
     <!-- Print Button (hidden in print) -->
     <div class="no-print print-button">
         <button onclick="window.print()" class="btn btn-primary">
-            <i class="bi bi-printer me-2"></i>Print Report
+            <i class="fas fa-print"></i> Print
         </button>
         <button onclick="window.close()" class="btn btn-secondary ms-2">
-            <i class="bi bi-x-circle me-2"></i>Close
+            <i class="fas fa-times"></i> Close
         </button>
     </div>
 
     <div class="container-fluid">
-        <!-- Report Header -->
-        <div class="report-header">
-            <div class="school-info">
-                <h2>School Management System</h2>
-                <h4>Pupil Academic Report</h4>
-                <p class="mb-0">Report Type: {{ report_type.replace('_', ' ').title() }}</p>
+        <!-- Report Header Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-graduation-cap me-1"></i>
+                School Management System - Pupil Academic Report
+                <div class="mt-1 text-muted">{{ report_type.replace('_', ' ').title() }}</div>
             </div>
         </div>
 
-        <!-- Pupil Information -->
-        <div class="pupil-info">
-            <h5>Pupil Information</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Name:</strong> {{ pupil.first_name }} {{ pupil.last_name }}</p>
-                    <p><strong>Admission Number:</strong> {{ pupil.admission_number or 'N/A' }}</p>
-                    <p><strong>Gender:</strong> {{ pupil.gender or 'N/A' }}</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Class:</strong> {{ class_name }}</p>
-                    <p><strong>Stream:</strong> {{ stream_name }}</p>
-                    <p><strong>Academic Year:</strong> {{ pupil.academic_year.name if pupil.academic_year else 'N/A' }}</p>
+        <!-- Pupil Information Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user me-1"></i>
+                Pupil Information
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Name</div>
+                        <div class="info-value">{{ pupil.first_name }} {{ pupil.last_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Admission No</div>
+                        <div class="info-value">{{ pupil.admission_number or 'N/A' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">{{ pupil.gender or 'N/A' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Class</div>
+                        <div class="info-value">{{ class_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Stream</div>
+                        <div class="info-value">{{ stream_name }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Academic Year</div>
+                        <div class="info-value">{{ pupil.academic_year.name if pupil.academic_year else 'N/A' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Academic Performance Section -->
-        <div class="academic-performance">
-            <h5>Academic Performance</h5>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-1"></i>
+                Academic Performance
+            </div>
+            <div class="card-body">
+                {% if marks_data %}
+                    {% for exam_data in marks_data %}
+                    <div class="exam-section mb-3">
+                        <h6 class="text-gradient mb-2">
+                            <i class="fas fa-clipboard-check me-1"></i>
+                            {{ exam_data.exam_type }}
+                        </h6>
 
-            {% if marks_data %}
-                {% for exam_data in marks_data %}
-                <h6 class="mt-3">{{ exam_data.exam_type }}</h6>
-                <table class="marks-table">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th>Marks (out of 100)</th>
-                            <th>Grade</th>
-                            <th>Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>English</td>
-                            <td>{{ exam_data.english }}</td>
-                            <td>{{ get_grade(exam_data.english) }}</td>
-                            <td>{{ exam_data.english_remark or '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td>Mathematics</td>
-                            <td>{{ exam_data.mathematics }}</td>
-                            <td>{{ get_grade(exam_data.mathematics) }}</td>
-                            <td>{{ exam_data.mathematics_remark or '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td>Science</td>
-                            <td>{{ exam_data.science }}</td>
-                            <td>{{ get_grade(exam_data.science) }}</td>
-                            <td>{{ exam_data.science_remark or '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td>Social Studies</td>
-                            <td>{{ exam_data.social_studies }}</td>
-                            <td>{{ get_grade(exam_data.social_studies) }}</td>
-                            <td>{{ exam_data.social_studies_remark or '-' }}</td>
-                        </tr>
-                        <tr class="table-secondary">
-                            <td><strong>Total</strong></td>
-                            <td><strong>{{ exam_data.total }}</strong></td>
-                            <td><strong>{{ get_overall_grade(exam_data.average) }}</strong></td>
-                            <td><strong>Overall Performance</strong></td>
-                        </tr>
-                        <tr class="table-secondary">
-                            <td><strong>Average</strong></td>
-                            <td colspan="3"><strong>{{ "%.1f"|format(exam_data.average) }}%</strong></td>
-                        </tr>
-                        <tr class="table-secondary">
-                            <td><strong>Position in Stream</strong></td>
-                            <td colspan="3"><strong>{{ exam_data.position }} out of {{ exam_data.stream_student_count or 'N/A' }}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
+                        <table class="marks-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-book me-1"></i>Subject</th>
+                                    <th><i class="fas fa-calculator me-1"></i>Marks</th>
+                                    <th><i class="fas fa-medal me-1"></i>Grade</th>
+                                    <th><i class="fas fa-comment me-1"></i>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>English</td>
+                                    <td>{{ exam_data.english if exam_data.english is not none else '-' }}</td>
+                                    <td>
+                                        {% if exam_data.english_grade %}
+                                        <span class="grade-badge {{ get_grade_class(exam_data.english_grade) }}">
+                                            {{ exam_data.english_grade }}
+                                        </span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam_data.english_remark or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Mathematics</td>
+                                    <td>{{ exam_data.mathematics if exam_data.mathematics is not none else '-' }}</td>
+                                    <td>
+                                        {% if exam_data.mathematics_grade %}
+                                        <span class="grade-badge {{ get_grade_class(exam_data.mathematics_grade) }}">
+                                            {{ exam_data.mathematics_grade }}
+                                        </span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam_data.mathematics_remark or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Science</td>
+                                    <td>{{ exam_data.science if exam_data.science is not none else '-' }}</td>
+                                    <td>
+                                        {% if exam_data.science_grade %}
+                                        <span class="grade-badge {{ get_grade_class(exam_data.science_grade) }}">
+                                            {{ exam_data.science_grade }}
+                                        </span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam_data.science_remark or '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Social Studies</td>
+                                    <td>{{ exam_data.social_studies if exam_data.social_studies is not none else '-' }}</td>
+                                    <td>
+                                        {% if exam_data.social_studies_grade %}
+                                        <span class="grade-badge {{ get_grade_class(exam_data.social_studies_grade) }}">
+                                            {{ exam_data.social_studies_grade }}
+                                        </span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam_data.social_studies_remark or '-' }}</td>
+                                </tr>
+                                <tr class="table-highlight">
+                                    <td><strong>Total</strong></td>
+                                    <td><strong>{{ exam_data.total }}</strong></td>
+                                    <td>
+                                        {% if exam_data.overall_grade %}
+                                        <span class="grade-badge {{ get_grade_class(exam_data.overall_grade) }}">
+                                            {{ exam_data.overall_grade }}
+                                        </span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>Overall</strong></td>
+                                </tr>
+                                <tr class="table-highlight">
+                                    <td><strong>Average</strong></td>
+                                    <td colspan="3"><strong>{{ "%.1f"|format(exam_data.average) }}%</strong></td>
+                                </tr>
+                                <tr class="table-highlight">
+                                    <td><strong>Stream Position</strong></td>
+                                    <td colspan="3">
+                                        <div class="position-display">
+                                            <strong>{{ exam_data.position }} / {{ exam_data.stream_student_count or 'N/A' }}</strong>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                {% if exam_data.remarks %}
-                <div class="mt-3 p-3 bg-light rounded border-start border-primary border-4">
-                    <h6 class="text-primary mb-2"><i class="bi bi-chat-quote me-2"></i>Teacher's General Comments</h6>
-                    <p class="mb-0">{{ exam_data.remarks }}</p>
-                </div>
+                        {% if exam_data.remarks %}
+                        <div class="comments-card mt-2 p-2">
+                            <h6 class="mb-1"><i class="fas fa-quote-left me-1"></i>Teacher Comments</h6>
+                            <p class="mb-0 small">{{ exam_data.remarks }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        No marks data available.
+                    </div>
                 {% endif %}
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    No marks data available for the selected report type.
-                    <br><small>Please ensure marks have been entered for this pupil in the selected term and exam type.</small>
-                </div>
-            {% endif %}
+            </div>
         </div>
 
-        <!-- Report Footer -->
         <div class="report-footer">
-            <p>This report was generated on {{ datetime.now().strftime('%B %d, %Y') }} at {{ datetime.now().strftime('%I:%M %p') }}</p>
-            <p>Report generated by School Management System</p>
+            Generated {{ datetime.now().strftime('%d/%m/%Y %H:%M') }} - School Management System
         </div>
     </div>
-
-    <script>
-        // Auto-print when page loads (optional)
-        // window.onload = function() {
-        //     setTimeout(function() {
-        //         window.print();
-        //     }, 1000);
-        // };
-    </script>
 </body>
 </html>

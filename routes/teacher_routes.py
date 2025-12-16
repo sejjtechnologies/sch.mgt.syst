@@ -8,6 +8,7 @@ from models.attendance import Attendance
 from models import db
 from datetime import datetime, date, timedelta
 import pytz
+from sqlalchemy import text
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 
@@ -245,8 +246,7 @@ def debug_db():
             'success': True,
             'database_connection': 'OK',
             'test_query_result': test_result,
-            'pupil_marks_table_exists': table_exists,
-            'database_url': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...' if app.config.get('SQLALCHEMY_DATABASE_URI') else 'Not set'
+            'pupil_marks_table_exists': table_exists
         }
 
         if table_exists:
@@ -270,8 +270,7 @@ def debug_db():
         return jsonify({
             'success': False,
             'error': str(e),
-            'error_type': type(e).__name__,
-            'database_url': app.config.get('SQLALCHEMY_DATABASE_URI', 'Not set')[:50] + '...' if app.config.get('SQLALCHEMY_DATABASE_URI') else 'Not set'
+            'error_type': type(e).__name__
         })
 
 @teacher_bp.route('/save_marks', methods=['POST'])
@@ -322,6 +321,7 @@ def save_marks():
         # Calculate totals and remarks
         marks_record.calculate_totals()
         marks_record.generate_remarks()
+        marks_record.calculate_grades()
 
         # Calculate positions
         _calculate_positions(marks_record)
@@ -344,7 +344,7 @@ def save_marks():
 
 
 def _calculate_positions(marks_record):
-    """Calculate position in stream and class for the marks record"""
+    """Calculate position in stream and class"""
     if not marks_record.total_marks:
         return
 
@@ -377,15 +377,27 @@ def _calculate_positions(marks_record):
         stream_marks.sort(key=sort_key, reverse=True)
         class_marks.sort(key=sort_key, reverse=True)
 
+        # Get TOTAL number of pupils in stream and class from database
+        total_stream_pupils = Pupil.query.filter_by(
+            class_admitted=pupil.class_admitted,
+            stream=pupil.stream,
+            enrollment_status='active'
+        ).count()
+
+        total_class_pupils = Pupil.query.filter_by(
+            class_admitted=pupil.class_admitted,
+            enrollment_status='active'
+        ).count()
+
         # Update positions for ALL students in the stream
         for i, m in enumerate(stream_marks, 1):
             m.position_in_stream = i
-            m.stream_student_count = len(stream_marks)
+            m.stream_student_count = total_stream_pupils  # Use actual total from database
 
         # Update positions for ALL students in the class
         for i, m in enumerate(class_marks, 1):
             m.position_in_class = i
-            m.class_student_count = len(class_marks)
+            m.class_student_count = total_class_pupils  # Use actual total from database
 
         # Commit all position updates
         db.session.commit()
@@ -462,13 +474,19 @@ def recalculate_positions():
         # Group by class and stream, then recalculate positions
         updated_count = 0
 
-        # Get unique classes
+        # Get unique classes from the marks records
         classes = set()
         for mark in all_marks:
             if mark.pupil:
                 classes.add(mark.pupil.class_admitted)
 
         for class_id in classes:
+            # Get TOTAL number of pupils in this class (not just those with marks)
+            total_class_pupils = Pupil.query.filter_by(
+                class_admitted=class_id,
+                enrollment_status='active'
+            ).count()
+
             # Get all marks for this class
             class_marks = [m for m in all_marks if m.pupil and m.pupil.class_admitted == class_id]
 
@@ -478,10 +496,10 @@ def recalculate_positions():
 
             class_marks.sort(key=sort_key, reverse=True)
 
-            # Update class positions
+            # Update class positions and total class count
             for i, m in enumerate(class_marks, 1):
                 m.position_in_class = i
-                m.class_student_count = len(class_marks)
+                m.class_student_count = total_class_pupils  # Use actual total from database
                 updated_count += 1
 
             # Group by stream within this class
@@ -491,14 +509,21 @@ def recalculate_positions():
                     streams.add(mark.pupil.stream)
 
             for stream_id in streams:
+                # Get TOTAL number of pupils in this stream and class (not just those with marks)
+                total_stream_pupils = Pupil.query.filter_by(
+                    class_admitted=class_id,
+                    stream=stream_id,
+                    enrollment_status='active'
+                ).count()
+
                 # Get marks for this stream
                 stream_marks = [m for m in class_marks if m.pupil and m.pupil.stream == stream_id]
                 stream_marks.sort(key=sort_key, reverse=True)
 
-                # Update stream positions
+                # Update stream positions and total stream count
                 for i, m in enumerate(stream_marks, 1):
                     m.position_in_stream = i
-                    m.stream_student_count = len(stream_marks)
+                    m.stream_student_count = total_stream_pupils  # Use actual total from database
 
         db.session.commit()
 
@@ -574,10 +599,10 @@ def get_pupils_for_reports():
             if not class_obj or not stream_obj:
                 continue
 
-            # Get pupils in this class and stream using names, not IDs
+            # Get pupils in this class and stream using IDs, not names
             pupils = Pupil.query.filter_by(
-                class_admitted=class_obj.name,  # Use class name, not ID
-                stream=stream_obj.name,         # Use stream name, not ID
+                class_admitted=assignment.class_id,  # Use class ID
+                stream=assignment.stream_id,         # Use stream ID
                 enrollment_status='active'
             ).order_by(Pupil.admission_number.asc()).all()
 
@@ -699,14 +724,21 @@ def generate_pupil_report(pupil_id, report_type):
             if beginning_marks:
                 marks_data.append({
                     'exam_type': 'Beginning of Term',
-                    'english': beginning_marks.english or 0,
-                    'mathematics': beginning_marks.mathematics or 0,
-                    'science': beginning_marks.science or 0,
-                    'social_studies': beginning_marks.social_studies or 0,
+                    'english': beginning_marks.english,
+                    'mathematics': beginning_marks.mathematics,
+                    'science': beginning_marks.science,
+                    'social_studies': beginning_marks.social_studies,
+                    'english_grade': beginning_marks.english_grade,
+                    'mathematics_grade': beginning_marks.mathematics_grade,
+                    'science_grade': beginning_marks.science_grade,
+                    'social_studies_grade': beginning_marks.social_studies_grade,
                     'total': beginning_marks.total_marks or 0,
                     'average': beginning_marks.average or 0,
+                    'overall_grade': beginning_marks.overall_grade,
                     'position': beginning_marks.position_in_stream or 0,
+                    'class_position': beginning_marks.position_in_class or 0,
                     'stream_student_count': beginning_marks.stream_student_count or 0,
+                    'class_student_count': beginning_marks.class_student_count or 0,
                     'english_remark': beginning_marks.english_remark or '',
                     'mathematics_remark': beginning_marks.mathematics_remark or '',
                     'science_remark': beginning_marks.science_remark or '',
@@ -717,14 +749,21 @@ def generate_pupil_report(pupil_id, report_type):
             if mid_marks:
                 marks_data.append({
                     'exam_type': 'Mid Term',
-                    'english': mid_marks.english or 0,
-                    'mathematics': mid_marks.mathematics or 0,
-                    'science': mid_marks.science or 0,
-                    'social_studies': mid_marks.social_studies or 0,
+                    'english': mid_marks.english,
+                    'mathematics': mid_marks.mathematics,
+                    'science': mid_marks.science,
+                    'social_studies': mid_marks.social_studies,
+                    'english_grade': mid_marks.english_grade,
+                    'mathematics_grade': mid_marks.mathematics_grade,
+                    'science_grade': mid_marks.science_grade,
+                    'social_studies_grade': mid_marks.social_studies_grade,
                     'total': mid_marks.total_marks or 0,
                     'average': mid_marks.average or 0,
+                    'overall_grade': mid_marks.overall_grade,
                     'position': mid_marks.position_in_stream or 0,
+                    'class_position': mid_marks.position_in_class or 0,
                     'stream_student_count': mid_marks.stream_student_count or 0,
+                    'class_student_count': mid_marks.class_student_count or 0,
                     'english_remark': mid_marks.english_remark or '',
                     'mathematics_remark': mid_marks.mathematics_remark or '',
                     'science_remark': mid_marks.science_remark or '',
@@ -735,53 +774,26 @@ def generate_pupil_report(pupil_id, report_type):
             if end_marks:
                 marks_data.append({
                     'exam_type': 'End of Term',
-                    'english': end_marks.english or 0,
-                    'mathematics': end_marks.mathematics or 0,
-                    'science': end_marks.science or 0,
-                    'social_studies': end_marks.social_studies or 0,
+                    'english': end_marks.english,
+                    'mathematics': end_marks.mathematics,
+                    'science': end_marks.science,
+                    'social_studies': end_marks.social_studies,
+                    'english_grade': end_marks.english_grade,
+                    'mathematics_grade': end_marks.mathematics_grade,
+                    'science_grade': end_marks.science_grade,
+                    'social_studies_grade': end_marks.social_studies_grade,
                     'total': end_marks.total_marks or 0,
                     'average': end_marks.average or 0,
+                    'overall_grade': end_marks.overall_grade,
                     'position': end_marks.position_in_stream or 0,
+                    'class_position': end_marks.position_in_class or 0,
                     'stream_student_count': end_marks.stream_student_count or 0,
+                    'class_student_count': end_marks.class_student_count or 0,
                     'english_remark': end_marks.english_remark or '',
-                    'mathematics_remark': end_marks.mathematics_remark or '',
+                    'mathematics_remark': end_marks.science_remark or '',
                     'science_remark': end_marks.science_remark or '',
                     'social_studies_remark': end_marks.social_studies_remark or '',
                     'remarks': end_marks.general_comment or ''
-                })
-                marks_data.append({
-                    'exam_type': 'Beginning of Term',
-                    'english': beginning_marks.english or 0,
-                    'mathematics': beginning_marks.mathematics or 0,
-                    'science': beginning_marks.science or 0,
-                    'social_studies': beginning_marks.social_studies or 0,
-                    'total': beginning_marks.total_marks or 0,
-                    'average': beginning_marks.average or 0,
-                    'position': beginning_marks.position_in_stream or 0,
-                    'stream_student_count': beginning_marks.stream_student_count or 0,
-                    'english_remark': beginning_marks.english_remark or '',
-                    'mathematics_remark': beginning_marks.mathematics_remark or '',
-                    'science_remark': beginning_marks.science_remark or '',
-                    'social_studies_remark': beginning_marks.social_studies_remark or '',
-                    'remarks': beginning_marks.general_comment or ''
-                })
-
-            if mid_marks:
-                marks_data.append({
-                    'exam_type': 'Mid Term',
-                    'english': mid_marks.english or 0,
-                    'mathematics': mid_marks.mathematics or 0,
-                    'science': mid_marks.science or 0,
-                    'social_studies': mid_marks.social_studies or 0,
-                    'total': mid_marks.total_marks or 0,
-                    'average': mid_marks.average or 0,
-                    'position': mid_marks.position_in_stream or 0,
-                    'stream_student_count': mid_marks.stream_student_count or 0,
-                    'english_remark': mid_marks.english_remark or '',
-                    'mathematics_remark': mid_marks.mathematics_remark or '',
-                    'science_remark': mid_marks.science_remark or '',
-                    'social_studies_remark': mid_marks.social_studies_remark or '',
-                    'remarks': mid_marks.general_comment or ''
                 })
         else:
             # Single exam type
@@ -801,14 +813,21 @@ def generate_pupil_report(pupil_id, report_type):
             if marks:
                 marks_data.append({
                     'exam_type': exam_type,
-                    'english': marks.english or 0,
-                    'mathematics': marks.mathematics or 0,
-                    'science': marks.science or 0,
-                    'social_studies': marks.social_studies or 0,
+                    'english': marks.english,
+                    'mathematics': marks.mathematics,
+                    'science': marks.science,
+                    'social_studies': marks.social_studies,
+                    'english_grade': marks.english_grade,
+                    'mathematics_grade': marks.mathematics_grade,
+                    'science_grade': marks.science_grade,
+                    'social_studies_grade': marks.social_studies_grade,
                     'total': marks.total_marks or 0,
                     'average': marks.average or 0,
+                    'overall_grade': marks.overall_grade,
                     'position': marks.position_in_stream or 0,
+                    'class_position': marks.position_in_class or 0,
                     'stream_student_count': marks.stream_student_count or 0,
+                    'class_student_count': marks.class_student_count or 0,
                     'english_remark': marks.english_remark or '',
                     'mathematics_remark': marks.mathematics_remark or '',
                     'science_remark': marks.science_remark or '',
