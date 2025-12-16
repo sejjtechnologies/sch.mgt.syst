@@ -314,7 +314,7 @@
 
       document.querySelectorAll('.attendance-check').forEach(input => {
         input.addEventListener('change', (e) => {
-          const pupilId = parseInt(e.target.name.split('_')[1]);
+          const pupilId = e.target.name.split('_')[1];
           currentAttendance[pupilId] = e.target.value;
         });
       });
@@ -371,7 +371,7 @@
           document.getElementById('viewSummaryBtn').style.display='inline-block';
           // Update attendance_map with saved records
           Object.entries(currentAttendance).forEach(([pid, status]) => {
-            attendanceMapFromBackend[parseInt(pid)] = status;
+            attendanceMapFromBackend[pid] = status;
           });
           currentAttendance = {};
           renderTable();
