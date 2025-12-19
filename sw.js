@@ -36,12 +36,14 @@ self.addEventListener('fetch', event => {
       fetch(event.request)
         .then(response => {
           console.log('Navigation successful, caching response');
-          // Cache successful navigation responses
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseClone);
-            });
+          // Only cache GET requests
+          if (event.request.method === 'GET') {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseClone);
+              });
+          }
           return response;
         })
         .catch(() => {

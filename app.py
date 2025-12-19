@@ -91,6 +91,12 @@ if SYSTEM_CONFIGURED:
         app.register_blueprint(bursar_bp)
     except Exception as e:
         print(f"⚠ Could not register bursar routes: {e}")
+
+    try:
+        from routes.parent_routes import parent_bp
+        app.register_blueprint(parent_bp)
+    except Exception as e:
+        print(f"⚠ Could not register parent routes: {e}")
 else:
     print("⚠️  Skipping blueprint registration - system not configured")
 

@@ -3,10 +3,121 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Parent Dashboard</title>
+    <title>Parent Dashboard - School Management System</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+      /* Custom styles for parent dashboard */
+      .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 2rem 2rem;
+      }
+
+      .search-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .search-input {
+        border: 2px solid #e1e5e9;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+      }
+
+      .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+      }
+
+      .pupil-card {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .pupil-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      }
+
+      .pupil-card.selected {
+        border: 3px solid #667eea;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+      }
+
+      .info-section {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .fees-balance {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .attendance-card {
+        background: linear-gradient(135deg, #00d2d3, #54a0ff);
+        color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .payment-item {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 4px solid #28a745;
+      }
+
+      .loading-spinner {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        min-height: 200px;
+      }
+
+      .no-results {
+        text-align: center;
+        color: #6c757d;
+        padding: 3rem;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+    </style>
   </head>
   <body class="bg-light">
+    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-info">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
@@ -15,43 +126,440 @@
         </a>
         <div class="ms-auto">
           <a href="{{ url_for('user.logout') }}" class="btn btn-danger text-white d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right me-2" viewBox="0 0 16 16" aria-hidden="true">
-              <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-2h-1v2H2V2h8v2h1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8z"/>
-              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H6.5a.5.5 0 0 0 0 1h7.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-            </svg>
+            <i class="bi bi-box-arrow-right me-2"></i>
             Logout
           </a>
         </div>
       </div>
     </nav>
 
-    <main class="container py-4">
-      <h1 class="h4 mb-3">Parent dashboard</h1>
-      <p class="text-muted">View your child's progress and announcements.</p>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold mb-3">
+              <i class="bi bi-house-heart-fill me-3"></i>
+              Welcome to Parent Portal
+            </h1>
+            <p class="lead mb-4">
+              Monitor your child's academic progress, view payment history, and stay connected with their educational journey.
+            </p>
+            <div class="row g-3 justify-content-center">
+              <div class="col-auto">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-search text-warning me-2 fs-5"></i>
+                  <span>Search Students</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-receipt text-success me-2 fs-5"></i>
+                  <span>View Payments</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <div class="d-flex align-items-center">
+                  <i class="bi bi-calendar-check text-info me-2 fs-5"></i>
+                  <span>Check Attendance</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <div class="row g-3 mt-2">
-        <div class="col-12 col-md-6">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">My children</h5>
-              <p class="card-text">List of children linked to your account</p>
-              <a href="#" class="btn btn-sm btn-info">View children</a>
+    <main class="container">
+      <!-- Search Section -->
+      <div class="search-container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h3 class="text-center mb-4">
+              <i class="bi bi-search me-2 text-primary"></i>
+              Find Your Child
+            </h3>
+            <div class="input-group input-group-lg">
+              <input type="text" class="form-control search-input" id="pupilSearch"
+                     placeholder="Search by name, admission number, or roll number..."
+                     autocomplete="off">
+              <button class="btn btn-primary" type="button" id="searchBtn">
+                <i class="bi bi-search me-2"></i>
+                Search
+              </button>
+            </div>
+            <small class="form-text text-muted text-center mt-2">
+              Enter first name, last name, admission number, or roll number
+            </small>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="searchResults" class="mt-4" style="display: none;">
+          <h5 class="mb-3">
+            <i class="bi bi-list-ul me-2"></i>
+            Search Results
+          </h5>
+          <div id="pupilList" class="row g-3">
+            <!-- Pupil cards will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="ms-3">Searching pupils...</div>
+        </div>
+
+        <!-- No Results -->
+        <div id="noResults" class="no-results" style="display: none;">
+          <i class="bi bi-search fs-1 text-muted mb-3"></i>
+          <h5>No pupils found</h5>
+          <p>Try searching with a different name or number</p>
+        </div>
+      </div>
+
+      <!-- Pupil Details Section -->
+      <div id="pupilDetails" style="display: none;">
+        <!-- Pupil Header -->
+        <div class="info-section">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h3 id="pupilName" class="mb-2"></h3>
+              <div class="row g-3">
+                <div class="col-auto">
+                  <small class="text-muted">Admission No:</small>
+                  <div class="fw-bold" id="admissionNumber"></div>
+                </div>
+                <div class="col-auto">
+                  <small class="text-muted">Roll No:</small>
+                  <div class="fw-bold" id="rollNumber"></div>
+                </div>
+                <div class="col-auto">
+                  <small class="text-muted">Class:</small>
+                  <div class="fw-bold" id="pupilClass"></div>
+                </div>
+                <div class="col-auto">
+                  <small class="text-muted">Stream:</small>
+                  <div class="fw-bold" id="pupilStream"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-outline-primary" onclick="refreshPupilData()">
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                Refresh
+              </button>
             </div>
           </div>
         </div>
 
-        <div class="col-12 col-md-6">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Announcements</h5>
-              <p class="card-text">School notices and events</p>
-              <a href="#" class="btn btn-sm btn-info">View announcements</a>
+        <!-- Fees Balance & Attendance -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <div class="fees-balance">
+              <div class="stat-number" id="feesBalance">0.00</div>
+              <div class="stat-label">Fees Balance (KES)</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="attendance-card">
+              <div class="stat-number" id="attendancePercentage">0%</div>
+              <div class="stat-label">Monthly Attendance</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Information Tabs -->
+        <div class="info-section">
+          <ul class="nav nav-tabs" id="pupilTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
+                <i class="bi bi-receipt me-2"></i>
+                Payment History
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">
+                <i class="bi bi-calendar-check me-2"></i>
+                Attendance
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Reports
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content mt-4" id="pupilTabsContent">
+            <!-- Payment History Tab -->
+            <div class="tab-pane fade show active" id="payments" role="tabpanel">
+              <h5 class="mb-3">Recent Payments</h5>
+              <div id="paymentsList">
+                <div class="text-center text-muted py-4">
+                  <i class="bi bi-receipt fs-1 mb-3"></i>
+                  <p>Loading payment history...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div class="tab-pane fade" id="attendance" role="tabpanel">
+              <h5 class="mb-3">Attendance Summary</h5>
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <div class="card text-center">
+                    <div class="card-body">
+                      <h6 class="card-title text-primary">Daily (7 days)</h6>
+                      <div class="stat-number" id="dailyAttendance">0%</div>
+                      <small class="text-muted" id="dailyStats">0/0 days</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card text-center">
+                    <div class="card-body">
+                      <h6 class="card-title text-success">Weekly (Month)</h6>
+                      <div class="stat-number" id="weeklyAttendance">0%</div>
+                      <small class="text-muted" id="weeklyStats">0/0 days</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card text-center">
+                    <div class="card-body">
+                      <h6 class="card-title text-info">Termly (3 months)</h6>
+                      <div class="stat-number" id="termlyAttendance">0%</div>
+                      <small class="text-muted" id="termlyStats">0/0 days</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-pane fade" id="reports" role="tabpanel">
+              <h5 class="mb-3">Academic Reports</h5>
+              <div class="text-center text-muted py-4">
+                <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
+                <p>Report generation feature coming soon</p>
+                <small>This section will show academic reports, grades, and progress tracking</small>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </main>
 
+    {% include 'base.html' %}
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      let selectedPupilId = null;
+      let searchTimeout = null;
+
+      // Initialize when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('pupilSearch');
+        const searchBtn = document.getElementById('searchBtn');
+
+        // Search on input with debounce
+        searchInput.addEventListener('input', function() {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            performSearch(this.value);
+          }, 300);
+        });
+
+        // Search on button click
+        searchBtn.addEventListener('click', function() {
+          performSearch(searchInput.value);
+        });
+
+        // Search on Enter key
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            performSearch(this.value);
+          }
+        });
+      });
+
+      function performSearch(query) {
+        if (!query.trim()) {
+          hideSearchResults();
+          return;
+        }
+
+        showLoading();
+
+        fetch(`/parent/api/search_pupils?q=${encodeURIComponent(query)}`)
+          .then(response => response.json())
+          .then(data => {
+            hideLoading();
+            if (data.success) {
+              displaySearchResults(data.pupils);
+            } else {
+              showError('Search failed: ' + data.message);
+            }
+          })
+          .catch(error => {
+            hideLoading();
+            showError('Search error: ' + error.message);
+          });
+      }
+
+      function displaySearchResults(pupils) {
+        const resultsDiv = document.getElementById('searchResults');
+        const pupilList = document.getElementById('pupilList');
+        const noResults = document.getElementById('noResults');
+
+        if (pupils.length === 0) {
+          resultsDiv.style.display = 'none';
+          noResults.style.display = 'block';
+          return;
+        }
+
+        noResults.style.display = 'none';
+        pupilList.innerHTML = '';
+
+        pupils.forEach(pupil => {
+          const pupilCard = document.createElement('div');
+          pupilCard.className = 'col-md-6 col-lg-4';
+          pupilCard.innerHTML = `
+            <div class="pupil-card card h-100" onclick="selectPupil('${pupil.id}')">
+              <div class="card-body text-center">
+                <div class="avatar-circle mx-auto mb-3">
+                  <i class="bi bi-person-circle fs-1 text-primary"></i>
+                </div>
+                <h6 class="card-title mb-2">${pupil.full_name}</h6>
+                <div class="text-muted small">
+                  <div>Adm: ${pupil.admission_number || 'N/A'}</div>
+                  <div>Roll: ${pupil.roll_number || 'N/A'}</div>
+                  <div>Class: ${pupil.class_admitted || 'N/A'}</div>
+                </div>
+              </div>
+            </div>
+          `;
+          pupilList.appendChild(pupilCard);
+        });
+
+        resultsDiv.style.display = 'block';
+      }
+
+      function selectPupil(pupilId) {
+        selectedPupilId = pupilId;
+
+        // Update UI to show selected pupil
+        document.querySelectorAll('.pupil-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        // Load pupil details
+        loadPupilDetails(pupilId);
+      }
+
+      function loadPupilDetails(pupilId) {
+        showLoading();
+
+        fetch(`/parent/api/pupil/${pupilId}`)
+          .then(response => response.json())
+          .then(data => {
+            hideLoading();
+            if (data.success) {
+              displayPupilDetails(data.pupil);
+            } else {
+              showError('Failed to load pupil details: ' + data.message);
+            }
+          })
+          .catch(error => {
+            hideLoading();
+            showError('Error loading pupil details: ' + error.message);
+          });
+      }
+
+      function displayPupilDetails(pupil) {
+        // Update header information
+        document.getElementById('pupilName').textContent = `${pupil.first_name} ${pupil.last_name}`;
+        document.getElementById('admissionNumber').textContent = pupil.admission_number || 'N/A';
+        document.getElementById('rollNumber').textContent = pupil.roll_number || 'N/A';
+        document.getElementById('pupilClass').textContent = pupil.class_admitted || 'N/A';
+        document.getElementById('pupilStream').textContent = pupil.stream || 'N/A';
+
+        // Update fees balance
+        document.getElementById('feesBalance').textContent = pupil.fees_balance.toLocaleString();
+
+        // Update attendance summary
+        const attendance = pupil.attendance_summary;
+        document.getElementById('attendancePercentage').textContent = `${attendance.weekly.percentage}%`;
+        document.getElementById('dailyAttendance').textContent = `${attendance.daily.percentage}%`;
+        document.getElementById('dailyStats').textContent = `${attendance.daily.present}/${attendance.daily.total} days`;
+        document.getElementById('weeklyAttendance').textContent = `${attendance.weekly.percentage}%`;
+        document.getElementById('weeklyStats').textContent = `${attendance.weekly.present}/${attendance.weekly.total} days`;
+        document.getElementById('termlyAttendance').textContent = `${attendance.termly.percentage}%`;
+        document.getElementById('termlyStats').textContent = `${attendance.termly.present}/${attendance.termly.total} days`;
+
+        // Update payments list
+        const paymentsList = document.getElementById('paymentsList');
+        if (pupil.recent_payments.length === 0) {
+          paymentsList.innerHTML = `
+            <div class="text-center text-muted py-4">
+              <i class="bi bi-receipt fs-1 mb-3"></i>
+              <p>No payment records found</p>
+            </div>
+          `;
+        } else {
+          paymentsList.innerHTML = pupil.recent_payments.map(payment => `
+            <div class="payment-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="fw-bold">KES ${payment.amount.toLocaleString()}</div>
+                  <small class="text-muted">${payment.payment_date} • Term ${payment.term}</small>
+                </div>
+                <div class="text-end">
+                  <div class="badge bg-success">${payment.payment_method}</div>
+                  <div class="small text-muted mt-1">Receipt: ${payment.receipt_number || 'N/A'}</div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Show pupil details section
+        document.getElementById('pupilDetails').style.display = 'block';
+
+        // Scroll to details
+        document.getElementById('pupilDetails').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function refreshPupilData() {
+        if (selectedPupilId) {
+          loadPupilDetails(selectedPupilId);
+        }
+      }
+
+      function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'flex';
+      }
+
+      function hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+      }
+
+      function hideSearchResults() {
+        document.getElementById('searchResults').style.display = 'none';
+        document.getElementById('noResults').style.display = 'none';
+      }
+
+      function showError(message) {
+        // You can implement a toast notification here
+        alert(message);
+      }
+    </script>
   </body>
 </html>

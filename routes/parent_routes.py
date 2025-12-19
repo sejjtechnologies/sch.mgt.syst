@@ -1,0 +1,195 @@
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
+from models import db
+from models.register_pupil import Pupil
+from models.bursar import Payment, StudentFee
+from models.attendance import Attendance
+from models.user import User
+from models.school_class import SchoolClass
+from models.stream import Stream
+from datetime import datetime, timedelta
+import calendar
+
+parent_bp = Blueprint('parent', __name__, url_prefix='/parent')
+
+@parent_bp.route('/dashboard')
+def dashboard():
+    """Parent dashboard - search and view pupil information"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'parent':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    return render_template('parent/dashboard.html')
+
+@parent_bp.route('/api/search_pupils')
+def search_pupils():
+    """Search pupils by first name, last name, admission number, or roll number"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'parent':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({'success': True, 'pupils': []})
+
+    # Search pupils by various fields
+    pupils = Pupil.query.filter(
+        db.or_(
+            Pupil.first_name.ilike(f'%{query}%'),
+            Pupil.last_name.ilike(f'%{query}%'),
+            Pupil.admission_number.ilike(f'%{query}%'),
+            Pupil.roll_number.ilike(f'%{query}%')
+        )
+    ).limit(10).all()
+
+    results = []
+    for pupil in pupils:
+        # Get class and stream names
+        class_name = None
+        stream_name = None
+        
+        if pupil.class_admitted:
+            class_obj = SchoolClass.query.get(pupil.class_admitted)
+            class_name = class_obj.name if class_obj else pupil.class_admitted
+        
+        if pupil.stream:
+            stream_obj = Stream.query.get(pupil.stream)
+            stream_name = stream_obj.name if stream_obj else pupil.stream
+
+        results.append({
+            'id': pupil.id,
+            'first_name': pupil.first_name,
+            'last_name': pupil.last_name,
+            'admission_number': pupil.admission_number,
+            'roll_number': pupil.roll_number,
+            'class_admitted': class_name,
+            'stream': stream_name,
+            'full_name': f"{pupil.first_name} {pupil.last_name}"
+        })
+
+    return jsonify({'success': True, 'pupils': results})
+
+@parent_bp.route('/api/pupil/<pupil_id>')
+def get_pupil_details(pupil_id):
+    """Get detailed information for a specific pupil"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'parent':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    pupil = Pupil.query.get(pupil_id)
+    if not pupil:
+        return jsonify({'success': False, 'message': 'Pupil not found'}), 404
+
+    # Get fees balance
+    fees_balance = get_pupil_fees_balance(pupil_id)
+
+    # Get recent payments
+    recent_payments = Payment.query.filter_by(pupil_id=pupil_id).order_by(Payment.payment_date.desc()).limit(5).all()
+    payments_data = []
+    for payment in recent_payments:
+        payments_data.append({
+            'amount': payment.amount,
+            'payment_date': payment.payment_date.strftime('%Y-%m-%d'),
+            'receipt_number': payment.receipt_number,
+            'payment_method': payment.payment_method,
+            'term': payment.term
+        })
+
+    # Get attendance summary
+    attendance_summary = get_pupil_attendance_summary(pupil_id)
+
+    # Get class and stream names
+    class_name = None
+    stream_name = None
+    
+    if pupil.class_admitted:
+        class_obj = SchoolClass.query.get(pupil.class_admitted)
+        class_name = class_obj.name if class_obj else pupil.class_admitted
+    
+    if pupil.stream:
+        stream_obj = Stream.query.get(pupil.stream)
+        stream_name = stream_obj.name if stream_obj else pupil.stream
+
+    pupil_data = {
+        'id': pupil.id,
+        'first_name': pupil.first_name,
+        'last_name': pupil.last_name,
+        'admission_number': pupil.admission_number,
+        'roll_number': pupil.roll_number,
+        'class_admitted': class_name,
+        'stream': stream_name,
+        'academic_year': pupil.academic_year.name if pupil.academic_year else None,
+        'fees_balance': fees_balance,
+        'recent_payments': payments_data,
+        'attendance_summary': attendance_summary
+    }
+
+    return jsonify({'success': True, 'pupil': pupil_data})
+
+def get_pupil_fees_balance(pupil_id):
+    """Calculate total fees balance for a pupil"""
+    try:
+        # Get all student fees for this pupil
+        student_fees = StudentFee.query.filter_by(pupil_id=pupil_id).all()
+
+        total_balance = 0.0
+        for fee in student_fees:
+            total_balance += fee.balance
+
+        return round(total_balance, 2)
+    except Exception as e:
+        print(f"Error calculating fees balance: {e}")
+        return 0.0
+
+def get_pupil_attendance_summary(pupil_id):
+    """Get attendance summary for different periods"""
+    try:
+        today = datetime.now().date()
+
+        # Daily attendance (last 7 days)
+        week_ago = today - timedelta(days=7)
+        daily_attendance = Attendance.query.filter(
+            Attendance.pupil_id == pupil_id,
+            Attendance.attendance_date >= week_ago,
+            Attendance.attendance_date <= today
+        ).order_by(Attendance.attendance_date.desc()).all()
+
+        # Weekly attendance (current month)
+        month_start = today.replace(day=1)
+        weekly_attendance = Attendance.query.filter(
+            Attendance.pupil_id == pupil_id,
+            Attendance.attendance_date >= month_start,
+            Attendance.attendance_date <= today
+        ).all()
+
+        # Termly attendance (current academic year - approximate 3 months)
+        term_start = today - timedelta(days=90)
+        termly_attendance = Attendance.query.filter(
+            Attendance.pupil_id == pupil_id,
+            Attendance.attendance_date >= term_start,
+            Attendance.attendance_date <= today
+        ).all()
+
+        def calculate_stats(attendance_records):
+            if not attendance_records:
+                return {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
+            present = sum(1 for a in attendance_records if a.status == 'present')
+            absent = sum(1 for a in attendance_records if a.status == 'absent')
+            total = present + absent
+            percentage = round((present / total * 100), 1) if total > 0 else 0
+            return {
+                'present': present,
+                'absent': absent,
+                'total': total,
+                'percentage': percentage
+            }
+
+        return {
+            'daily': calculate_stats(daily_attendance),
+            'weekly': calculate_stats(weekly_attendance),
+            'termly': calculate_stats(termly_attendance)
+        }
+    except Exception as e:
+        print(f"Error calculating attendance summary: {e}")
+        return {
+            'daily': {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0},
+            'weekly': {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0},
+            'termly': {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
+        }
