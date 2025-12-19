@@ -145,50 +145,6 @@
       <!-- Settings Form -->
       <form method="POST" id="settingsForm">
         <div class="row g-3">
-          <!-- General Settings -->
-          <div class="col-12 col-md-6">
-            <div class="card shadow-sm settings-card">
-              <div class="card-header bg-primary text-white">
-                <h6 class="mb-0">
-                  <i class="bi bi-sliders me-2"></i>
-                  General Settings
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="mb-3">
-                  <label class="form-label">Currency</label>
-                  <select class="form-select" name="currency">
-                    <option value="KES" {% if settings.general.currency == 'KES' %}selected{% endif %}>KES (Kenyan Shilling)</option>
-                    <option value="UGX" {% if settings.general.currency == 'UGX' %}selected{% endif %}>UGX (Ugandan Shilling)</option>
-                    <option value="TZS" {% if settings.general.currency == 'TZS' %}selected{% endif %}>TZS (Tanzanian Shilling)</option>
-                    <option value="USD" {% if settings.general.currency == 'USD' %}selected{% endif %}>USD (US Dollar)</option>
-                    <option value="EUR" {% if settings.general.currency == 'EUR' %}selected{% endif %}>EUR (Euro)</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Current Academic Year</label>
-                  <select class="form-select" name="academic_year">
-                    <option value="">Select Academic Year</option>
-                    {% for year in academic_years %}
-                    <option value="{{ year.name }}" {% if settings.general.academic_year == year.name %}selected{% endif %}>
-                      {{ year.name }} ({{ year.start_year }}-{{ year.end_year }})
-                    </option>
-                    {% endfor %}
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Timezone</label>
-                  <select class="form-select" name="timezone">
-                    <option value="Africa/Nairobi" {% if settings.general.timezone == 'Africa/Nairobi' %}selected{% endif %}>East Africa Time (EAT)</option>
-                    <option value="Africa/Kampala" {% if settings.general.timezone == 'Africa/Kampala' %}selected{% endif %}>East Africa Time (EAT) - Kampala</option>
-                    <option value="Africa/Dar_es_Salaam" {% if settings.general.timezone == 'Africa/Dar_es_Salaam' %}selected{% endif %}>East Africa Time (EAT) - Dar es Salaam</option>
-                    <option value="UTC" {% if settings.general.timezone == 'UTC' %}selected{% endif %}>UTC</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Notification Settings -->
           <div class="col-12 col-md-6">
             <div class="card shadow-sm settings-card">

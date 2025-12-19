@@ -1480,17 +1480,6 @@ def settings():
         print(f"DEBUG: Form data: {dict(request.form)}")
         # Handle form submission
         try:
-            # General settings
-            school_name = request.form.get('school_name', '')
-            abbr_name = request.form.get('abbreviated_school_name', '')
-            print(f"DEBUG: Saving school_name='{school_name}', abbreviated_school_name='{abbr_name}'")
-            
-            SystemSetting.upsert_setting('general', 'school_name', school_name)
-            SystemSetting.upsert_setting('general', 'abbreviated_school_name', abbr_name)
-            SystemSetting.upsert_setting('general', 'currency', request.form.get('currency', 'KES'))
-            SystemSetting.upsert_setting('general', 'academic_year', request.form.get('academic_year', ''))
-            SystemSetting.upsert_setting('general', 'timezone', request.form.get('timezone', 'Africa/Nairobi'))
-
             # Notification settings
             SystemSetting.upsert_setting('notifications', 'email_notifications', request.form.get('email_notifications') == 'on')
             SystemSetting.upsert_setting('notifications', 'payment_reminders', request.form.get('payment_reminders') == 'on')
@@ -1532,12 +1521,6 @@ def settings():
 
     # Set defaults if not found
     defaults = {
-        'general': {
-            'school_name': '',
-            'currency': 'KES',
-            'academic_year': '',
-            'timezone': 'Africa/Nairobi'
-        },
         'notifications': {
             'email_notifications': False,
             'payment_reminders': True,
@@ -1569,4 +1552,4 @@ def settings():
     # Fetch academic years for dropdown
     academic_years = AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
 
-    return render_template('bursar/settings.html', settings=settings_data, academic_years=academic_years)
+    return render_template('bursar/settings.html', settings=settings_data)

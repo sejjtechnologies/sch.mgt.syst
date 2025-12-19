@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>System Settings - Admin</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     <style>
       /* Custom styles for better mobile experience */
       .form-control, .form-select {
@@ -100,6 +103,8 @@
         height: 80px; /* Reserve space for navbar */
       }
     </style>
+
+  </head>
 
   <body class="bg-light">
 
@@ -330,8 +335,6 @@
       </div>
     </main>
 
-    {% include 'base.html' %}
-
     <!-- Bootstrap Confirmation Modal -->
     <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -363,7 +366,6 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       // Global variables for modal callbacks
       let confirmCallback = null;
@@ -559,5 +561,7 @@
         subtree: true
       });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
