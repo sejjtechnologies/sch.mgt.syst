@@ -146,3 +146,18 @@ def delete_user(user_id):
     db.session.commit()
     flash('User deleted successfully')
     return redirect(url_for('admin.list_users'))
+
+
+@admin_bp.route('/system_settings', methods=['GET', 'POST'])
+def system_settings():
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        # Handle form submission for technical settings
+        # For now, just flash a message
+        flash('System settings updated successfully')
+        return redirect(url_for('admin.system_settings'))
+
+    return render_template('admin/system_settings.html')

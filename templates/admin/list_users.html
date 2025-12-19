@@ -194,6 +194,11 @@
             </div>
           </div>
 
+          <!-- Search Bar -->
+          <div class="px-3 py-2 border-bottom">
+            <input type="text" id="userSearch" class="form-control form-control-sm" placeholder="Search users by name, email, role, or status..." style="max-width: 400px;">
+          </div>
+
           <div class="table-responsive">
             <table class="table table-striped align-middle mb-0">
               <thead class="table-light">
@@ -277,6 +282,21 @@
         var deleteForm = deleteModal.querySelector('#deleteForm');
         modalUserName.textContent = userName;
         deleteForm.action = '/admin/delete_user/' + userId;
+      });
+
+      // Search functionality
+      document.getElementById('userSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        tableRows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
       });
     </script>
 
