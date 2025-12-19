@@ -67,10 +67,13 @@
               {% set results = results if results is defined else [] %}
               {% include 'bursar/_fee_search_results.html' with context %}
 
+              <div id="pupil-data" data-assigned='{{ assigned_by_year|tojson|safe }}' data-current-year='{{ current_year.id if current_year else "" }}' style="display:none;"></div>
+
               <script>
-                // assigned_by_year provided by server
-                const assignedByYear = {{ assigned_by_year|tojson | safe }};
-                const currentYearId = {{ current_year.id if current_year else 'null' }};
+                // assigned_by_year provided by server (from data attribute)
+                const meta = document.getElementById('pupil-data');
+                const assignedByYear = (meta && meta.dataset.assigned) ? JSON.parse(meta.dataset.assigned) : {};
+                const currentYearId = meta && meta.dataset.currentYear ? (parseInt(meta.dataset.currentYear,10) || null) : null;
 
                 function formatCurrency(n){
                   try{
