@@ -238,7 +238,7 @@
               <td>{{ p.enrollment_status or '' }}</td>
               <td>{{ p.created_at or '' }}</td>
               <td><a href="{{ url_for('secretary.edit_pupil', id=p.id) }}" class="btn btn-sm btn-primary">Edit</a></td>
-              <td><form method="post" action="{{ url_for('secretary.delete_pupil', id=p.id) }}" style="display:inline;"><button type="submit" onclick="return confirm('Are you sure you want to delete this pupil?')" class="btn btn-sm btn-danger">Delete</button></form></td>
+              <td><button onclick="deletePupil({{ p.id }}, '{{ p.first_name }} {{ p.last_name }}')" class="btn btn-sm btn-danger">Delete</button></td>
             </tr>
             {% else %}
             <tr><td colspan="18" class="text-center">No pupils registered</td></tr>
@@ -279,6 +279,50 @@
 
       // Search container is now always sticky below fixed navbar
       // No additional scroll handling needed
+
+      // Global variables for modal callbacks
+      let confirmCallback = null;
+
+      function showConfirmationModal(message, confirmText, confirmClass, callback) {
+        document.getElementById('confirmationMessage').textContent = message;
+        const confirmButton = document.getElementById('confirmButton');
+        confirmButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>' + confirmText;
+        confirmButton.className = `btn ${confirmClass}`;
+        confirmCallback = callback;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        modal.show();
+      }
+
+      function executeConfirmation() {
+        if (confirmCallback) {
+          confirmCallback();
+          confirmCallback = null;
+        }
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        modal.hide();
+      }
+
+      function deletePupil(pupilId, pupilName) {
+        showConfirmationModal(
+          `Are you sure you want to delete "${pupilName}"? This action cannot be undone.`,
+          'Delete Pupil',
+          'btn-danger',
+          function() {
+            // Create and submit form
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = `/secretary/delete_pupil/${pupilId}`;
+            document.body.appendChild(form);
+            form.submit();
+          }
+        );
+      }
+
+      // Initialize modal event listeners
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('confirmButton').addEventListener('click', executeConfirmation);
+      });
     </script>
 
     </main>
@@ -286,5 +330,29 @@
     <footer class="mt-auto">
     {% include 'base.html' %}
     </footer>
+
+    <!-- Bootstrap Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+          <div class="modal-header bg-danger text-white" style="border-radius: 15px 15px 0 0; border-bottom: none;">
+            <h5 class="modal-title" id="confirmationModalLabel">
+              <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center py-4">
+            <i class="bi bi-question-circle text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p id="confirmationMessage" class="mb-0 fs-5"></p>
+          </div>
+          <div class="modal-footer justify-content-center" style="border-top: none; padding-bottom: 2rem;">
+            <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal" style="min-width: 100px;">
+              <i class="bi bi-x-circle me-1"></i>Cancel
+            </button>
+            <button type="button" id="confirmButton" class="btn" style="min-width: 100px;"></button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

@@ -1,8 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from models.user import User, db
 from models.bursar import BursarSettings
 from models.system_settings import SystemSetting
 from werkzeug.security import generate_password_hash
+import os
+import shutil
+from datetime import datetime
+import zipfile
+from io import BytesIO
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -194,6 +199,9 @@ def system_settings():
             SystemSetting.upsert_setting('security', 'cors_enabled', enable_cors)
 
             db.session.commit()
+            # Invalidate settings cache
+            from utils.settings import SystemSettings
+            SystemSettings.invalidate_cache()
             flash('System settings updated successfully', 'success')
         except Exception as e:
             db.session.rollback()
@@ -208,3 +216,145 @@ def system_settings():
         settings[setting.key] = setting.typed_value
 
     return render_template('admin/system_settings.html', settings=settings)
+
+
+@admin_bp.route('/create_backup', methods=['POST'])
+def create_backup():
+    """Create a manual database backup"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    try:
+        # Create backups directory if it doesn't exist
+        backup_dir = os.path.join(os.getcwd(), 'backups')
+        os.makedirs(backup_dir, exist_ok=True)
+
+        # Generate backup filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_filename = f'backup_{timestamp}.zip'
+        backup_path = os.path.join(backup_dir, backup_filename)
+
+        # Create zip file containing database and important files
+        with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # Add database file if using SQLite
+            db_url = os.getenv('DATABASE_URL') or os.getenv('SQLALCHEMY_DATABASE_URI')
+            if db_url and 'sqlite' in db_url:
+                db_path = db_url.replace('sqlite:///', '')
+                if os.path.exists(db_path):
+                    zipf.write(db_path, 'database.db')
+
+            # Add migrations directory
+            if os.path.exists('migrations'):
+                for root, dirs, files in os.walk('migrations'):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, os.getcwd())
+                        zipf.write(file_path, arcname)
+
+            # Add instance directory (contains uploaded files, etc.)
+            if os.path.exists('instance'):
+                for root, dirs, files in os.walk('instance'):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, os.getcwd())
+                        zipf.write(file_path, arcname)
+
+            # Add a README file with backup info
+            readme_content = f"""School Management System Backup
+Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Database: {'SQLite' if db_url and 'sqlite' in db_url else 'External Database'}
+
+This backup contains:
+- Database schema and data (if using SQLite)
+- Migration files
+- Uploaded files and documents
+
+To restore:
+1. Extract this zip file
+2. If using SQLite, replace the database.db file
+3. Run database migrations if needed
+4. Restore any uploaded files to the instance directory
+"""
+            zipf.writestr('README.txt', readme_content)
+
+        return jsonify({
+            'success': True,
+            'message': 'Backup created successfully',
+            'filename': backup_filename,
+            'size': os.path.getsize(backup_path)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error creating backup: {str(e)}'}), 500
+
+
+@admin_bp.route('/list_backups')
+def list_backups():
+    """List all available backups"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    try:
+        backup_dir = os.path.join(os.getcwd(), 'backups')
+        if not os.path.exists(backup_dir):
+            return jsonify({'success': True, 'backups': []})
+
+        backups = []
+        for filename in os.listdir(backup_dir):
+            if filename.endswith('.zip'):
+                file_path = os.path.join(backup_dir, filename)
+                stat = os.stat(file_path)
+                backups.append({
+                    'filename': filename,
+                    'size': stat.st_size,
+                    'created': datetime.fromtimestamp(stat.st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+                    'size_formatted': f"{stat.st_size / (1024*1024):.2f} MB"
+                })
+
+        # Sort by creation time (newest first)
+        backups.sort(key=lambda x: x['created'], reverse=True)
+
+        return jsonify({'success': True, 'backups': backups})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error listing backups: {str(e)}'}), 500
+
+
+@admin_bp.route('/download_backup/<filename>')
+def download_backup(filename):
+    """Download a specific backup file"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    try:
+        backup_dir = os.path.join(os.getcwd(), 'backups')
+        file_path = os.path.join(backup_dir, filename)
+
+        if not os.path.exists(file_path):
+            return jsonify({'success': False, 'message': 'Backup file not found'}), 404
+
+        return send_file(file_path, as_attachment=True, download_name=filename)
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error downloading backup: {str(e)}'}), 500
+
+
+@admin_bp.route('/delete_backup/<filename>', methods=['DELETE'])
+def delete_backup(filename):
+    """Delete a specific backup file"""
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    try:
+        backup_dir = os.path.join(os.getcwd(), 'backups')
+        file_path = os.path.join(backup_dir, filename)
+
+        if not os.path.exists(file_path):
+            return jsonify({'success': False, 'message': 'Backup file not found'}), 404
+
+        os.remove(file_path)
+
+        return jsonify({'success': True, 'message': 'Backup deleted successfully'})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error deleting backup: {str(e)}'}), 500

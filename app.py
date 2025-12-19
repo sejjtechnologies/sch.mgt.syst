@@ -136,33 +136,42 @@ def check_maintenance_mode():
     if not SYSTEM_CONFIGURED:
         return  # Skip for unconfigured systems
 
-    # Skip maintenance check for static files, service worker, and debug routes
-    if request.path.startswith('/static/') or request.path in ['/sw.js', '/favicon.ico', '/debug', '/db-test']:
+    # Skip maintenance check for static files, service worker, debug routes, login, logout, and admin routes
+    if (request.path.startswith('/static/') or
+        request.path.startswith('/admin/') or
+        request.path in ['/sw.js', '/favicon.ico', '/debug', '/db-test', '/login', '/logout', '/']):
         return
 
     try:
         from utils.settings import SystemSettings
         maintenance_mode = SystemSettings.get_maintenance_mode()
+        user_role = session.get('user_role', '').lower()
+        print(f"DEBUG: Maintenance check - path: {request.path}, maintenance_mode: {maintenance_mode}, user_role: {user_role}")
         if maintenance_mode:
-            # Check if user is logged in and is admin
-            user_role = session.get('user_role', '').lower()
-            if user_role != 'admin':
-                # Get maintenance message
-                maintenance_message = SystemSettings.get_maintenance_message()
-                return render_template('maintenance.html', maintenance_message=maintenance_message)
+            # Allow admin users access to all routes, even in maintenance mode
+            if user_role == 'admin':
+                return
+            # Block non-admin users
+            maintenance_message = SystemSettings.get_maintenance_message()
+            print(f"DEBUG: Blocking access for non-admin user")
+            return render_template('maintenance.html', maintenance_message=maintenance_message)
     except Exception as e:
         print(f"⚠ Could not check maintenance mode: {e}")
         # If we can't check maintenance mode, allow access to prevent lockout
 
 @app.route("/debug")
 def debug():
+    from utils.settings import SystemSettings
     return {
         "SYSTEM_CONFIGURED": SYSTEM_CONFIGURED,
         "DATABASE_URL_SET": bool(os.getenv("DATABASE_URL")),
         "SECRET_KEY_SET": bool(os.getenv("SECRET_KEY")),
         "DATABASE_URL_PREFIX": os.getenv("DATABASE_URL", "")[:20] + "..." if os.getenv("DATABASE_URL") else "Not set",
         "FLASK_ENV": os.getenv("FLASK_ENV", "Not set"),
-        "VERCEL_ENV": os.getenv("VERCEL_ENV", "Not set")
+        "VERCEL_ENV": os.getenv("VERCEL_ENV", "Not set"),
+        "MAINTENANCE_MODE": SystemSettings.get_maintenance_mode(),
+        "MAINTENANCE_MESSAGE": SystemSettings.get_maintenance_message(),
+        "SESSION_USER_ROLE": session.get('user_role', 'Not set')
     }
 
 @app.route("/")

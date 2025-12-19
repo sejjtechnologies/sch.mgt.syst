@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Maintenance - {{ system_settings.abbreviated_school_name }}</title>
+    <title>System Maintenance - {{ system_settings.abbreviated_school_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -13,36 +13,377 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       }
+
+      .maintenance-container {
+        animation: fadeInUp 0.8s ease-out;
+      }
+
       .maintenance-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255,255,255,0.2);
+        overflow: hidden;
       }
+
+      .maintenance-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+      }
+
+      .maintenance-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+      }
+
       .maintenance-icon {
-        font-size: 4rem;
-        color: #667eea;
+        font-size: 4.5rem;
+        color: #ffffff;
         margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      }
+
+      .maintenance-body {
+        padding: 2.5rem 2rem;
+        text-align: center;
+      }
+
+      .maintenance-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+
+      .maintenance-message {
+        font-size: 1.1rem;
+        color: #4a5568;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .technical-alert {
+        background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+        border: 1px solid #e53e3e;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .technical-icon {
+        font-size: 2rem;
+        color: #e53e3e;
+        animation: bounce 1s infinite;
+      }
+
+      .technical-text {
+        font-weight: 600;
+        color: #c53030;
+        margin: 0;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-try-again {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-try-again:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+      }
+
+      .btn-contact {
+        background: rgba(113, 128, 150, 0.1);
+        border: 2px solid #a0aec0;
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #4a5568;
+        transition: all 0.3s ease;
+      }
+
+      .btn-logout {
+        background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 12px 30px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+      }
+
+      .btn-logout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(229, 62, 62, 0.4);
+        color: white;
+        background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+      }
+
+      .footer-text {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-5px);
+        }
+        60% {
+          transform: translateY(-3px);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .maintenance-body {
+          padding: 2rem 1.5rem;
+        }
+
+        .maintenance-title {
+          font-size: 1.8rem;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn-try-again, .btn-logout, .btn-contact {
+          width: 100%;
+          max-width: 280px;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container maintenance-container">
       <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-8">
           <div class="card maintenance-card border-0">
-            <div class="card-body text-center p-5">
+            <!-- Header Section -->
+            <div class="maintenance-header">
               <div class="maintenance-icon">
                 <i class="bi bi-tools"></i>
               </div>
-              <h2 class="card-title mb-3">System Maintenance</h2>
-              <p class="card-text text-muted mb-4">{{ maintenance_message }}</p>
-              <small class="text-muted">Please check back later. We apologize for any inconvenience.</small>
+              <h1 class="maintenance-title">System Maintenance</h1>
+            </div>
+
+            <!-- Body Section -->
+            <div class="maintenance-body">
+              <!-- Technical Alert -->
+              <div class="technical-alert">
+                <div class="technical-icon">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <p class="technical-text">Technical maintenance in progress</p>
+              </div>
+
+              <!-- Maintenance Message -->
+              <div class="maintenance-message">
+                {{ maintenance_message }}
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="action-buttons">
+                <button class="btn btn-try-again" onclick="tryAgain()">
+                  <i class="bi bi-arrow-clockwise me-2"></i>
+                  Try Again
+                </button>
+                <button class="btn btn-logout" onclick="logout()">
+                  <i class="bi bi-box-arrow-right me-2"></i>
+                  Logout
+                </button>
+                <button class="btn btn-contact" onclick="contactSupport()">
+                  <i class="bi bi-envelope me-2"></i>
+                  Contact Support
+                </button>
+              </div>
+
+              <!-- Footer Text -->
+              <div class="footer-text">
+                <i class="bi bi-info-circle me-1"></i>
+                Our team is working to resolve this issue. Please check back later or contact support if you need immediate assistance.
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Bootstrap Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+          <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0; border-bottom: none;">
+            <h5 class="modal-title" id="confirmationModalLabel">
+              <i class="bi bi-question-circle me-2"></i>
+              Confirm Action
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center p-4">
+            <div class="mb-3">
+              <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+            </div>
+            <p class="mb-0" id="confirmationMessage" style="font-size: 1.1rem; color: #4a5568;"></p>
+          </div>
+          <div class="modal-footer justify-content-center" style="border-top: none; padding: 1.5rem;">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 25px; padding: 8px 25px; margin: 0 5px;">
+              <i class="bi bi-x-circle me-1"></i>
+              Cancel
+            </button>
+            <button type="button" class="btn" id="confirmButton" style="border-radius: 25px; padding: 8px 25px; margin: 0 5px;">
+              <i class="bi bi-check-circle me-1"></i>
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global variables for modal callbacks
+      let confirmCallback = null;
+
+      function showConfirmationModal(message, confirmText, confirmClass, callback) {
+        document.getElementById('confirmationMessage').textContent = message;
+        const confirmButton = document.getElementById('confirmButton');
+        confirmButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>' + confirmText;
+        confirmButton.className = `btn ${confirmClass}`;
+        confirmCallback = callback;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        modal.show();
+      }
+
+      function executeConfirmation() {
+        if (confirmCallback) {
+          confirmCallback();
+          confirmCallback = null;
+        }
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+        modal.hide();
+      }
+
+      // Initialize modal event listeners
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('confirmButton').addEventListener('click', executeConfirmation);
+      });
+
+      function tryAgain() {
+        // Add loading animation
+        const button = event.target.closest('.btn-try-again');
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Refreshing...';
+        button.disabled = true;
+
+        // Refresh the page after a short delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+
+      function logout() {
+        showConfirmationModal(
+          'Are you sure you want to logout? You will be redirected to the login page.',
+          'Logout',
+          'btn-danger',
+          function() {
+            // Add loading animation
+            const button = document.querySelector('.btn-logout');
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Logging out...';
+            button.disabled = true;
+
+            // Redirect to logout endpoint
+            window.location.href = '/user/logout';
+          }
+        );
+      }
+
+      function contactSupport() {
+        // You can customize this to open a support email or modal
+        const subject = encodeURIComponent('System Maintenance - Need Assistance');
+        const body = encodeURIComponent('Hello,\n\nI am experiencing issues accessing the system due to maintenance. Please provide an update on when the system will be available.\n\nThank you.');
+        window.location.href = `mailto:support@school.com?subject=${subject}&body=${body}`;
+      }
+
+      // Auto-refresh every 30 seconds as a fallback
+      setTimeout(() => {
+        showConfirmationModal(
+          'Still experiencing maintenance? Click OK to refresh the page.',
+          'Refresh Page',
+          'btn-primary',
+          function() {
+            window.location.reload();
+          }
+        );
+      }, 30000);
+    </script>
   </body>
 </html>
