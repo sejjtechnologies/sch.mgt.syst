@@ -25,9 +25,11 @@
   <body>
     <nav class="navbar d-flex align-items-center">
       <div class="container-fluid">
-        <a class="navbar-brand text-white" href="/">{{ system_settings.abbreviated_school_name }} — Edit Pupils</a>
-        <div class="ms-auto d-flex align-items-center">
+        <a class="navbar-brand text-white d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="height: 32px; width: auto;">
+          {{ system_settings.abbreviated_school_name }} — Edit Pupils
+        </a>
+        <div class="ms-auto">
           <a href="{{ url_for('secretary.manage_pupils') }}" class="btn btn-light btn-sm d-flex align-items-center">
             <i class="bi bi-box-arrow-left me-2"></i>Back
           </a>
