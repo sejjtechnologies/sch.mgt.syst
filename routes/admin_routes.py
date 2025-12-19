@@ -163,6 +163,19 @@ def system_settings():
 
     if request.method == 'POST':
         try:
+            # General Settings
+            school_name = request.form.get('school_name', '')
+            abbreviated_school_name = request.form.get('abbreviated_school_name', '')
+            currency = request.form.get('currency', 'KES')
+            academic_year = request.form.get('academic_year', '')
+            timezone = request.form.get('timezone', 'Africa/Nairobi')
+
+            SystemSetting.upsert_setting('general', 'school_name', school_name)
+            SystemSetting.upsert_setting('general', 'abbreviated_school_name', abbreviated_school_name)
+            SystemSetting.upsert_setting('general', 'currency', currency)
+            SystemSetting.upsert_setting('general', 'academic_year', academic_year)
+            SystemSetting.upsert_setting('general', 'timezone', timezone)
+
             # Maintenance Mode
             maintenance_mode = request.form.get('maintenance_mode') == 'on'
             maintenance_message = request.form.get('maintenance_message', 'System is under maintenance. Please try again later.')
@@ -215,7 +228,11 @@ def system_settings():
     for setting in all_settings:
         settings[setting.key] = setting.typed_value
 
-    return render_template('admin/system_settings.html', settings=settings)
+    # Fetch academic years for dropdown
+    from models.register_pupil import AcademicYear
+    academic_years = AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
+
+    return render_template('admin/system_settings.html', settings=settings, academic_years=academic_years)
 
 
 @admin_bp.route('/create_backup', methods=['POST'])

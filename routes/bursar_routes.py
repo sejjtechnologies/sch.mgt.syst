@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 import uuid
-from models import db, FeeCategory, FeeStructure, StudentFee, Payment, PaymentMethod, Pupil, AcademicYear, SchoolClass, User, Stream, Term, BursarSettings
+from models import db, FeeCategory, FeeStructure, StudentFee, Payment, PaymentMethod, Pupil, AcademicYear, SchoolClass, User, Stream, Term, BursarSettings, SystemSetting
 from utils.settings import SystemSettings
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_, or_
@@ -8,11 +8,12 @@ import pytz
 
 bursar_bp = Blueprint('bursar', __name__, url_prefix='/bursar')
 
-# Require bursar role for all routes
+# Require bursar role for all routes (but allow admin access)
 def bursar_required(f):
     def wrapper(*args, **kwargs):
         print(f"BURSAR CHECK: user_id in session={('user_id' in session)}, user_role={session.get('user_role', 'None')}")  # Debug print
-        if 'user_id' not in session or session.get('user_role', '').lower() != 'bursar':
+        user_role = session.get('user_role', '').lower()
+        if 'user_id' not in session or (user_role != 'bursar' and user_role != 'admin'):
             print("BURSAR CHECK FAILED: Redirecting to index")  # Debug print
             flash('Access denied')
             return redirect(url_for('index'))
@@ -1475,36 +1476,43 @@ def delete_payment_method(method_id):
 def settings():
     """Bursar settings page"""
     if request.method == 'POST':
+        print(f"DEBUG: POST request to bursar settings")
+        print(f"DEBUG: Form data: {dict(request.form)}")
         # Handle form submission
         try:
             # General settings
-            BursarSettings.upsert_setting('general', 'school_name', request.form.get('school_name', ''))
-            BursarSettings.upsert_setting('general', 'abbreviated_school_name', request.form.get('abbreviated_school_name', ''))
-            BursarSettings.upsert_setting('general', 'currency', request.form.get('currency', 'KES'))
-            BursarSettings.upsert_setting('general', 'academic_year', request.form.get('academic_year', ''))
-            BursarSettings.upsert_setting('general', 'timezone', request.form.get('timezone', 'Africa/Nairobi'))
+            school_name = request.form.get('school_name', '')
+            abbr_name = request.form.get('abbreviated_school_name', '')
+            print(f"DEBUG: Saving school_name='{school_name}', abbreviated_school_name='{abbr_name}'")
+            
+            SystemSetting.upsert_setting('general', 'school_name', school_name)
+            SystemSetting.upsert_setting('general', 'abbreviated_school_name', abbr_name)
+            SystemSetting.upsert_setting('general', 'currency', request.form.get('currency', 'KES'))
+            SystemSetting.upsert_setting('general', 'academic_year', request.form.get('academic_year', ''))
+            SystemSetting.upsert_setting('general', 'timezone', request.form.get('timezone', 'Africa/Nairobi'))
 
             # Notification settings
-            BursarSettings.upsert_setting('notifications', 'email_notifications', request.form.get('email_notifications') == 'on')
-            BursarSettings.upsert_setting('notifications', 'payment_reminders', request.form.get('payment_reminders') == 'on')
-            BursarSettings.upsert_setting('notifications', 'overdue_alerts', request.form.get('overdue_alerts') == 'on')
-            BursarSettings.upsert_setting('notifications', 'reminder_days', int(request.form.get('reminder_days', 7)))
+            SystemSetting.upsert_setting('notifications', 'email_notifications', request.form.get('email_notifications') == 'on')
+            SystemSetting.upsert_setting('notifications', 'payment_reminders', request.form.get('payment_reminders') == 'on')
+            SystemSetting.upsert_setting('notifications', 'overdue_alerts', request.form.get('overdue_alerts') == 'on')
+            SystemSetting.upsert_setting('notifications', 'reminder_days', int(request.form.get('reminder_days', 7)))
 
             # Security settings
-            BursarSettings.upsert_setting('security', 'password_min_length', int(request.form.get('password_min_length', 8)))
-            BursarSettings.upsert_setting('security', 'session_timeout', int(request.form.get('session_timeout', 30)))
-            BursarSettings.upsert_setting('security', 'two_factor_auth', request.form.get('two_factor_auth') == 'on')
-            BursarSettings.upsert_setting('security', 'login_attempts', int(request.form.get('login_attempts', 5)))
+            SystemSetting.upsert_setting('security', 'password_min_length', int(request.form.get('password_min_length', 8)))
+            SystemSetting.upsert_setting('security', 'session_timeout', int(request.form.get('session_timeout', 30)))
+            SystemSetting.upsert_setting('security', 'two_factor_auth', request.form.get('two_factor_auth') == 'on')
+            SystemSetting.upsert_setting('security', 'login_attempts', int(request.form.get('login_attempts', 5)))
 
             # Report settings
-            BursarSettings.upsert_setting('reports', 'default_format', request.form.get('default_format', 'pdf'))
-            BursarSettings.upsert_setting('reports', 'auto_generate', request.form.get('auto_generate') == 'on')
-            BursarSettings.upsert_setting('reports', 'include_charts', request.form.get('include_charts') == 'on')
-            BursarSettings.upsert_setting('reports', 'report_frequency', request.form.get('report_frequency', 'monthly'))
+            SystemSetting.upsert_setting('reports', 'default_format', request.form.get('default_format', 'pdf'))
+            SystemSetting.upsert_setting('reports', 'auto_generate', request.form.get('auto_generate') == 'on')
+            SystemSetting.upsert_setting('reports', 'include_charts', request.form.get('include_charts') == 'on')
+            SystemSetting.upsert_setting('reports', 'report_frequency', request.form.get('report_frequency', 'monthly'))
 
             db.session.commit()
             # Invalidate system settings cache
             SystemSettings.invalidate_cache()
+            print(f"DEBUG: Settings committed and cache invalidated")
             flash('Settings saved successfully!', 'success')
         except Exception as e:
             db.session.rollback()
@@ -1516,7 +1524,7 @@ def settings():
     settings_data = {}
 
     # Load all settings from database
-    all_settings = BursarSettings.query.filter_by(is_active=True).all()
+    all_settings = SystemSetting.query.filter_by(is_active=True).all()
     for setting in all_settings:
         if setting.category not in settings_data:
             settings_data[setting.category] = {}

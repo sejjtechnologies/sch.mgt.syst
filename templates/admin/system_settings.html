@@ -5,9 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>System Settings - Admin</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  </head>
+    <style>
+      /* Custom styles for better mobile experience */
+      .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e1e5e9;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus, .form-select:focus {
+        border-color: #6c5ce7;
+        box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25);
+      }
+
+      .card {
+        background: linear-gradient(135deg, #fff5f5, #fed7d7) !important;
+        border: 1px solid #feb2b2 !important;
+      }
+
+      .card-header {
+        background: linear-gradient(135deg, #fc8181, #f56565) !important;
+        border-bottom: 1px solid #e53e3e !important;
+      }
+
+      /* Mobile responsive improvements */
+      @media (max-width: 768px) {
+        .container {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+
+        .form-control, .form-select {
+          font-size: 16px; /* Prevents zoom on iOS */
+          padding: 12px 16px;
+        }
+
+        .btn {
+          padding: 12px 24px;
+          font-size: 16px;
+        }
+
+        .card-body {
+          padding: 1.5rem 1rem;
+        }
+
+        .row {
+          --bs-gutter-x: 0.5rem;
+        }
+
+        .col-md-4, .col-md-6 {
+          margin-bottom: 1rem;
+        }
+
+        .card {
+          margin: 0.5rem;
+          border-radius: 8px;
+        }
+
+        .form-label {
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+
+        .card-header h5 {
+          font-size: 1.1rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .col-md-6 {
+          margin-bottom: 1rem;
+        }
+
+        .card-body {
+          padding: 1rem;
+        }
+
+        .btn-group {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .btn-group .btn {
+          width: 100%;
+        }
+
+        .navbar-fixed-top-spacer {
+          height: 70px; /* Smaller navbar height for very small screens */
+        }
+      }
+
+      /* Ensure navbar doesn't overlap content */
+      .navbar-fixed-top-spacer {
+        height: 80px; /* Reserve space for navbar */
+      }
+    </style>
 
   <body class="bg-light">
 
@@ -29,14 +121,15 @@
     </nav>
 
     <!-- MAIN CONTENT -->
-    <main class="container py-4" style="padding-top: 100px;">
+    <div class="navbar-fixed-top-spacer"></div>
+    <main class="container py-4" id="main-content">
       <!-- Bootstrap Alerts Container -->
       <div id="alerts-container"></div>
 
       <div class="row justify-content-center">
         <div class="col-lg-8">
-          <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+          <div class="card shadow-sm" style="border: none; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #fff5f5, #fed7d7); border: 1px solid #feb2b2;">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #fc8181, #f56565); border-bottom: 1px solid #e53e3e;">
               <h5 class="mb-0">
                 <i class="bi bi-gear me-2"></i>
                 System Settings
@@ -44,6 +137,54 @@
             </div>
             <div class="card-body">
               <form method="POST">
+                <!-- General Settings -->
+                <div class="mb-4">
+                  <h6 class="fw-bold text-primary mb-3">
+                    <i class="bi bi-building me-2"></i>
+                    General Settings
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label class="form-label">School Name</label>
+                      <input type="text" class="form-control" name="school_name" value="{{ settings.get('school_name', '') }}" placeholder="">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Abbreviated School Name</label>
+                      <input type="text" class="form-control" name="abbreviated_school_name" value="{{ settings.get('abbreviated_school_name', '') }}" placeholder="">
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-4">
+                      <label class="form-label">Currency</label>
+                      <select class="form-select" name="currency">
+                        <option value="KES" {% if settings.get('currency') == 'KES' %}selected{% endif %}>KES (Kenyan Shilling)</option>
+                        <option value="UGX" {% if settings.get('currency') == 'UGX' %}selected{% endif %}>UGX (Ugandan Shilling)</option>
+                        <option value="TZS" {% if settings.get('currency') == 'TZS' %}selected{% endif %}>TZS (Tanzanian Shilling)</option>
+                        <option value="USD" {% if settings.get('currency') == 'USD' %}selected{% endif %}>USD (US Dollar)</option>
+                        <option value="EUR" {% if settings.get('currency') == 'EUR' %}selected{% endif %}>EUR (Euro)</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Current Academic Year</label>
+                      <select class="form-select" name="academic_year">
+                        <option value="">Select Academic Year</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year.name }}" {% if settings.get('academic_year') == year.name %}selected{% endif %}>{{ year.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Timezone</label>
+                      <select class="form-select" name="timezone">
+                        <option value="Africa/Nairobi" {% if settings.get('timezone') == 'Africa/Nairobi' %}selected{% endif %}>East Africa (Nairobi)</option>
+                        <option value="Africa/Kampala" {% if settings.get('timezone') == 'Africa/Kampala' %}selected{% endif %}>East Africa (Kampala)</option>
+                        <option value="Africa/Dar_es_Salaam" {% if settings.get('timezone') == 'Africa/Dar_es_Salaam' %}selected{% endif %}>East Africa (Dar es Salaam)</option>
+                        <option value="UTC" {% if settings.get('timezone') == 'UTC' %}selected{% endif %}>UTC</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Maintenance Mode -->
                 <div class="mb-4">
                   <h6 class="fw-bold text-primary mb-3">
@@ -389,6 +530,33 @@
       // Load backups on page load
       document.addEventListener('DOMContentLoaded', function() {
         loadBackups();
+      });
+
+      // Dynamic navbar spacing
+      function adjustNavbarSpacing() {
+        const navbar = document.querySelector('.navbar');
+        const spacer = document.querySelector('.navbar-fixed-top-spacer');
+        const mainContent = document.getElementById('main-content');
+
+        if (navbar && spacer) {
+          const navbarHeight = navbar.offsetHeight;
+          spacer.style.height = navbarHeight + 'px';
+          mainContent.style.paddingTop = '1rem'; // Add small additional padding
+        }
+      }
+
+      // Adjust spacing on load
+      adjustNavbarSpacing();
+
+      // Adjust spacing on window resize
+      window.addEventListener('resize', adjustNavbarSpacing);
+
+      // Adjust spacing after any dynamic content changes
+      const observer = new MutationObserver(adjustNavbarSpacing);
+      observer.observe(document.querySelector('.navbar'), {
+        attributes: true,
+        childList: true,
+        subtree: true
       });
     </script>
   </body>

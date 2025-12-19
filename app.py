@@ -100,32 +100,29 @@ def inject_system_settings():
     print(f"DEBUG: Context processor called for request to {request.path}")
     if SYSTEM_CONFIGURED:
         try:
-            from utils.settings import SystemSettings
+            from models.system_settings import SystemSetting
+            # Load settings directly from database
+            school_name_setting = SystemSetting.query.filter_by(category='general', key='school_name', is_active=True).first()
+            abbr_name_setting = SystemSetting.query.filter_by(category='general', key='abbreviated_school_name', is_active=True).first()
+            
+            school_name = school_name_setting.typed_value if school_name_setting else ''
+            abbr_name = abbr_name_setting.typed_value if abbr_name_setting else ''
+            
+            print(f"DEBUG: Loaded school_name='{school_name}', abbr_name='{abbr_name}'")
+            
             settings = {
                 'system_settings': {
-                    'school_name': SystemSettings.get_school_name(),
-                    'abbreviated_school_name': SystemSettings.get_abbreviated_school_name(),
-                    'currency': SystemSettings.get_currency(),
-                    'academic_year': SystemSettings.get_academic_year(),
-                    'timezone': SystemSettings.get_timezone(),
-                    'email_notifications': SystemSettings.get_email_notifications_enabled(),
-                    'payment_reminders': SystemSettings.get_payment_reminders_enabled(),
-                    'overdue_alerts': SystemSettings.get_overdue_alerts_enabled(),
-                    'reminder_days': SystemSettings.get_reminder_days(),
-                    'password_min_length': SystemSettings.get_password_min_length(),
-                    'session_timeout': SystemSettings.get_session_timeout(),
-                    'two_factor_auth': SystemSettings.get_two_factor_auth_enabled(),
-                    'login_attempts': SystemSettings.get_login_attempts_limit(),
-                    'default_report_format': SystemSettings.get_default_report_format(),
-                    'auto_generate_reports': SystemSettings.get_auto_generate_reports(),
-                    'include_charts': SystemSettings.get_include_charts_in_reports(),
-                    'report_frequency': SystemSettings.get_report_frequency()
+                    'school_name': school_name,
+                    'abbreviated_school_name': abbr_name,
+                    # Add other settings as needed
                 }
             }
             print(f"DEBUG: Returning settings: {settings['system_settings']['school_name']}")
             return settings
         except Exception as e:
             print(f"⚠ Could not load system settings: {e}")
+            import traceback
+            traceback.print_exc()
             return {'system_settings': {}}
     return {'system_settings': {}}
 

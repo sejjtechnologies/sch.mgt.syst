@@ -156,14 +156,6 @@
               </div>
               <div class="card-body">
                 <div class="mb-3">
-                  <label class="form-label">School Name</label>
-                  <input type="text" class="form-control" name="school_name" value="{{ settings.general.school_name }}" placeholder="Enter school name">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Abbreviated School Name</label>
-                  <input type="text" class="form-control" name="abbreviated_school_name" value="{{ settings.general.abbreviated_school_name }}" placeholder="e.g., Katojo P.Sch">
-                </div>
-                <div class="mb-3">
                   <label class="form-label">Currency</label>
                   <select class="form-select" name="currency">
                     <option value="KES" {% if settings.general.currency == 'KES' %}selected{% endif %}>KES (Kenyan Shilling)</option>
@@ -387,6 +379,7 @@
           input.addEventListener('input', function() {
             const min = parseInt(this.min);
             const max = parseInt(this.max);
+
             const value = parseInt(this.value);
 
             if (value < min) this.value = min;
@@ -396,13 +389,8 @@
 
         // Settings preview
         function updatePreview() {
-          const schoolName = document.querySelector('input[name="school_name"]').value;
           const currency = document.querySelector('select[name="currency"]').value;
-
-          // Update page title if school name is set
-          if (schoolName) {
-            document.title = `${schoolName} - Bursar Settings`;
-          }
+          // Preview logic can be added here if needed
         }
 
         // Update preview on input changes
