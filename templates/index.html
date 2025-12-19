@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>Welcome — School Manager</title>
+    <title>Welcome — {{ system_settings.school_name or 'School Manager' }}</title>
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
@@ -414,7 +414,7 @@
               <div class="logo">
                 <i class="bi bi-mortarboard" style="color: #fff;"></i>
               </div>
-              <span style="white-space: nowrap;">School Manager</span>
+              <span style="white-space: nowrap;">{{ system_settings.school_name or 'School Manager' }}</span>
             </a>
             <div class="d-none d-md-flex align-items-center text-white small" style="gap: 0.5rem;">
               <i class="bi bi-check-circle"></i>
@@ -429,7 +429,7 @@
         <div class="d-flex align-items-center">
           <i class="bi bi-download me-2" style="font-size: 1.2rem;"></i>
           <div>
-            <strong>Install School Manager</strong>
+            <strong>Install {{ system_settings.school_name or 'School Manager' }}</strong>
             <p class="mb-0">Get the full app experience! Install now for offline access and better performance.</p>
           </div>
         </div>
@@ -445,7 +445,7 @@
           <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-danger text-white border-0">
               <h5 class="modal-title fw-bold mx-auto" id="installModalLabel">
-                <i class="bi bi-rocket-takeoff me-2"></i>Install School Manager
+                <i class="bi bi-rocket-takeoff me-2"></i>Install {{ system_settings.school_name or 'School Manager' }}
               </h5>
               <button type="button" class="btn-close btn-close-white position-absolute end-0 me-3" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -472,7 +472,7 @@
 
           <div class="hero-right">
             <div class="school-branding">
-              <h1 class="school-name-title">Greenfield Primary School</h1>
+              <h1 class="school-name-title">{{ system_settings.school_name or 'School Manager' }}</h1>
               <p class="school-motto-text">Imagine More. Build More.</p>
             </div>
             <div class="login-card">

@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   </head>
   <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
@@ -205,8 +205,8 @@
                       {{ data.fee_status }}
                     </span>
                   </td>
-                  <td style="font-size: 0.85rem;">UGX {{ "{:,.0f}".format(data.total_paid or 0) }}</td>
-                  <td style="font-size: 0.85rem;">UGX {{ "{:,.0f}".format(data.outstanding or 0) }}</td>
+                  <td style="font-size: 0.85rem;">{{ "{:,.0f}".format(data.total_paid or 0) }} {{ system_settings.currency }}</td>
+                  <td style="font-size: 0.85rem;">{{ "{:,.0f}".format(data.outstanding or 0) }} {{ system_settings.currency }}</td>
                   <td>
                     <a href="{{ url_for('bursar.edit_payments', pupil_id=data.student.id) }}" class="btn btn-outline-primary btn-sm px-2 py-1" title="Edit Payments" style="font-size: 0.8rem;">
                       <i class="fas fa-edit"></i> Edit
@@ -267,7 +267,7 @@
                 </div>
               </div>
               <div class="mb-3">
-                <label class="form-label">Amount (UGX)</label>
+                <label class="form-label">Amount ({{ system_settings.currency }})</label>
                 <input type="number" class="form-control" id="paymentAmount" step="0.01" min="0" required>
               </div>
               <div class="mb-3">
@@ -373,5 +373,6 @@
         });
       });
     </script>
+    {% include 'base.html' %}
   </body>
 </html>

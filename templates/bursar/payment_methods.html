@@ -48,11 +48,8 @@
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
         <h2 class="mb-0" style="font-size: 1.5rem;">
           <i class="fas fa-credit-card me-2"></i>
-          Payment Methods Management
+          Payment Methods
         </h2>
-        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addMethodModal">
-          <i class="fas fa-plus me-1"></i>Add Method
-        </button>
       </div>
 
       <div class="card shadow-sm">
@@ -65,7 +62,6 @@
                     <th style="font-size: 0.9rem;">Method Name</th>
                     <th style="font-size: 0.9rem;">Status</th>
                     <th style="font-size: 0.9rem;">Usage Count</th>
-                    <th style="font-size: 0.9rem;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -79,18 +75,6 @@
                     </td>
                     <td style="font-size: 0.85rem;">
                       {{ method.usage_count }}
-                    </td>
-                    <td>
-                      <button class="btn btn-outline-primary btn-sm px-2 py-1 me-1" onclick="editMethod({{ method.id }}, '{{ method.name }}', {{ method.is_active|lower }})">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      {% if method.usage_count == 0 %}
-                      <form method="POST" action="{{ url_for('bursar.delete_payment_method', method_id=method.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payment method?')">
-                        <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1">
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </form>
-                      {% endif %}
                     </td>
                   </tr>
                   {% endfor %}
@@ -108,58 +92,8 @@
       </div>
     </main>
 
-    <!-- Add/Edit Method Modal -->
-    <div class="modal fade" id="addMethodModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle">Add Payment Method</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form id="methodForm" method="POST" action="{{ url_for('bursar.save_payment_method') }}">
-              <input type="hidden" name="method_id" id="methodId">
-              <div class="mb-3">
-                <label class="form-label">Method Name</label>
-                <input type="text" class="form-control" name="name" id="methodName" required>
-              </div>
-              <div class="mb-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" name="is_active" id="methodActive" checked>
-                  <label class="form-check-label" for="methodActive">
-                    Active (available for new payments)
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" form="methodForm" class="btn btn-success">Save Method</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      function editMethod(id, name, isActive) {
-        document.getElementById('modalTitle').textContent = 'Edit Payment Method';
-        document.getElementById('methodId').value = id;
-        document.getElementById('methodName').value = name;
-        document.getElementById('methodActive').checked = isActive;
-
-        const modal = new bootstrap.Modal(document.getElementById('addMethodModal'));
-        modal.show();
-      }
-
-      // Reset modal when closed
-      document.getElementById('addMethodModal').addEventListener('hidden.bs.modal', function() {
-        document.getElementById('modalTitle').textContent = 'Add Payment Method';
-        document.getElementById('methodForm').reset();
-        document.getElementById('methodId').value = '';
-      });
-
       // Auto-hide flash messages after 2 seconds
       document.addEventListener('DOMContentLoaded', function() {
         const alerts = document.querySelectorAll('.alert');
@@ -170,5 +104,6 @@
         });
       });
     </script>
+    {% include 'base.html' %}
   </body>
 </html>

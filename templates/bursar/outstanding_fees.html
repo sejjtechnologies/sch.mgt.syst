@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   </head>
   <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
@@ -29,7 +29,7 @@
       </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="container-fluid px-2 px-md-3 py-3">
       <div class="row">
         <div class="col-12">
           <div class="card shadow-sm">
@@ -66,10 +66,10 @@
                   <label class="form-label">Amount Range</label>
                   <select class="form-select" id="amountFilter" name="amount_range">
                     <option value="">All Amounts</option>
-                    <option value="0-50000" {% if amount_filter == '0-50000' %}selected{% endif %}>Under 50,000 UGX</option>
-                    <option value="50000-100000" {% if amount_filter == '50000-100000' %}selected{% endif %}>50,000 - 100,000 UGX</option>
-                    <option value="100000-200000" {% if amount_filter == '100000-200000' %}selected{% endif %}>100,000 - 200,000 UGX</option>
-                    <option value="200000+" {% if amount_filter == '200000+' %}selected{% endif %}>Over 200,000 UGX</option>
+                    <option value="0-50000" {% if amount_filter == '0-50000' %}selected{% endif %}>Under 50,000 {{ system_settings.currency }}</option>
+                    <option value="50000-100000" {% if amount_filter == '50000-100000' %}selected{% endif %}>50,000 - 100,000 {{ system_settings.currency }}</option>
+                    <option value="100000-200000" {% if amount_filter == '100000-200000' %}selected{% endif %}>100,000 - 200,000 {{ system_settings.currency }}</option>
+                    <option value="200000+" {% if amount_filter == '200000+' %}selected{% endif %}>Over 200,000 {{ system_settings.currency }}</option>
                   </select>
                 </div>
 
@@ -90,7 +90,7 @@
                     <div class="card-body text-center">
                       <h6 class="card-title">Total Outstanding</h6>
                       <h4 class="mb-0">{{ "{:,.0f}".format(outstanding_data | sum(attribute='outstanding_amount')) if outstanding_data else 0 }}</h4>
-                      <small>UGX</small>
+                      <small>{{ system_settings.currency }}</small>
                     </div>
                   </div>
                 </div>
@@ -110,7 +110,7 @@
                     <div class="card-body text-center">
                       <h6 class="card-title">Average Debt</h6>
                       <h4 class="mb-0">{{ "{:,.0f}".format((outstanding_data | sum(attribute='outstanding_amount')) / outstanding_data | length) if outstanding_data else 0 }}</h4>
-                      <small>UGX per student</small>
+                      <small>{{ system_settings.currency }} per student</small>
                     </div>
                   </div>
                 </div>
@@ -155,7 +155,7 @@
                             All Terms
                           {% endif %}
                         </td>
-                        <td>{{ "{:,.0f}".format(data.outstanding_amount) }} UGX</td>
+                        <td>{{ "{:,.0f}".format(data.outstanding_amount) }} {{ system_settings.currency }}</td>
                         <td>{{ data.due_date }}</td>
                         <td>
                           <span class="badge {{ 'bg-danger' if data.days_overdue > 30 else 'bg-warning' if data.days_overdue > 14 else 'bg-secondary' }}">
@@ -238,7 +238,7 @@
                 <input type="text" class="form-control" id="paymentStudentName" readonly>
               </div>
               <div class="mb-3">
-                <label class="form-label">Amount (UGX)</label>
+                <label class="form-label">Amount ({{ system_settings.currency }})</label>
                 <input type="number" class="form-control" id="paymentAmount" step="0.01" min="0" required>
               </div>
               <div class="mb-3">
@@ -336,5 +336,6 @@
         });
       });
     </script>
+    {% include 'base.html' %}
   </body>
 </html>

@@ -8,6 +8,7 @@ from datetime import datetime
 import pytz
 import re
 from collections import defaultdict
+from utils.settings import SystemSettings
 
 headteacher_bp = Blueprint('headteacher', __name__, url_prefix='/headteacher')
 
@@ -136,7 +137,7 @@ def view_assignments():
             TeacherAssignment.created_at
         ).all()
 
-    east_africa_tz = pytz.timezone('Africa/Nairobi')
+    system_tz = pytz.timezone(SystemSettings.get_timezone())
     formatted_assignments = []
 
     for assignment in assignments:
@@ -145,8 +146,8 @@ def view_assignments():
         if date_to_format:
             if date_to_format.tzinfo is None:
                 date_to_format = pytz.utc.localize(date_to_format)
-            east_africa_time = date_to_format.astimezone(east_africa_tz)
-            formatted_date = east_africa_time.strftime('%b %d, %Y %I:%M %p')
+            system_time = date_to_format.astimezone(system_tz)
+            formatted_date = system_time.strftime('%b %d, %Y %I:%M %p')
         else:
             formatted_date = 'N/A'
 

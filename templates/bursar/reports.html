@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.css" rel="stylesheet">
   </head>
   <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
@@ -33,7 +33,7 @@
       </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="container-fluid px-2 px-md-3 py-3">
       <div class="row">
         <div class="col-12">
           <div class="card shadow-sm">
@@ -45,9 +45,9 @@
             </div>
             <div class="card-body">
               <!-- Report Filters -->
-              <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                  <label class="form-label">Report Type</label>
+              <div class="row g-2 g-md-3 mb-4">
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label class="form-label" style="font-size: 0.9rem;">Report Type</label>
                   <select class="form-select" id="reportType">
                     <option value="payments">Payment Summary</option>
                     <option value="outstanding">Outstanding Fees</option>
@@ -56,16 +56,17 @@
                   </select>
                 </div>
 
-                <div class="col-md-3">
-                  <label class="form-label">Academic Year</label>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label class="form-label" style="font-size: 0.9rem;">Academic Year</label>
                   <select class="form-select" id="academicYear">
-                    <option value="{{ current_year }}">{{ current_year }}</option>
-                    <option value="{{ current_year - 1 }}">{{ current_year - 1 }}</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.id }}" {% if year.is_active %}selected{% endif %}>{{ year.name }}</option>
+                    {% endfor %}
                   </select>
                 </div>
 
-                <div class="col-md-3">
-                  <label class="form-label">Term</label>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label class="form-label" style="font-size: 0.9rem;">Term</label>
                   <select class="form-select" id="term">
                     <option value="">All Terms</option>
                     {% for term in terms %}
@@ -74,10 +75,10 @@
                   </select>
                 </div>
 
-                <div class="col-md-3">
-                  <label class="form-label">&nbsp;</label>
+                <div class="col-12 col-sm-6 col-md-3">
+                  <label class="form-label" style="font-size: 0.9rem;">&nbsp;</label>
                   <div class="d-grid">
-                    <button class="btn btn-primary" id="generateReport">
+                    <button class="btn btn-primary btn-sm" id="generateReport">
                       <i class="fas fa-search me-2"></i>
                       Generate Report
                     </button>
@@ -101,7 +102,7 @@
                             <tr>
                               <th>Term</th>
                               <th>Total Payments</th>
-                              <th>Amount (UGX)</th>
+                              <th>Amount ({{ system_settings.currency }})</th>
                             </tr>
                           </thead>
                           <tbody id="paymentsTableBody">
@@ -192,15 +193,19 @@
               </div>
 
               <!-- Export Options -->
-              <div class="mt-4 text-center">
-                <button class="btn btn-outline-primary me-2" id="exportPDF">
-                  <i class="fas fa-file-pdf me-2"></i>
-                  Export PDF
-                </button>
-                <button class="btn btn-outline-success" id="exportExcel">
-                  <i class="fas fa-file-excel me-2"></i>
-                  Export Excel
-                </button>
+              <div class="mt-4">
+                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center justify-content-md-start">
+                  <button class="btn btn-outline-primary btn-sm" id="exportPDF">
+                    <i class="bi bi-filetype-pdf me-1"></i>
+                    <span class="d-none d-sm-inline">Export PDF</span>
+                    <span class="d-sm-none">PDF</span>
+                  </button>
+                  <button class="btn btn-outline-success btn-sm" id="exportExcel">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                    <span class="d-none d-sm-inline">Export Excel</span>
+                    <span class="d-sm-none">Excel</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -252,164 +257,210 @@
       }
 
       function generatePaymentsReport(year, term) {
-        // Mock data
-        const data = [
-          { term: 'Term 1', payments: 150, amount: 4500000 },
-          { term: 'Term 2', payments: 145, amount: 4350000 },
-          { term: 'Term 3', payments: 148, amount: 4440000 }
-        ];
+        // Fetch data from API
+        let url = '/bursar/api/payment_summary?academic_year=' + year;
+        if (term) url += '&term=' + term;
 
-        // Update table
-        const tbody = document.getElementById('paymentsTableBody');
-        tbody.innerHTML = data.map(row => `
-          <tr>
-            <td>${row.term}</td>
-            <td>${row.payments}</td>
-            <td>${row.amount.toLocaleString()}</td>
-          </tr>
-        `).join('');
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            // Update table
+            const tbody = document.getElementById('paymentsTableBody');
+            if (data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No payment data available</td></tr>';
+              return;
+            }
 
-        // Update chart
-        if (currentChart) currentChart.destroy();
-        const ctx = document.getElementById('paymentsChart').getContext('2d');
-        currentChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: data.map(d => d.term),
-            datasets: [{
-              label: 'Amount (UGX)',
-              data: data.map(d => d.amount),
-              backgroundColor: 'rgba(54, 162, 235, 0.5)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return value.toLocaleString();
+            tbody.innerHTML = data.map(row => `
+              <tr>
+                <td>${row.term}</td>
+                <td>${row.payments}</td>
+                <td>${row.amount.toLocaleString()}</td>
+              </tr>
+            `).join('');
+
+            // Update chart
+            if (currentChart) currentChart.destroy();
+            const ctx = document.getElementById('paymentsChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: data.map(d => d.term),
+                datasets: [{
+                  label: 'Amount ({{ system_settings.currency }})',
+                  data: data.map(d => d.amount),
+                  backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return value.toLocaleString();
+                      }
+                    }
                   }
                 }
               }
-            }
-          }
-        });
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching payment summary:', error);
+            document.getElementById('paymentsTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error loading data</td></tr>';
+          });
       }
 
       function generateOutstandingReport(year, term) {
-        // Mock data
-        const data = [
-          { name: 'John Doe', class: 'P.1', amount: 50000, dueDate: '2024-02-15' },
-          { name: 'Jane Smith', class: 'P.2', amount: 75000, dueDate: '2024-02-20' }
-        ];
+        // Fetch data from API
+        let url = '/bursar/api/outstanding_fees?academic_year=' + year;
+        if (term) url += '&term=' + term;
 
-        const tbody = document.getElementById('outstandingTableBody');
-        tbody.innerHTML = data.map(row => `
-          <tr>
-            <td>${row.name}</td>
-            <td>${row.class}</td>
-            <td>${row.amount.toLocaleString()}</td>
-            <td>${row.dueDate}</td>
-            <td>
-              <button class="btn btn-sm btn-warning" onclick="sendReminder('${row.name}')">
-                <i class="fas fa-bell"></i>
-              </button>
-            </td>
-          </tr>
-        `).join('');
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('outstandingTableBody');
+            if (data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No outstanding fees</td></tr>';
+              return;
+            }
+
+            tbody.innerHTML = data.map(row => `
+              <tr>
+                <td>${row.name}</td>
+                <td>${row.class_name}</td>
+                <td>${row.outstanding_amount.toLocaleString()}</td>
+                <td>${row.due_date}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning" onclick="sendReminder('${row.name}')">
+                    <i class="fas fa-bell"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          })
+          .catch(error => {
+            console.error('Error fetching outstanding fees:', error);
+            document.getElementById('outstandingTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>';
+          });
       }
 
       function generateRevenueReport(year, term) {
-        // Mock data
-        const totalRevenue = 13290000;
-        const avgRevenue = 442333;
-        const collectionRate = '95.2%';
+        // Fetch data from API
+        let url = '/bursar/api/revenue_analysis?academic_year=' + year;
+        if (term) url += '&term=' + term;
 
-        document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString();
-        document.getElementById('avgRevenue').textContent = avgRevenue.toLocaleString();
-        document.getElementById('collectionRate').textContent = collectionRate;
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('totalRevenue').textContent = data.total_revenue.toLocaleString();
+            document.getElementById('avgRevenue').textContent = data.avg_revenue.toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('collectionRate').textContent = data.collection_rate.toFixed(1) + '%';
 
-        // Revenue chart
-        if (currentChart) currentChart.destroy();
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        currentChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-              label: 'Monthly Revenue',
-              data: [1000000, 1100000, 1050000, 1200000, 1150000, 1300000, 1250000, 1400000, 1350000, 1500000, 1450000, 1600000],
-              borderColor: 'rgba(75, 192, 192, 1)',
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              tension: 0.1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return value.toLocaleString();
+            // Revenue chart
+            if (currentChart) currentChart.destroy();
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: data.monthly_labels,
+                datasets: [{
+                  label: 'Monthly Revenue',
+                  data: data.monthly_data,
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  tension: 0.1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return value.toLocaleString();
+                      }
+                    }
                   }
                 }
               }
-            }
-          }
-        });
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching revenue analysis:', error);
+            document.getElementById('totalRevenue').textContent = 'Error';
+            document.getElementById('avgRevenue').textContent = 'Error';
+            document.getElementById('collectionRate').textContent = 'Error';
+          });
       }
 
       function generateClassReport(year, term) {
-        // Mock data
-        const data = [
-          { class: 'P.1', students: 45, expected: 2250000, collected: 2100000, percentage: 93.3 },
-          { class: 'P.2', students: 42, expected: 2100000, collected: 2000000, percentage: 95.2 },
-          { class: 'P.3', students: 38, expected: 1900000, collected: 1800000, percentage: 94.7 }
-        ];
+        // Fetch data from API
+        let url = '/bursar/api/class_collection?academic_year=' + year;
+        if (term) url += '&term=' + term;
 
-        // Update table
-        const tbody = document.getElementById('classTableBody');
-        tbody.innerHTML = data.map(row => `
-          <tr>
-            <td>${row.class}</td>
-            <td>${row.students}</td>
-            <td>${row.expected.toLocaleString()}</td>
-            <td>${row.collected.toLocaleString()}</td>
-            <td>${row.percentage}%</td>
-          </tr>
-        `).join('');
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            // Update table
+            const tbody = document.getElementById('classTableBody');
+            if (data.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No class data available</td></tr>';
+              return;
+            }
 
-        // Update chart
-        if (currentChart) currentChart.destroy();
-        const ctx = document.getElementById('classChart').getContext('2d');
-        currentChart = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: data.map(d => d.class),
-            datasets: [{
-              data: data.map(d => d.percentage),
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 205, 86, 0.5)'
-              ],
-              borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 205, 86, 1)'
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true
-          }
-        });
+            tbody.innerHTML = data.map(row => `
+              <tr>
+                <td>${row.class}</td>
+                <td>${row.students}</td>
+                <td>${row.expected.toLocaleString()}</td>
+                <td>${row.collected.toLocaleString()}</td>
+                <td>${row.percentage}%</td>
+              </tr>
+            `).join('');
+
+            // Update chart
+            if (currentChart) currentChart.destroy();
+            const ctx = document.getElementById('classChart').getContext('2d');
+            currentChart = new Chart(ctx, {
+              type: 'doughnut',
+              data: {
+                labels: data.map(d => d.class),
+                datasets: [{
+                  data: data.map(d => d.percentage),
+                  backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 205, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)'
+                  ],
+                  borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                  ],
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true
+              }
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching class collection:', error);
+            document.getElementById('classTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>';
+          });
       }
 
       function sendReminder(studentName) {
@@ -417,12 +468,84 @@
       }
 
       // Export functions
+      function exportToCSV(filename = 'report.csv') {
+        const reportType = document.getElementById('reportType').value;
+        let csv = '';
+        let headers = [];
+        let rows = [];
+
+        if (reportType === 'payments') {
+          headers = ['Term', 'Total Payments', 'Amount ({{ system_settings.currency }})'];
+          rows = Array.from(document.querySelectorAll('#paymentsTableBody tr')).map(row => {
+            return Array.from(row.querySelectorAll('td')).map(cell => '"' + cell.textContent.replace(/"/g, '""') + '"').join(',');
+          });
+        } else if (reportType === 'outstanding') {
+          headers = ['Student Name', 'Class', 'Outstanding Amount', 'Due Date'];
+          rows = Array.from(document.querySelectorAll('#outstandingTableBody tr')).filter(row => row.querySelectorAll('td').length >= 4).map(row => {
+            return Array.from(row.querySelectorAll('td')).slice(0, 4).map(cell => '"' + cell.textContent.replace(/"/g, '""') + '"').join(',');
+          });
+        } else if (reportType === 'revenue') {
+          headers = ['Metric', 'Value'];
+          rows = [
+            '"Total Revenue","' + document.getElementById('totalRevenue').textContent + '"',
+            '"Average per Student","' + document.getElementById('avgRevenue').textContent + '"',
+            '"Collection Rate","' + document.getElementById('collectionRate').textContent + '"'
+          ];
+        } else if (reportType === 'class') {
+          headers = ['Class', 'Students', 'Total Expected', 'Total Collected', '% Collected'];
+          rows = Array.from(document.querySelectorAll('#classTableBody tr')).map(row => {
+            return Array.from(row.querySelectorAll('td')).map(cell => '"' + cell.textContent.replace(/"/g, '""') + '"').join(',');
+          });
+        }
+
+        csv = headers.map(h => '"' + h + '"').join(',') + '\n' + rows.join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      function exportToPDF() {
+        const reportType = document.getElementById('reportType').value;
+        let printWindow = window.open('', '', 'height=600,width=800');
+        let content = '<html><head><title>Report</title>';
+        content += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">';
+        content += '<style>body { font-family: Arial, sans-serif; margin: 20px; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #007bff; color: white; }</style>';
+        content += '</head><body>';
+        content += '<h2>' + document.getElementById(reportType + 'Report').querySelector('h6').textContent + '</h2>';
+
+        if (reportType === 'revenue') {
+          content += '<div class="card p-3"><p><strong>Total Revenue:</strong> ' + document.getElementById('totalRevenue').textContent + '</p>';
+          content += '<p><strong>Average per Student:</strong> ' + document.getElementById('avgRevenue').textContent + '</p>';
+          content += '<p><strong>Collection Rate:</strong> ' + document.getElementById('collectionRate').textContent + '</p></div>';
+        } else {
+          content += document.querySelector('#' + reportType + 'Report .table-responsive').innerHTML;
+        }
+
+        content += '<p style="margin-top: 30px; font-size: 12px; color: #666;">Generated on ' + new Date().toLocaleString() + '</p>';
+        content += '</body></html>';
+
+        printWindow.document.write(content);
+        printWindow.document.close();
+        setTimeout(() => {
+          printWindow.print();
+        }, 250);
+      }
+
+      // Export button handlers
       document.getElementById('exportPDF').addEventListener('click', function() {
-        alert('PDF export functionality would be implemented here');
+        exportToPDF();
       });
 
       document.getElementById('exportExcel').addEventListener('click', function() {
-        alert('Excel export functionality would be implemented here');
+        const reportType = document.getElementById('reportType').value;
+        exportToCSV('report_' + reportType + '_' + new Date().toISOString().split('T')[0] + '.csv');
       });
 
       // Initialize with default report
@@ -430,5 +553,6 @@
         document.getElementById('generateReport').click();
       });
     </script>
+    {% include 'base.html' %}
   </body>
 </html>

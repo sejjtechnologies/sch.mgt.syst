@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Settings - Bursar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+      /* Mobile optimizations */
+      @media (max-width: 576px) {
+        .container-fluid {
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+        }
+        .card-body {
+          padding: 0.75rem 0.5rem;
+        }
+        .form-label {
+          font-size: 0.875rem;
+          margin-bottom: 0.25rem;
+        }
+        .btn {
+          font-size: 0.875rem;
+          padding: 0.5rem 1rem;
+        }
+        /* Force 2-column layout even on mobile */
+        .col-12.col-md-6 {
+          flex: 0 0 50% !important;
+          max-width: 50% !important;
+        }
+      }
+
+      /* Reduce card sizes */
+      .card {
+        margin-bottom: 1rem;
+      }
+      .card-body {
+        padding: 1rem 0.75rem;
+      }
+
+      /* Reduce input field sizes */
+      .form-select, .form-control {
+        border-radius: 6px;
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+        height: calc(1.5em + 0.75rem + 2px);
+      }
+
+      /* Reduce label sizes */
+      .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+        h2 {
+          font-size: 1.25rem !important;
+        }
+        .navbar-brand span {
+          display: none;
+        }
+      }
+
+      /* Settings cards */
+      .settings-card {
+        transition: transform 0.2s ease-in-out;
+      }
+      .settings-card:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Form controls */
+      .form-select, .form-control {
+        border-radius: 6px;
+      }
+
+      /* Loading state */
+      .btn-loading {
+        position: relative;
+        color: transparent !important;
+      }
+      .btn-loading::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Success animation */
+      @keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      .btn-success-saved {
+        animation: successPulse 0.6s ease-in-out;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
+      <div class="container-fluid px-2 px-md-3">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
+          <span class="d-none d-sm-inline">Bursar</span>
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-1 gap-md-2">
+          <a href="{{ url_for('bursar.dashboard') }}" class="btn btn-light btn-sm d-flex align-items-center">
+            <i class="bi bi-speedometer2 me-1"></i>
+            <span class="d-none d-sm-inline">Dashboard</span>
+          </a>
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white d-flex align-items-center px-2 py-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-right me-1" viewBox="0 0 16 16" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-2h-1v2H2V2h8v2h1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8z"/>
+              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H6.5a.5.5 0 0 0 0 1h7.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+            </svg>
+            <span class="d-none d-sm-inline">Logout</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container-fluid px-2 px-md-3 py-3">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+        <h2 class="mb-0" style="font-size: 1.5rem;">
+          <i class="bi bi-gear me-2"></i>
+          Bursar Settings
+        </h2>
+      </div>
+
+      <!-- Settings Form -->
+      <form method="POST" id="settingsForm">
+        <div class="row g-3">
+          <!-- General Settings -->
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                  <i class="bi bi-sliders me-2"></i>
+                  General Settings
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">School Name</label>
+                  <input type="text" class="form-control" name="school_name" value="{{ settings.general.school_name }}" placeholder="Enter school name">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Currency</label>
+                  <select class="form-select" name="currency">
+                    <option value="KES" {% if settings.general.currency == 'KES' %}selected{% endif %}>KES (Kenyan Shilling)</option>
+                    <option value="UGX" {% if settings.general.currency == 'UGX' %}selected{% endif %}>UGX (Ugandan Shilling)</option>
+                    <option value="TZS" {% if settings.general.currency == 'TZS' %}selected{% endif %}>TZS (Tanzanian Shilling)</option>
+                    <option value="USD" {% if settings.general.currency == 'USD' %}selected{% endif %}>USD (US Dollar)</option>
+                    <option value="EUR" {% if settings.general.currency == 'EUR' %}selected{% endif %}>EUR (Euro)</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Current Academic Year</label>
+                  <select class="form-select" name="academic_year">
+                    <option value="">Select Academic Year</option>
+                    {% for year in academic_years %}
+                    <option value="{{ year.name }}" {% if settings.general.academic_year == year.name %}selected{% endif %}>
+                      {{ year.name }} ({{ year.start_year }}-{{ year.end_year }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Timezone</label>
+                  <select class="form-select" name="timezone">
+                    <option value="Africa/Nairobi" {% if settings.general.timezone == 'Africa/Nairobi' %}selected{% endif %}>East Africa Time (EAT)</option>
+                    <option value="Africa/Kampala" {% if settings.general.timezone == 'Africa/Kampala' %}selected{% endif %}>East Africa Time (EAT) - Kampala</option>
+                    <option value="Africa/Dar_es_Salaam" {% if settings.general.timezone == 'Africa/Dar_es_Salaam' %}selected{% endif %}>East Africa Time (EAT) - Dar es Salaam</option>
+                    <option value="UTC" {% if settings.general.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification Settings -->
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                  <i class="bi bi-bell me-2"></i>
+                  Notification Settings
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotifications" {% if settings.notifications.email_notifications %}checked{% endif %}>
+                    <label class="form-check-label" for="emailNotifications">
+                      Email notifications for system events
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="payment_reminders" id="paymentReminders" {% if settings.notifications.payment_reminders %}checked{% endif %}>
+                    <label class="form-check-label" for="paymentReminders">
+                      Payment reminders for overdue fees
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="overdue_alerts" id="overdueAlerts" {% if settings.notifications.overdue_alerts %}checked{% endif %}>
+                    <label class="form-check-label" for="overdueAlerts">
+                      Overdue payment alerts
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Reminder Days Before Due</label>
+                  <input type="number" class="form-control" name="reminder_days" value="{{ settings.notifications.reminder_days }}" min="1" max="30">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-warning text-white">
+                <h6 class="mb-0">
+                  <i class="bi bi-shield-lock me-2"></i>
+                  Security Settings
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Minimum Password Length</label>
+                  <input type="number" class="form-control" name="password_min_length" value="{{ settings.security.password_min_length }}" min="6" max="32">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Session Timeout (minutes)</label>
+                  <input type="number" class="form-control" name="session_timeout" value="{{ settings.security.session_timeout }}" min="5" max="480">
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="two_factor_auth" id="twoFactorAuth" {% if settings.security.two_factor_auth %}checked{% endif %}>
+                    <label class="form-check-label" for="twoFactorAuth">
+                      Enable two-factor authentication
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Maximum Login Attempts</label>
+                  <input type="number" class="form-control" name="login_attempts" value="{{ settings.security.login_attempts }}" min="3" max="10">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Settings -->
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                  <i class="bi bi-graph-up me-2"></i>
+                  Report Settings
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Default Report Format</label>
+                  <select class="form-select" name="default_format">
+                    <option value="pdf" {% if settings.reports.default_format == 'pdf' %}selected{% endif %}>PDF</option>
+                    <option value="excel" {% if settings.reports.default_format == 'excel' %}selected{% endif %}>Excel</option>
+                    <option value="csv" {% if settings.reports.default_format == 'csv' %}selected{% endif %}>CSV</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="auto_generate" id="autoGenerate" {% if settings.reports.auto_generate %}checked{% endif %}>
+                    <label class="form-check-label" for="autoGenerate">
+                      Auto-generate reports
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="include_charts" id="includeCharts" {% if settings.reports.include_charts %}checked{% endif %}>
+                    <label class="form-check-label" for="includeCharts">
+                      Include charts in reports
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Report Generation Frequency</label>
+                  <select class="form-select" name="report_frequency">
+                    <option value="weekly" {% if settings.reports.report_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="monthly" {% if settings.reports.report_frequency == 'monthly' %}selected{% endif %}>Monthly</option>
+                    <option value="quarterly" {% if settings.reports.report_frequency == 'quarterly' %}selected{% endif %}>Quarterly</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="d-flex justify-content-center mt-4">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bi bi-check-circle me-2"></i>Save
+          </button>
+        </div>
+      </form>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show mt-3" role="alert">
+              <small>{{ message }}</small>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const settingsForm = document.getElementById('settingsForm');
+        const submitBtn = settingsForm.querySelector('button[type="submit"]');
+
+        // Auto-hide alerts
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+          setTimeout(() => {
+            if (alert) {
+              alert.style.display = 'none';
+            }
+          }, 3000);
+        });
+
+        // Form submission with loading state
+        settingsForm.addEventListener('submit', function(e) {
+          // Show loading state
+          submitBtn.classList.add('btn-loading');
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+
+          // Let the form submit normally, but show success feedback
+          setTimeout(() => {
+            if (!submitBtn.classList.contains('btn-success-saved')) {
+              submitBtn.classList.remove('btn-loading');
+              submitBtn.classList.add('btn-success-saved');
+              submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved!';
+              submitBtn.disabled = false;
+
+              // Reset after 2 seconds
+              setTimeout(() => {
+                submitBtn.classList.remove('btn-success-saved');
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Save All Settings';
+              }, 2000);
+            }
+          }, 1000);
+        });
+
+        // Real-time validation for number inputs
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+          input.addEventListener('input', function() {
+            const min = parseInt(this.min);
+            const max = parseInt(this.max);
+            const value = parseInt(this.value);
+
+            if (value < min) this.value = min;
+            if (value > max) this.value = max;
+          });
+        });
+
+        // Settings preview
+        function updatePreview() {
+          const schoolName = document.querySelector('input[name="school_name"]').value;
+          const currency = document.querySelector('select[name="currency"]').value;
+
+          // Update page title if school name is set
+          if (schoolName) {
+            document.title = `${schoolName} - Bursar Settings`;
+          }
+        }
+
+        // Update preview on input changes
+        document.querySelectorAll('input, select').forEach(element => {
+          element.addEventListener('input', updatePreview);
+          element.addEventListener('change', updatePreview);
+        });
+
+        // Initialize preview
+        updatePreview();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'base.html' %}
+  </body>
+</html>

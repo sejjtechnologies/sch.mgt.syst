@@ -1,0 +1,78 @@
+{% if results and results|length > 0 %}
+<div class="table-responsive">
+  {% if pupil is defined %}
+  <form method="post" action="{{ url_for('bursar.update_payments', pupil_id=pupil.id) }}">
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Pupil</th>
+        <th>Admission No.</th>
+        <th>Receipt</th>
+        <th style="min-width:120px">Amount</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in results %}
+      <tr data-term="{{ p.term if p.term is defined else '' }}" data-academic-year="{{ p.academic_year_id if p.academic_year_id is defined else '' }}">
+        <td>{{ p.pupil_name }}</td>
+        <td>{{ p.admission_no or '' }}</td>
+        <td>{{ p.receipt_no or '' }}</td>
+        <td>
+          <input type="number" step="0.01" class="form-control form-control-sm" name="payments[{{ p.payment_id }}][amount]" value="{{ p.amount }}">
+          <input type="hidden" name="payments[{{ p.payment_id }}][payment_date]" value="{{ p.date_posted }}">
+          <input type="hidden" name="payments[{{ p.payment_id }}][payment_method]" value="{{ p.payment_method }}">
+          <input type="hidden" name="payments[{{ p.payment_id }}][term]" value="{{ p.term }}">
+          <input type="hidden" name="payments[{{ p.payment_id }}][academic_year_id]" value="{{ p.academic_year_id }}">
+          <input type="hidden" name="payments[{{ p.payment_id }}][notes]" value="{{ p.notes }}">
+        </td>
+        <td>{{ p.date_posted or '' }}</td>
+        <td>
+          {% if p.payment_id %}
+            <a href="{{ url_for('bursar.pupil_payments', pupil_id=p.pupil_id, edit_payment_id=p.payment_id) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+          {% else %}
+            <a href="{{ url_for('bursar.pupil_payments', pupil_id=p.pupil_id) }}" class="btn btn-sm btn-outline-primary me-1">Manage</a>
+          {% endif %}
+          <!-- Inline save handled by outer form -->
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-end mt-2">
+    <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+  </div>
+  </form>
+  {% else %}
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Pupil</th>
+        <th>Admission No.</th>
+        <th>Receipt</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in results %}
+      <tr data-term="{{ p.term if p.term is defined else '' }}" data-academic-year="{{ p.academic_year_id if p.academic_year_id is defined else '' }}">
+        <td>{{ p.pupil_name }}</td>
+        <td>{{ p.admission_no or '' }}</td>
+        <td>{{ p.receipt_no or '' }}</td>
+        <td>{{ p.amount_formatted or p.amount }}</td>
+        <td>{{ p.date_posted or '' }}</td>
+        <td>
+          <a href="{{ url_for('bursar.pupil_payments', pupil_id=p.pupil_id) }}" class="btn btn-sm btn-outline-primary">Manage</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% else %}
+<div class="alert alert-info">No results found.</div>
+{% endif %}

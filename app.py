@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, render_template, send_from_directory
+from flask import Flask, jsonify, render_template, send_from_directory, request
 from flask_migrate import Migrate
 from sqlalchemy import text
 from models import db
@@ -91,8 +91,42 @@ else:
     print("⚠️  Skipping blueprint registration - system not configured")
 
 # ---------------------------------------------------------------------------
-# Routes
+# Context processors for global template variables
 # ---------------------------------------------------------------------------
+
+@app.context_processor
+def inject_system_settings():
+    """Make system settings available in all templates"""
+    print(f"DEBUG: Context processor called for request to {request.path}")
+    if SYSTEM_CONFIGURED:
+        try:
+            from utils.settings import SystemSettings
+            settings = {
+                'system_settings': {
+                    'school_name': SystemSettings.get_school_name(),
+                    'currency': SystemSettings.get_currency(),
+                    'academic_year': SystemSettings.get_academic_year(),
+                    'timezone': SystemSettings.get_timezone(),
+                    'email_notifications': SystemSettings.get_email_notifications_enabled(),
+                    'payment_reminders': SystemSettings.get_payment_reminders_enabled(),
+                    'overdue_alerts': SystemSettings.get_overdue_alerts_enabled(),
+                    'reminder_days': SystemSettings.get_reminder_days(),
+                    'password_min_length': SystemSettings.get_password_min_length(),
+                    'session_timeout': SystemSettings.get_session_timeout(),
+                    'two_factor_auth': SystemSettings.get_two_factor_auth_enabled(),
+                    'login_attempts': SystemSettings.get_login_attempts_limit(),
+                    'default_report_format': SystemSettings.get_default_report_format(),
+                    'auto_generate_reports': SystemSettings.get_auto_generate_reports(),
+                    'include_charts': SystemSettings.get_include_charts_in_reports(),
+                    'report_frequency': SystemSettings.get_report_frequency()
+                }
+            }
+            print(f"DEBUG: Returning settings: {settings['system_settings']['school_name']}")
+            return settings
+        except Exception as e:
+            print(f"⚠ Could not load system settings: {e}")
+            return {'system_settings': {}}
+    return {'system_settings': {}}
 
 @app.route("/debug")
 def debug():

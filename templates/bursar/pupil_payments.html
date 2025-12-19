@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pupil Payments - Bursar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('bursar.dashboard') }}">
+          <i class="bi bi-house-door-fill me-2" style="font-size:1rem;color:#fff;"></i>
+          {{ system_settings.school_name or 'Bursar' }}
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <a href="{{ url_for('bursar.dashboard') }}" class="btn btn-light btn-sm me-2 d-flex align-items-center">
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+          </a>
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white d-flex align-items-center px-2 py-1">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mt-5 pt-4" style="padding-top:75px;">
+      <div class="row">
+        <div class="col-12 col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <strong>Pupil Payments</strong>
+            </div>
+            <div class="card-body">
+              <h5>{{ pupil.first_name }} {{ pupil.last_name }} <small class="text-muted">{{ pupil.admission_number }}</small></h5>
+              <p class="mb-1">Class: {{ classes.get(pupil.class_admitted, 'N/A') }} | Stream: {{ streams.get(pupil.stream, 'N/A') }} | Academic Year: {{ current_year.name if current_year else 'N/A' }}</p>
+              <div class="mb-3">
+                <strong>Assigned:</strong> <span id="assignedAmt">{{ assigned_total_formatted }}</span> &nbsp; <strong>Paid:</strong> <span id="paidAmt">{{ total_paid_formatted }}</span> &nbsp; <strong>Balance:</strong> <span id="balanceAmt">{{ balance_formatted }}</span>
+              </div>
+
+              <h6>Payments</h6>
+              <div class="row mb-2 g-2 align-items-center">
+                <div class="col-auto">
+                  <label class="form-label mb-0 small">Academic Year</label>
+                  <select id="filterAcademicYear" class="form-select form-select-sm">
+                    <option value="">All years</option>
+                    {% for ay in academic_years %}
+                    <option value="{{ ay.id }}" {% if selected_academic_year and ay.id==selected_academic_year %}selected{% elif not selected_academic_year and current_year and ay.id==current_year.id %}selected{% endif %}>{{ ay.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <label class="form-label mb-0 small">Term</label>
+                  <select id="filterTerm" class="form-select form-select-sm">
+                    <option value="">All terms</option>
+                    {% for t in terms %}
+                    <option value="{{ t.term_number }}" {% if selected_term and t.term_number==selected_term %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto align-self-end">
+                  <button id="applyFilters" class="btn btn-outline-secondary btn-sm">Apply</button>
+                  <button id="clearFilters" class="btn btn-outline-secondary btn-sm">Clear</button>
+                </div>
+              </div>
+
+              {% set results = results if results is defined else [] %}
+              {% include 'bursar/_fee_search_results.html' with context %}
+
+              <script>
+                // assigned_by_year provided by server
+                const assignedByYear = {{ assigned_by_year|tojson | safe }};
+                const currentYearId = {{ current_year.id if current_year else 'null' }};
+
+                function formatCurrency(n){
+                  try{
+                    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'UGX', minimumFractionDigits: 2 }).format(n);
+                  }catch(e){
+                    return 'UGX ' + (Number(n).toFixed(2));
+                  }
+                }
+
+                document.addEventListener('DOMContentLoaded', function(){
+                  const applyBtn = document.getElementById('applyFilters');
+                  const clearBtn = document.getElementById('clearFilters');
+                  const termSel = document.getElementById('filterTerm');
+                  const aySel = document.getElementById('filterAcademicYear');
+
+                  function updateSummary(){
+                    const term = termSel.value;
+                    const ay = aySel.value || String(currentYearId || '');
+
+                    // compute paid from visible rows
+                    let paid = 0.0;
+                    const rows = document.querySelectorAll('#feeSearchResults table tbody tr, .table-responsive table tbody tr');
+                    rows.forEach(row => {
+                      if (row.style.display === 'none') return;
+                      const input = row.querySelector('input[type="number"]');
+                      if (input){
+                        const v = parseFloat(input.value) || 0;
+                        paid += v;
+                      } else {
+                        // try to parse amount cell text (4th cell)
+                        const cells = row.querySelectorAll('td');
+                        if (cells && cells.length >= 4){
+                          const text = cells[3].innerText.replace(/[\,\s\u00A0UGX\s]/g,'').trim();
+                          const v = parseFloat(text) || 0;
+                          paid += v;
+                        }
+                      }
+                    });
+
+                    // determine assigned for selected year/term
+                    let assigned = 0.0;
+                    try{
+                      const ayObj = assignedByYear[parseInt(ay)];
+                      if (ayObj){
+                        if (term === '1') assigned = ayObj.term1 || 0;
+                        else if (term === '2') assigned = ayObj.term2 || 0;
+                        else if (term === '3') assigned = ayObj.term3 || 0;
+                        else assigned = ayObj.annual || 0;
+                      }
+                    }catch(e){ assigned = 0; }
+
+                    const balance = Math.max(0, assigned - paid);
+
+                    // update DOM
+                    const assignedEl = document.getElementById('assignedAmt');
+                    const paidEl = document.getElementById('paidAmt');
+                    const balanceEl = document.getElementById('balanceAmt');
+                    if (assignedEl) assignedEl.textContent = formatCurrency(assigned);
+                    if (paidEl) paidEl.textContent = formatCurrency(paid);
+                    if (balanceEl) balanceEl.textContent = formatCurrency(balance);
+                  }
+
+                  function applyFilters() {
+                    const term = termSel.value;
+                    const ay = aySel.value;
+                    const rows = document.querySelectorAll('#feeSearchResults table tbody tr, .table-responsive table tbody tr');
+                    rows.forEach(row => {
+                      const rowTerm = row.getAttribute('data-term') || '';
+                      const rowAy = row.getAttribute('data-academic-year') || '';
+                      let visible = true;
+                      if (term) visible = visible && (rowTerm === term);
+                      if (ay) visible = visible && (rowAy === ay);
+                      row.style.display = visible ? '' : 'none';
+                    });
+                    updateSummary();
+                  }
+
+                  applyBtn && applyBtn.addEventListener('click', applyFilters);
+                  clearBtn && clearBtn.addEventListener('click', function(){
+                    termSel.value = '';
+                    aySel.value = '';
+                    applyFilters();
+                  });
+
+                  // initial summary update
+                  updateSummary();
+                });
+              </script>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card mb-3">
+            <div class="card-header">Add / Edit Payment</div>
+            <div class="card-body">
+              <form method="post" action="{{ url_for('bursar.pupil_payments', pupil_id=pupil.id) }}">
+                <input type="hidden" name="payment_id" value="{{ editing_payment.id if editing_payment else '' }}">
+                <div class="mb-2">
+                  <label class="form-label">Amount</label>
+                  <input name="amount" type="number" step="0.01" class="form-control" value="{{ editing_payment.amount if editing_payment else '' }}" required>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Term</label>
+                  <select name="term" class="form-select">
+                    <option value="1" {% if editing_payment and editing_payment.term==1 %}selected{% endif %}>Term 1</option>
+                    <option value="2" {% if editing_payment and editing_payment.term==2 %}selected{% endif %}>Term 2</option>
+                    <option value="3" {% if editing_payment and editing_payment.term==3 %}selected{% endif %}>Term 3</option>
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Payment Date</label>
+                  <input name="payment_date" type="date" class="form-control" value="{{ editing_payment.payment_date if editing_payment and editing_payment.payment_date else '' }}" required>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Academic Year</label>
+                  <select name="academic_year_id" class="form-select">
+                    {% for ay in academic_years %}
+                      <option value="{{ ay.id }}" {% if current_year and ay.id==current_year.id %}selected{% endif %}>{{ ay.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Payment Method</label>
+                  <select name="payment_method" class="form-select">
+                    {% for m in payment_methods %}
+                      <option value="{{ m.name }}" {% if editing_payment and editing_payment.payment_method==m.name %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Receipt Number</label>
+                  <input name="receipt_number" class="form-control" value="{{ editing_payment.receipt_number if editing_payment else '' }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Transaction Reference</label>
+                  <input name="transaction_reference" class="form-control" value="{{ editing_payment.transaction_reference if editing_payment else '' }}">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Notes</label>
+                  <textarea name="notes" class="form-control">{{ editing_payment.notes if editing_payment else '' }}</textarea>
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary">Save Payment</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'base.html' %}
+  </body>
+</html>
