@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from models import db
-from models.register_pupil import Pupil
-from models.bursar import Payment, StudentFee
+from models.register_pupil import Pupil, AcademicYear
+from models.bursar import Payment, StudentFee, FeeStructure
 from models.attendance import Attendance
 from models.user import User
 from models.school_class import SchoolClass
@@ -45,13 +45,13 @@ def search_pupils():
         # Get class and stream names
         class_name = None
         stream_name = None
-        
+
         if pupil.class_admitted:
-            class_obj = SchoolClass.query.get(pupil.class_admitted)
+            class_obj = db.session.get(SchoolClass, pupil.class_admitted)
             class_name = class_obj.name if class_obj else pupil.class_admitted
-        
+
         if pupil.stream:
-            stream_obj = Stream.query.get(pupil.stream)
+            stream_obj = db.session.get(Stream, pupil.stream)
             stream_name = stream_obj.name if stream_obj else pupil.stream
 
         results.append({
@@ -98,13 +98,13 @@ def get_pupil_details(pupil_id):
     # Get class and stream names
     class_name = None
     stream_name = None
-    
+
     if pupil.class_admitted:
-        class_obj = SchoolClass.query.get(pupil.class_admitted)
+        class_obj = db.session.get(SchoolClass, pupil.class_admitted)
         class_name = class_obj.name if class_obj else pupil.class_admitted
-    
+
     if pupil.stream:
-        stream_obj = Stream.query.get(pupil.stream)
+        stream_obj = db.session.get(Stream, pupil.stream)
         stream_name = stream_obj.name if stream_obj else pupil.stream
 
     pupil_data = {
@@ -124,16 +124,80 @@ def get_pupil_details(pupil_id):
     return jsonify({'success': True, 'pupil': pupil_data})
 
 def get_pupil_fees_balance(pupil_id):
-    """Calculate total fees balance for a pupil"""
+    """Calculate total fees balance for a pupil
+    
+    Balance = Total fees owed - Total payments made
+    
+    If pupil has assigned StudentFee records, calculate from those.
+    Otherwise, calculate from class fee structures.
+    """
     try:
-        # Get all student fees for this pupil
-        student_fees = StudentFee.query.filter_by(pupil_id=pupil_id).all()
+        # Get total payments made by pupil
+        total_paid = db.session.query(db.func.sum(Payment.amount)).filter_by(pupil_id=pupil_id).scalar() or 0.0
 
-        total_balance = 0.0
-        for fee in student_fees:
-            total_balance += fee.balance
+        # Get the pupil
+        pupil = Pupil.query.get(pupil_id)
+        if not pupil:
+            return 0.0
 
-        return round(total_balance, 2)
+        # Check if pupil has assigned student fees
+        student_fees = StudentFee.query.filter_by(pupil_id=pupil_id, is_active=True).all()
+
+        total_owed = 0.0
+
+        if student_fees:
+            # Calculate from assigned student fees
+            for student_fee in student_fees:
+                fee_structure = student_fee.fee_structure
+
+                # Calculate amount owed for each assigned term
+                if student_fee.term1_assigned:
+                    term1_amount = fee_structure.term1_amount - student_fee.term1_exemption
+                    total_owed += max(0, term1_amount)
+
+                if student_fee.term2_assigned:
+                    term2_amount = fee_structure.term2_amount - student_fee.term2_exemption
+                    total_owed += max(0, term2_amount)
+
+                if student_fee.term3_assigned:
+                    term3_amount = fee_structure.term3_amount - student_fee.term3_exemption
+                    total_owed += max(0, term3_amount)
+        else:
+            # No assigned student fees, calculate from class fee structures
+            # Get current academic year (assuming the latest active one)
+            current_academic_year = AcademicYear.query.filter_by(is_active=True).order_by(AcademicYear.id.desc()).first()
+
+            if current_academic_year and pupil.class_admitted:
+                # Get all fee structures for this class/academic year (ignore stream initially)
+                fee_structures = FeeStructure.query.filter_by(
+                    academic_year_id=current_academic_year.id,
+                    class_id=pupil.class_admitted,
+                    is_active=True
+                ).all()
+
+                # Group by stream to find the most appropriate fee structure
+                stream_specific = [fs for fs in fee_structures if fs.stream_id == pupil.stream]
+                if stream_specific:
+                    # Use stream-specific fees
+                    fee_structures = stream_specific
+                else:
+                    # Use class-wide fees (find one stream's fees as representative)
+                    if fee_structures:
+                        # Use fees from the first stream found for this class
+                        first_stream = fee_structures[0].stream_id
+                        fee_structures = [fs for fs in fee_structures if fs.stream_id == first_stream]
+
+                # Sum up all term amounts (assuming all terms are applicable)
+                for fee_structure in fee_structures:
+                    total_owed += fee_structure.term1_amount
+                    total_owed += fee_structure.term2_amount
+                    total_owed += fee_structure.term3_amount
+
+        # Balance = Amount owed - Amount paid
+        balance = total_owed - total_paid
+
+        return round(max(0, balance), 2)  # Don't show negative balances
+
     except Exception as e:
         print(f"Error calculating fees balance: {e}")
         return 0.0
