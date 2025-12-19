@@ -51,6 +51,10 @@ class SystemSettings:
         return cls.get('general', 'school_name', '')
 
     @classmethod
+    def get_abbreviated_school_name(cls):
+        return cls.get('general', 'abbreviated_school_name', '')
+
+    @classmethod
     def get_currency(cls):
         return cls.get('general', 'currency', 'KES')
 

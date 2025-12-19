@@ -104,6 +104,7 @@ def inject_system_settings():
             settings = {
                 'system_settings': {
                     'school_name': SystemSettings.get_school_name(),
+                    'abbreviated_school_name': SystemSettings.get_abbreviated_school_name(),
                     'currency': SystemSettings.get_currency(),
                     'academic_year': SystemSettings.get_academic_year(),
                     'timezone': SystemSettings.get_timezone(),

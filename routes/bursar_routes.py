@@ -1479,6 +1479,7 @@ def settings():
         try:
             # General settings
             BursarSettings.upsert_setting('general', 'school_name', request.form.get('school_name', ''))
+            BursarSettings.upsert_setting('general', 'abbreviated_school_name', request.form.get('abbreviated_school_name', ''))
             BursarSettings.upsert_setting('general', 'currency', request.form.get('currency', 'KES'))
             BursarSettings.upsert_setting('general', 'academic_year', request.form.get('academic_year', ''))
             BursarSettings.upsert_setting('general', 'timezone', request.form.get('timezone', 'Africa/Nairobi'))

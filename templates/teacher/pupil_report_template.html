@@ -222,7 +222,7 @@
         <div class="card">
             <div class="card-header">
                 <i class="fas fa-graduation-cap me-1"></i>
-                {{ system_settings.school_name or 'School Management System' }} - Pupil Academic Report
+                {{ system_settings.abbreviated_school_name }} - Pupil Academic Report
                 <div class="mt-1 text-muted">{{ report_type.replace('_', ' ').title() }}</div>
             </div>
         </div>
@@ -391,7 +391,7 @@
         </div>
 
         <div class="report-footer">
-            Generated {{ datetime.now().strftime('%d/%m/%Y %H:%M') }} - {{ system_settings.school_name or 'School Management System' }}
+            Generated {{ datetime.now().strftime('%d/%m/%Y %H:%M') }} - {{ system_settings.abbreviated_school_name }}
         </div>
     </div>
 </body>

@@ -182,7 +182,7 @@
   <nav class="navbar navbar-custom fixed-top">
     <a class="navbar-brand" href="#">
       <img src="/static/images/school_192.png" alt="Logo" style="height:36px; width:auto; margin-right:8px;">
-      Manage Pupils Marks
+      {{ system_settings.abbreviated_school_name }} - Manage Pupils Marks
     </a>
     <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-small">
       <i class="bi bi-box-arrow-left"></i> Back

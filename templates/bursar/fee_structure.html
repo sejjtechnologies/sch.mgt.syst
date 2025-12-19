@@ -24,7 +24,7 @@
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
-          Bursar
+          {{ system_settings.abbreviated_school_name }}
         </a>
         <div class="ms-auto nav-actions">
           <a href="{{ url_for('bursar.dashboard') }}" class="btn btn-light btn-sm d-flex align-items-center px-2 py-1">

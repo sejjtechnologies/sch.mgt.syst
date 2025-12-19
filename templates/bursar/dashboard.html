@@ -25,7 +25,7 @@
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
           <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
-          {{ system_settings.school_name or 'Bursar' }}
+          {{ system_settings.abbreviated_school_name }}
         </a>
         <div class="ms-auto d-flex align-items-center">
           <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white d-flex align-items-center px-2 py-1">

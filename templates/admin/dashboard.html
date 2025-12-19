@@ -14,7 +14,7 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="/">Welcome Admin</a>
+        <a class="navbar-brand fw-bold" href="/">{{ system_settings.abbreviated_school_name }}</a>
 
         <div class="ms-auto">
           <a href="{{ url_for('user.logout') }}"
