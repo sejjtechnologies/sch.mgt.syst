@@ -64,7 +64,8 @@
         <div class="d-flex flex-column gap-3 align-items-center">
           <button
             class="btn btn-primary btn-lg d-flex align-items-center justify-content-center mx-auto"
-            onclick="window.location.href='{{ url_for('headteacher.assign_classes_streams') }}'"
+            data-href="{{ url_for('headteacher.assign_classes_streams') }}"
+            onclick="window.location.href = this.dataset.href"
             style="
               width: 320px;
               height: 60px;
@@ -84,7 +85,8 @@
 
           <button
             class="btn btn-success btn-lg d-flex align-items-center justify-content-center mx-auto"
-            onclick="window.location.href='{{ url_for('headteacher.view_assignments') }}'"
+            data-href="{{ url_for('headteacher.view_assignments') }}"
+            onclick="window.location.href = this.dataset.href"
             style="
               width: 320px;
               height: 60px;

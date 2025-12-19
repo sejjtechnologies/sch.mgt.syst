@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models.user import User, db
+from models.bursar import BursarSettings
+from models.system_settings import SystemSetting
 from werkzeug.security import generate_password_hash
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -155,9 +157,54 @@ def system_settings():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        # Handle form submission for technical settings
-        # For now, just flash a message
-        flash('System settings updated successfully')
+        try:
+            # Maintenance Mode
+            maintenance_mode = request.form.get('maintenance_mode') == 'on'
+            maintenance_message = request.form.get('maintenance_message', 'System is under maintenance. Please try again later.')
+
+            SystemSetting.upsert_setting('system', 'maintenance_mode', maintenance_mode)
+            SystemSetting.upsert_setting('system', 'maintenance_message', maintenance_message)
+
+            # Backup Settings
+            backup_frequency = request.form.get('backup_frequency', 'weekly')
+            backup_time = request.form.get('backup_time', '02:00')
+
+            SystemSetting.upsert_setting('backups', 'frequency', backup_frequency)
+            SystemSetting.upsert_setting('backups', 'time', backup_time)
+
+            # Log Settings
+            log_level = request.form.get('log_level', 'INFO')
+            log_retention = int(request.form.get('log_retention', 30))
+
+            SystemSetting.upsert_setting('logs', 'level', log_level)
+            SystemSetting.upsert_setting('logs', 'retention_days', log_retention)
+
+            # Performance Settings
+            cache_timeout = request.form.get('cache_enabled') == 'on'
+            max_upload_size = int(request.form.get('max_upload_size', 10))
+
+            SystemSetting.upsert_setting('performance', 'cache_enabled', cache_timeout)
+            SystemSetting.upsert_setting('performance', 'upload_max_size', max_upload_size)
+
+            # Security Settings
+            force_https = request.form.get('force_https') == 'on'
+            enable_cors = request.form.get('enable_cors') == 'on'
+
+            SystemSetting.upsert_setting('security', 'https_enforced', force_https)
+            SystemSetting.upsert_setting('security', 'cors_enabled', enable_cors)
+
+            db.session.commit()
+            flash('System settings updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating settings: {str(e)}', 'error')
+
         return redirect(url_for('admin.system_settings'))
 
-    return render_template('admin/system_settings.html')
+    # Load current settings
+    settings = {}
+    all_settings = SystemSetting.query.filter_by(is_active=True).all()
+    for setting in all_settings:
+        settings[setting.key] = setting.typed_value
+
+    return render_template('admin/system_settings.html', settings=settings)

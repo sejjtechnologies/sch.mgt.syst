@@ -1,7 +1,7 @@
 """
-System-wide settings utility for accessing bursar settings across the application.
+System-wide settings utility for accessing system settings across the application.
 """
-from models import BursarSettings, db
+from models import SystemSetting, db
 
 class SystemSettings:
     """Utility class for accessing system settings"""
@@ -13,7 +13,7 @@ class SystemSettings:
     def _load_cache(cls):
         """Load all settings into cache"""
         if not cls._cache_loaded:
-            all_settings = BursarSettings.query.filter_by(is_active=True).all()
+            all_settings = SystemSetting.query.filter_by(is_active=True).all()
             for setting in all_settings:
                 if setting.category not in cls._cache:
                     cls._cache[setting.category] = {}
@@ -35,7 +35,7 @@ class SystemSettings:
     @classmethod
     def set(cls, category, key, value, description=None):
         """Set a setting value"""
-        BursarSettings.upsert_setting(category, key, value, description)
+        SystemSetting.upsert_setting(category, key, value, description)
         db.session.commit()
         # Invalidate cache
         cls._cache_loaded = False
@@ -113,6 +113,51 @@ class SystemSettings:
     @classmethod
     def get_report_frequency(cls):
         return cls.get('reports', 'report_frequency', 'monthly')
+
+    # System maintenance settings
+    @classmethod
+    def get_maintenance_mode(cls):
+        return cls.get('system', 'maintenance_mode', False)
+
+    @classmethod
+    def get_maintenance_message(cls):
+        return cls.get('system', 'maintenance_message', 'The system is currently under maintenance. Please check back later.')
+
+    # Backup settings
+    @classmethod
+    def get_backup_frequency(cls):
+        return cls.get('backups', 'frequency', 'weekly')
+
+    @classmethod
+    def get_backup_time(cls):
+        return cls.get('backups', 'time', '02:00')
+
+    # Log settings
+    @classmethod
+    def get_log_level(cls):
+        return cls.get('logs', 'level', 'INFO')
+
+    @classmethod
+    def get_log_retention_days(cls):
+        return cls.get('logs', 'retention_days', 30)
+
+    # Performance settings
+    @classmethod
+    def get_cache_enabled(cls):
+        return cls.get('performance', 'cache_enabled', True)
+
+    @classmethod
+    def get_upload_max_size(cls):
+        return cls.get('performance', 'upload_max_size', 10)  # MB
+
+    # Security settings
+    @classmethod
+    def get_https_enforced(cls):
+        return cls.get('security', 'https_enforced', False)
+
+    @classmethod
+    def get_cors_enabled(cls):
+        return cls.get('security', 'cors_enabled', False)
 
     @classmethod
     def format_currency(cls, amount, currency=None):

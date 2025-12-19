@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, render_template, send_from_directory, request
+from flask import Flask, jsonify, render_template, send_from_directory, request, session
 from flask_migrate import Migrate
 from sqlalchemy import text
 from models import db
@@ -128,6 +128,31 @@ def inject_system_settings():
             print(f"⚠ Could not load system settings: {e}")
             return {'system_settings': {}}
     return {'system_settings': {}}
+
+
+@app.before_request
+def check_maintenance_mode():
+    """Check if maintenance mode is enabled and block non-admin access"""
+    if not SYSTEM_CONFIGURED:
+        return  # Skip for unconfigured systems
+
+    # Skip maintenance check for static files, service worker, and debug routes
+    if request.path.startswith('/static/') or request.path in ['/sw.js', '/favicon.ico', '/debug', '/db-test']:
+        return
+
+    try:
+        from utils.settings import SystemSettings
+        maintenance_mode = SystemSettings.get_maintenance_mode()
+        if maintenance_mode:
+            # Check if user is logged in and is admin
+            user_role = session.get('user_role', '').lower()
+            if user_role != 'admin':
+                # Get maintenance message
+                maintenance_message = SystemSettings.get_maintenance_message()
+                return render_template('maintenance.html', maintenance_message=maintenance_message)
+    except Exception as e:
+        print(f"⚠ Could not check maintenance mode: {e}")
+        # If we can't check maintenance mode, allow access to prevent lockout
 
 @app.route("/debug")
 def debug():

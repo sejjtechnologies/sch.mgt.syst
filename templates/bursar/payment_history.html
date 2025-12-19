@@ -146,25 +146,28 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      let allPayments = [
+    <script type="text/template" id="payments-data">
+      [
         {% for payment in payments %}
         {
-          id: {{ payment.id }},
-          studentName: '{{ payment.pupil.first_name }} {{ payment.pupil.last_name }}',
-          admissionNumber: '{{ payment.pupil.admission_number or '' }}',
-          className: '{{ class_names.get(payment.pupil.class_admitted, payment.pupil.class_admitted or '') }}',
-          academicYear: '{{ payment.academic_year.name if payment.academic_year else '' }}',
-          term: {{ payment.term }},
-          amount: {{ payment.amount }},
-          amountFormatted: '{{ payment.amount_formatted }}',
-          paymentMethod: '{{ payment.payment_method }}',
-          receiptNumber: '{{ payment.receipt_number or '' }}',
-          transactionRef: '{{ payment.transaction_reference or '' }}',
-          recordedTime: '{{ payment.recorded_at_system_tz }}'
+          "id": {{ payment.id }},
+          "studentName": "{{ payment.pupil.first_name }} {{ payment.pupil.last_name }}",
+          "admissionNumber": "{{ payment.pupil.admission_number or '' }}",
+          "className": "{{ class_names.get(payment.pupil.class_admitted, payment.pupil.class_admitted or '') }}",
+          "academicYear": "{{ payment.academic_year.name if payment.academic_year else '' }}",
+          "term": {{ payment.term }},
+          "amount": {{ payment.amount }},
+          "amountFormatted": "{{ payment.amount_formatted }}",
+          "paymentMethod": "{{ payment.payment_method }}",
+          "receiptNumber": "{{ payment.receipt_number or '' }}",
+          "transactionRef": "{{ payment.transaction_reference or '' }}",
+          "recordedTime": "{{ payment.recorded_at_system_tz }}"
         }{% if not loop.last %},{% endif %}
         {% endfor %}
-      ];
+      ]
+    </script>
+    <script>
+      let allPayments = JSON.parse(document.getElementById('payments-data').textContent);
 
       function refreshPayments() {
         location.reload();
