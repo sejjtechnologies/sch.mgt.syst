@@ -665,6 +665,30 @@
           navigator.serviceWorker.register('/sw.js')
             .then(function(registration) {
               console.log('ServiceWorker registration successful with scope:', registration.scope);
+
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // New version available, show update prompt or auto-reload
+                      console.log('New version available, reloading...');
+                      // Option 1: Auto-reload
+                      window.location.reload();
+                      // Option 2: Show prompt (uncomment below and comment above)
+                      // if (confirm('A new version is available. Reload to update?')) {
+                      //   window.location.reload();
+                      // }
+                    }
+                  });
+                }
+              });
+
+              // Check for updates every 5 minutes
+              setInterval(() => {
+                registration.update();
+              }, 5 * 60 * 1000); // 5 minutes
             })
             .catch(function(err) {
               console.log('ServiceWorker registration failed: ', err);
