@@ -10,7 +10,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-info">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">{{ system_settings.abbreviated_school_name }}</a>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex align-items-center">
+          <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="height: 32px; width: auto;">
           <a href="{{ url_for('user.logout') }}" class="btn btn-danger text-white d-flex align-items-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right me-2" viewBox="0 0 16 16" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 15a1 1 0 0 0 1-1v-2h-1v2H2V2h8v2h1V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8z"/>
