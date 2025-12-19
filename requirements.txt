@@ -48,6 +48,9 @@ weasyprint==60.1  # Optional on Vercel, may require system libs
 html5lib==1.1
 tinycss2==1.5.1
 cssselect2==0.8.0
+
+# Task scheduling
+APScheduler==3.10.4
 webencodings==0.5.1
 fonttools==4.61.0
 zopfli==0.4.0

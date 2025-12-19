@@ -184,9 +184,11 @@ def system_settings():
             SystemSetting.upsert_setting('system', 'maintenance_message', maintenance_message)
 
             # Backup Settings
+            auto_backup_enabled = request.form.get('auto_backup_enabled') == 'on'
             backup_frequency = request.form.get('backup_frequency', 'weekly')
             backup_time = request.form.get('backup_time', '02:00')
 
+            SystemSetting.upsert_setting('backups', 'enabled', auto_backup_enabled)
             SystemSetting.upsert_setting('backups', 'frequency', backup_frequency)
             SystemSetting.upsert_setting('backups', 'time', backup_time)
 
@@ -215,6 +217,15 @@ def system_settings():
             # Invalidate settings cache
             from utils.settings import SystemSettings
             SystemSettings.invalidate_cache()
+
+            # Reschedule automatic backups if settings changed
+            try:
+                # Import here to avoid circular imports
+                from app import setup_backup_scheduler
+                setup_backup_scheduler()
+            except Exception as e:
+                print(f"Error rescheduling backup: {e}")
+
             flash('System settings updated successfully', 'success')
         except Exception as e:
             db.session.rollback()
@@ -223,10 +234,12 @@ def system_settings():
         return redirect(url_for('admin.system_settings'))
 
     # Load current settings
-    settings = {}
-    all_settings = SystemSetting.query.filter_by(is_active=True).all()
-    for setting in all_settings:
-        settings[setting.key] = setting.typed_value
+    from utils.settings import SystemSettings
+    settings = SystemSettings.get_category('general')
+    settings.update(SystemSettings.get_category('maintenance'))
+    settings.update(SystemSettings.get_category('backups'))
+    settings.update(SystemSettings.get_category('logs'))
+    settings.update(SystemSettings.get_category('performance'))
 
     # Fetch academic years for dropdown
     from models.register_pupil import AcademicYear
@@ -242,6 +255,15 @@ def create_backup():
         return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     try:
+        from models.user import User
+        from models.register_pupil import Pupil
+        from models.bursar import BursarSettings, FeeCategory, FeeStructure, StudentFee, Payment, PaymentMethod
+        from models.school_class import SchoolClass
+        from models.stream import Stream
+        from models.teacher_assignment import TeacherAssignment
+        from models.attendance import Attendance
+        import json
+
         # Create backups directory if it doesn't exist
         backup_dir = os.path.join(os.getcwd(), 'backups')
         os.makedirs(backup_dir, exist_ok=True)
@@ -251,9 +273,45 @@ def create_backup():
         backup_filename = f'backup_{timestamp}.zip'
         backup_path = os.path.join(backup_dir, backup_filename)
 
-        # Create zip file containing database and important files
+        # Create zip file containing database data and important files
         with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add database file if using SQLite
+
+            # Helper function to convert model to dict
+            def model_to_dict(model_instance):
+                result = {}
+                for column in model_instance.__table__.columns:
+                    value = getattr(model_instance, column.name)
+                    if hasattr(value, 'isoformat'):
+                        value = value.isoformat()
+                    result[column.name] = value
+                return result
+
+            # Export all database data as JSON
+            data_backup = {
+                'backup_info': {
+                    'timestamp': timestamp,
+                    'type': 'manual',
+                    'version': '1.0'
+                },
+                'users': [model_to_dict(user) for user in User.query.all()],
+                'pupils': [model_to_dict(pupil) for pupil in Pupil.query.all()],
+                'school_classes': [model_to_dict(cls) for cls in SchoolClass.query.all()],
+                'streams': [model_to_dict(stream) for stream in Stream.query.all()],
+                'teacher_assignments': [model_to_dict(ta) for ta in TeacherAssignment.query.all()],
+                'attendances': [model_to_dict(att) for att in Attendance.query.all()],
+                'bursar_settings': [model_to_dict(bs) for bs in BursarSettings.query.all()],
+                'fee_categories': [model_to_dict(fc) for fc in FeeCategory.query.all()],
+                'fee_structures': [model_to_dict(fs) for fs in FeeStructure.query.all()],
+                'student_fees': [model_to_dict(sf) for sf in StudentFee.query.all()],
+                'payments': [model_to_dict(payment) for payment in Payment.query.all()],
+                'payment_methods': [model_to_dict(pm) for pm in PaymentMethod.query.all()],
+                'system_settings': [model_to_dict(ss) for ss in SystemSetting.query.all()]
+            }
+
+            # Write data to JSON file in zip
+            zipf.writestr('database_data.json', json.dumps(data_backup, indent=2, default=str))
+
+            # Add database file if using SQLite (as additional backup)
             db_url = os.getenv('DATABASE_URL') or os.getenv('SQLALCHEMY_DATABASE_URI')
             if db_url and 'sqlite' in db_url:
                 db_path = db_url.replace('sqlite:///', '')
@@ -279,24 +337,32 @@ def create_backup():
             # Add a README file with backup info
             readme_content = f"""School Management System Backup
 Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Database: {'SQLite' if db_url and 'sqlite' in db_url else 'External Database'}
+Type: Manual Backup
 
 This backup contains:
-- Database schema and data (if using SQLite)
+- Complete database data export (JSON format)
+- Database file (if SQLite)
 - Migration files
 - Uploaded files and documents
 
-To restore:
-1. Extract this zip file
-2. If using SQLite, replace the database.db file
-3. Run database migrations if needed
-4. Restore any uploaded files to the instance directory
+Data includes:
+- User accounts and profiles
+- Pupil records and information
+- School classes and streams
+- Teacher assignments
+- Attendance records
+- Bursar settings and fee structures
+- Payment records and methods
+- System settings and configuration
+
+To restore this backup, use the restore functionality in the admin panel.
 """
+
             zipf.writestr('README.txt', readme_content)
 
         return jsonify({
             'success': True,
-            'message': 'Backup created successfully',
+            'message': f'Backup created successfully',
             'filename': backup_filename,
             'size': os.path.getsize(backup_path)
         })
@@ -370,7 +436,6 @@ def delete_backup(filename):
             return jsonify({'success': False, 'message': 'Backup file not found'}), 404
 
         os.remove(file_path)
-
         return jsonify({'success': True, 'message': 'Backup deleted successfully'})
 
     except Exception as e:
