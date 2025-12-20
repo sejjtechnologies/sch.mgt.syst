@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice - {{ pupil.first_name }} {{ pupil.last_name }}{% endblock %}
+
+{% block head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .invoice-container, .invoice-container * {
+            visibility: visible;
+        }
+        .invoice-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            box-shadow: none;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+        margin: 0;
+        padding: 20px;
+        background: #f8f9fa;
+    }
+
+    .invoice-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .invoice-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .school-info h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .school-info p {
+        margin: 5px 0;
+        opacity: 0.9;
+    }
+
+    .invoice-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-top: 20px;
+        text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .invoice-details {
+            padding: 30px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .pupil-info, .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: #212529;
+            text-align: right;
+        }
+
+        .payments-section {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .payments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .payments-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .payments-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .payments-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .amount-cell {
+            text-align: right;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .total-row {
+            background: #667eea !important;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .total-row td {
+            padding: 15px 12px;
+        }
+
+        .invoice-footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .footer-text {
+            color: #6c757d;
+            margin: 5px 0;
+        }
+
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-print {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .btn-print:hover {
+            background: #218838;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #545b62;
+            color: white;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .invoice-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .action-buttons {
+                display: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .invoice-header {
+                padding: 20px;
+            }
+            .school-info h1 {
+                font-size: 2rem;
+            }
+            .invoice-details, .payments-section {
+                padding: 20px;
+            }
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .info-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="{{ url_for('static', filename='images/school_192.png') }}" alt="School Logo" class="me-2" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">
+          {{ system_settings.abbreviated_school_name }}
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <a href="{{ url_for('bursar.generate_invoice') }}" class="btn btn-outline-light btn-sm me-2">
+            <i class="bi bi-arrow-left me-1"></i>Back to Generate Invoice
+          </a>
+          <a href="{{ url_for('user.logout') }}" class="btn btn-danger btn-sm text-white">
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container-fluid px-2 px-md-3 py-3" style="padding-top: calc(70px + 5px) !important;">
+    <div class="action-buttons no-print">
+        <button onclick="window.print()" class="btn-print">
+            <i class="fas fa-print me-2"></i>Print Invoice
+        </button>
+        <a href="{{ url_for('bursar.generate_invoice') }}" class="btn-back">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+
+    <div class="invoice-container">
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            <div class="school-info">
+                <h1>{{ system_settings.school_name or 'School Name' }}</h1>
+                <p>{{ system_settings.school_address or 'School Address' }}</p>
+                <p>Phone: {{ system_settings.school_phone or 'School Phone' }} | Email: {{ system_settings.school_email or 'school@email.com' }}</p>
+            </div>
+            <div class="invoice-title">Payment Invoice & Receipt</div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="invoice-details">
+            <!-- Pupil Information -->
+            <div class="pupil-info">
+                <h5 style="margin-bottom: 15px; color: #495057;"><i class="fas fa-user me-2"></i>Pupil Information</h5>
+                <div class="info-row">
+                    <span class="info-label">Full Name:</span>
+                    <span class="info-value">{{ pupil.first_name }} {{ pupil.last_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Admission No:</span>
+                    <span class="info-value">{{ pupil.admission_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Academic Year:</span>
+                    <span class="info-value">{{ current_academic_year.name if current_academic_year else 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date Generated:</span>
+                    <span class="info-value">{{ datetime.now().strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <h5 style="margin-bottom: 15px; color: #495057;"><i class="fas fa-chart-line me-2"></i>Payment Summary</h5>
+                <div class="info-row">
+                    <span class="info-label">Total Payments:</span>
+                    <span class="info-value">{{ payments|length }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Total Amount Paid:</span>
+                    <span class="info-value" style="color: #28a745; font-weight: 700; font-size: 1.1rem;">KES {{ "%.2f"|format(total_paid) }}</span>
+                </div>
+                {% if payments %}
+                <div class="info-row">
+                    <span class="info-label">Date Range:</span>
+                    <span class="info-value">{{ payments[-1].payment_date.strftime('%d/%m/%Y') }} - {{ payments[0].payment_date.strftime('%d/%m/%Y') }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <div class="payments-section">
+            <h4 class="section-title"><i class="fas fa-list me-2"></i>Payment Details</h4>
+
+            {% if payments %}
+            <table class="payments-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Term</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Receipt No.</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.payment_date.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ payment.term }}</td>
+                        <td class="amount-cell">KES {{ "%.2f"|format(payment.amount) }}</td>
+                        <td>{{ payment.payment_method }}</td>
+                        <td>{{ payment.receipt_number or '-' }}</td>
+                        <td>{{ payment.notes or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="2" style="text-align: right; font-weight: 700;">TOTAL PAID:</td>
+                        <td class="amount-cell">KES {{ "%.2f"|format(total_paid) }}</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-info-circle fs-1 text-muted mb-3"></i>
+                <p class="text-muted">No payment records found for this pupil.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Invoice Footer -->
+        <div class="invoice-footer">
+            <p class="footer-text">This is a computer-generated invoice and requires no signature.</p>
+            <p class="footer-text">For any queries, please contact the bursar's office.</p>
+            <p class="footer-text">Generated on {{ datetime.now().strftime('%d %B %Y at %H:%M') }}</p>
+            <p class="footer-text">{{ system_settings.abbreviated_school_name }} - Payment Management System</p>
+        </div>
+    </div>
+
+    </main>
+{% endblock %}

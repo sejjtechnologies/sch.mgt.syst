@@ -1553,3 +1553,68 @@ def settings():
     academic_years = AcademicYear.query.order_by(AcademicYear.start_year.desc()).all()
 
     return render_template('bursar/settings.html', settings=settings_data)
+
+@bursar_bp.route('/generate_invoice')
+@bursar_required
+def generate_invoice():
+    """Page to generate invoices/receipts for paid pupils"""
+    if 'user_id' not in session or session.get('user_role', '').lower() not in ['bursar', 'admin']:
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    # Get all pupils who have made payments (paid pupils)
+    paid_pupils = Pupil.query.join(Payment, Pupil.id == Payment.pupil_id)\
+        .filter(Pupil.enrollment_status == 'active')\
+        .distinct(Pupil.id)\
+        .order_by(Pupil.id, Pupil.first_name, Pupil.last_name).all()
+
+    # Create pupil data with payment info
+    pupils_data = []
+    for pupil in paid_pupils:
+        # Get total payments made by this pupil
+        total_paid = db.session.query(func.sum(Payment.amount)).filter_by(pupil_id=pupil.id).scalar() or 0.0
+
+        # Get latest payment date
+        latest_payment = Payment.query.filter_by(pupil_id=pupil.id).order_by(Payment.payment_date.desc()).first()
+
+        pupils_data.append({
+            'id': pupil.id,
+            'first_name': pupil.first_name,
+            'last_name': pupil.last_name,
+            'admission_number': pupil.admission_number,
+            'total_paid': total_paid,
+            'latest_payment_date': latest_payment.payment_date if latest_payment else None,
+            'payment_count': Payment.query.filter_by(pupil_id=pupil.id).count()
+        })
+
+    return render_template('bursar/generate_invoice.html', pupils=pupils_data)
+
+@bursar_bp.route('/generate_pupil_invoice/<pupil_id>')
+@bursar_required
+def generate_pupil_invoice(pupil_id):
+    """Generate invoice/receipt for a specific pupil"""
+    if 'user_id' not in session or session.get('user_role', '').lower() not in ['bursar', 'admin']:
+        flash('Access denied')
+        return redirect(url_for('index'))
+
+    pupil = Pupil.query.get_or_404(pupil_id)
+
+    # Get all payments for this pupil
+    payments = Payment.query.filter_by(pupil_id=pupil_id).order_by(Payment.payment_date.desc()).all()
+
+    # Calculate total paid
+    total_paid = sum(payment.amount for payment in payments)
+
+    # Get current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+
+    # Get system settings
+    system_settings = SystemSettings()
+
+    return render_template('bursar/pupil_invoice.html',
+                         pupil=pupil,
+                         payments=payments,
+                         total_paid=total_paid,
+                         current_academic_year=current_academic_year,
+                         system_settings=system_settings,
+                         datetime=datetime)
