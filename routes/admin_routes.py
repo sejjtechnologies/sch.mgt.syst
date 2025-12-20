@@ -169,12 +169,18 @@ def system_settings():
             currency = request.form.get('currency', 'KES')
             academic_year = request.form.get('academic_year', '')
             timezone = request.form.get('timezone', 'Africa/Nairobi')
+            school_address = request.form.get('school_address', '')
+            school_phone = request.form.get('school_phone', '')
+            school_email = request.form.get('school_email', '')
 
             SystemSetting.upsert_setting('general', 'school_name', school_name)
             SystemSetting.upsert_setting('general', 'abbreviated_school_name', abbreviated_school_name)
             SystemSetting.upsert_setting('general', 'currency', currency)
             SystemSetting.upsert_setting('general', 'academic_year', academic_year)
             SystemSetting.upsert_setting('general', 'timezone', timezone)
+            SystemSetting.upsert_setting('general', 'school_address', school_address)
+            SystemSetting.upsert_setting('general', 'school_phone', school_phone)
+            SystemSetting.upsert_setting('general', 'school_email', school_email)
 
             # Maintenance Mode
             maintenance_mode = request.form.get('maintenance_mode') == 'on'

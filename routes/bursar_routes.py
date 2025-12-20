@@ -1563,10 +1563,15 @@ def generate_invoice():
         return redirect(url_for('index'))
 
     # Get all pupils who have made payments (paid pupils)
-    paid_pupils = Pupil.query.join(Payment, Pupil.id == Payment.pupil_id)\
-        .filter(Pupil.enrollment_status == 'active')\
-        .distinct(Pupil.id)\
-        .order_by(Pupil.id, Pupil.first_name, Pupil.last_name).all()
+    # First get all pupil IDs that have payments
+    paid_pupil_ids = db.session.query(Payment.pupil_id).distinct().all()
+    paid_pupil_ids = [p[0] for p in paid_pupil_ids]  # Extract IDs from tuples
+
+    # Then get the pupil details
+    paid_pupils = Pupil.query.filter(
+        Pupil.id.in_(paid_pupil_ids),
+        Pupil.enrollment_status == 'active'
+    ).order_by(Pupil.first_name, Pupil.last_name).all()
 
     # Create pupil data with payment info
     pupils_data = []
@@ -1604,17 +1609,56 @@ def generate_pupil_invoice(pupil_id):
 
     # Calculate total paid
     total_paid = sum(payment.amount for payment in payments)
+    total_paid_formatted = SystemSettings.format_currency(total_paid)
+
+    # Calculate required fees and balance for current academic year
+    current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
+    assigned_total = 0.0
+    balance = 0.0
+
+    if current_academic_year and pupil.class_admitted:
+        # Get fee structures for the pupil's class and current academic year
+        fee_structs = FeeStructure.query.filter_by(
+            academic_year_id=current_academic_year.id,
+            class_id=pupil.class_admitted
+        ).all()
+
+        # Sum all term amounts for the annual total
+        for fs in fee_structs:
+            assigned_total += (fs.term1_amount or 0) + (fs.term2_amount or 0) + (fs.term3_amount or 0)
+
+        # Calculate balance (what they still owe)
+        balance = max(0, assigned_total - total_paid)
+
+    # Format amounts
+    assigned_total_formatted = SystemSettings.format_currency(assigned_total)
+    balance_formatted = SystemSettings.format_currency(balance)
+
+    # Format payment amounts
+    for payment in payments:
+        payment.amount_formatted = SystemSettings.format_currency(payment.amount)
 
     # Get current academic year
     current_academic_year = AcademicYear.query.filter_by(is_active=True).first()
 
     # Get system settings
-    system_settings = SystemSettings()
+    system_settings = {
+        'school_name': SystemSettings.get_school_name(),
+        'abbreviated_school_name': SystemSettings.get_abbreviated_school_name(),
+        'school_address': SystemSettings.get('general', 'school_address', ''),
+        'school_phone': SystemSettings.get('general', 'school_phone', ''),
+        'school_email': SystemSettings.get('general', 'school_email', ''),
+    }
 
     return render_template('bursar/pupil_invoice.html',
                          pupil=pupil,
                          payments=payments,
                          total_paid=total_paid,
+                         total_paid_formatted=total_paid_formatted,
+                         assigned_total=assigned_total,
+                         assigned_total_formatted=assigned_total_formatted,
+                         balance=balance,
+                         balance_formatted=balance_formatted,
                          current_academic_year=current_academic_year,
                          system_settings=system_settings,
                          datetime=datetime)

@@ -366,9 +366,15 @@ def inject_system_settings():
             # Load settings directly from database
             school_name_setting = SystemSetting.query.filter_by(category='general', key='school_name', is_active=True).first()
             abbr_name_setting = SystemSetting.query.filter_by(category='general', key='abbreviated_school_name', is_active=True).first()
+            school_address_setting = SystemSetting.query.filter_by(category='general', key='school_address', is_active=True).first()
+            school_phone_setting = SystemSetting.query.filter_by(category='general', key='school_phone', is_active=True).first()
+            school_email_setting = SystemSetting.query.filter_by(category='general', key='school_email', is_active=True).first()
 
             school_name = school_name_setting.typed_value if school_name_setting else ''
             abbr_name = abbr_name_setting.typed_value if abbr_name_setting else ''
+            school_address = school_address_setting.typed_value if school_address_setting else ''
+            school_phone = school_phone_setting.typed_value if school_phone_setting else ''
+            school_email = school_email_setting.typed_value if school_email_setting else ''
 
             print(f"DEBUG: Loaded school_name='{school_name}', abbr_name='{abbr_name}'")
 
@@ -376,6 +382,9 @@ def inject_system_settings():
                 'system_settings': {
                     'school_name': school_name,
                     'abbreviated_school_name': abbr_name,
+                    'school_address': school_address,
+                    'school_phone': school_phone,
+                    'school_email': school_email,
                     # Add other settings as needed
                 }
             }

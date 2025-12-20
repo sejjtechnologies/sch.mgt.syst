@@ -55,6 +55,18 @@ class SystemSettings:
         return cls.get('general', 'abbreviated_school_name', '')
 
     @classmethod
+    def get_school_address(cls):
+        return cls.get('general', 'school_address', '')
+
+    @classmethod
+    def get_school_phone(cls):
+        return cls.get('general', 'school_phone', '')
+
+    @classmethod
+    def get_school_email(cls):
+        return cls.get('general', 'school_email', '')
+
+    @classmethod
     def get_currency(cls):
         return cls.get('general', 'currency', 'KES')
 

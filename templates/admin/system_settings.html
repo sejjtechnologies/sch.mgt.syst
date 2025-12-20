@@ -159,6 +159,22 @@
                     </div>
                   </div>
                   <div class="row mt-2">
+                    <div class="col-md-12">
+                      <label class="form-label">School Address</label>
+                      <input type="text" class="form-control" name="school_address" value="{{ settings.get('school_address', '') }}" placeholder="Enter full school address">
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-6">
+                      <label class="form-label">School Phone</label>
+                      <input type="tel" class="form-control" name="school_phone" value="{{ settings.get('school_phone', '') }}" placeholder="+254 XXX XXX XXX">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">School Email</label>
+                      <input type="email" class="form-control" name="school_email" value="{{ settings.get('school_email', '') }}" placeholder="school@example.com">
+                    </div>
+                  </div>
+                  <div class="row mt-2">
                     <div class="col-md-4">
                       <label class="form-label">Currency</label>
                       <select class="form-select" name="currency">
