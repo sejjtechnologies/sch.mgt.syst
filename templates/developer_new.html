@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sejjtechnologies(U) Ltd - Professional Technology Solutions</title>
+    <meta name="description" content="Sejjtechnologies(U) Ltd - Expert software development, web design, mobile apps, hosting, graphics design, and digital marketing services in Uganda.">
+    <meta name="keywords" content="software development, web design, mobile applications, hosting, graphics design, digital marketing, branding, Uganda">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='images/school_192.png') }}" type="image/png">
+    <style>
+        * {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif !important;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Comic Sans MS', cursive, sans-serif !important;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 0 0 20px 20px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.8rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            font-weight: bold;
+            transition: all 0.3s ease;
+            color: white !important;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover {
+            color: #ffd93d !important;
+            transform: scale(1.1);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 50px 50px;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="stars" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.3)"/><circle cx="5" cy="15" r="0.5" fill="rgba(255,255,255,0.2)"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/></svg>');
+            animation: twinkle 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+            animation: bounceIn 2s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+
+        .company-logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 6px solid rgba(255,255,255,0.9);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            object-fit: cover;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Service Cards */
+        .service-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffeaa7 100%);
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            border: 3px solid transparent;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .service-card:hover::before {
+            left: 100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px) rotate(2deg);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            border-color: #ffd93d;
+        }
+
+        .service-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.4s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .service-card:hover .service-icon::before {
+            width: 120%;
+            height: 120%;
+        }
+
+        .service-1 .service-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; }
+        .service-2 .service-icon { background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; }
+        .service-3 .service-icon { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .service-4 .service-icon { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; }
+        .service-5 .service-icon { background: linear-gradient(135deg, #ffd93d, #ff8c00); color: white; }
+        .service-6 .service-icon { background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333; }
+        .service-7 .service-icon { background: linear-gradient(135deg, #ff9a9e, #fecfef); color: #333; }
+
+        /* Process Section */
+        .process-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .process-step {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .process-step:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ffd93d;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Portfolio Section */
+        .portfolio-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .portfolio-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .portfolio-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        /* Testimonials */
+        .testimonial-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 2rem;
+            border: 3px solid #ffd93d;
+        }
+
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 1rem;
+            left: 2rem;
+            font-size: 5rem;
+            color: rgba(255, 217, 61, 0.2);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .contact-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-align: center;
+            line-height: 70px;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: 3px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-links a::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.4s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .social-links a:hover::before {
+            width: 120%;
+            height: 120%;
+        }
+
+        .social-links a:hover {
+            background: white;
+            color: #ff6b6b;
+            transform: translateY(-10px) rotate(360deg);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: #ddd;
+            padding: 4rem 0 2rem;
+        }
+
+        .footer h5 {
+            color: #ffd93d;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .footer-links a:hover {
+            color: #ffd93d;
+            transform: translateY(-3px);
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bounce-in {
+            animation: bounceIn 1s ease-out;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .company-logo {
+                width: 120px;
+                height: 120px;
+            }
+
+            .service-card {
+                margin-bottom: 2rem;
+            }
+
+            .process-step {
+                margin-bottom: 2rem;
+            }
+
+            .social-links {
+                gap: 0.5rem;
+            }
+
+            .social-links a {
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+
+            .nav-link {
+                font-size: 1rem;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ee5a24, #ff8c00);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#home">
+                <img src="{{ url_for('static', filename='images/school_192.png') }}"
+                     alt="Sejjtechnologies(U) Ltd Logo"
+                     class="me-3 rounded-circle"
+                     style="width: 50px; height: 50px; object-fit: cover;">
+                Sejjtechnologies(U) Ltd
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#process">Process</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#portfolio">Portfolio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section d-flex align-items-center">
+        <div class="container">
+            <div class="row align-items-center hero-content">
+                <div class="col-lg-6 text-center text-lg-start mb-5 mb-lg-0">
+                    <img src="{{ url_for('static', filename='images/school_192.png') }}"
+                         alt="Sejjtechnologies(U) Ltd Logo"
+                         class="company-logo">
+                </div>
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Sejjtechnologies(U) Ltd</h1>
+                    <p class="hero-subtitle">
+                        Your Trusted Technology Partner in Uganda
+                    </p>
+                    <p class="mb-4" style="font-size: 1.2rem;">
+                        We create amazing digital solutions that help businesses grow and succeed.
+                        From websites to mobile apps, we make technology work for you!
+                    </p>
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">✨ Software Development</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">🌐 Web Design</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">📱 Mobile Apps</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">☁️ Hosting</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">🎨 Graphics Design</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">📢 Digital Marketing</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#contact" class="btn btn-warning btn-lg px-5 py-3 fw-bold fs-5">
+                            🚀 Start Your Project
+                        </a>
+                        <a href="#services" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold fs-5">
+                            💡 Our Services
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5 bg-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <h2 class="display-4 fw-bold text-dark mb-4" style="color: #ff6b6b;">About Sejjtechnologies(U) Ltd</h2>
+                    <p class="lead text-muted mb-4 fs-5">
+                        We're a passionate team of tech enthusiasts based in Kampala, Uganda.
+                        We love creating digital solutions that make life easier and businesses more successful.
+                    </p>
+                    <p class="text-muted mb-4 fs-6">
+                        Since we started, we've been helping local businesses and organizations embrace technology.
+                        Whether you need a simple website or a complex software system, we're here to help you
+                        navigate the digital world with confidence.
+                    </p>
+                    <div class="row">
+                        <div class="col-6">
+                            <h4 style="color: #4ecdc4;">Our Mission</h4>
+                            <p class="small text-muted">
+                                To make technology accessible and beneficial for everyone in our community.
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <h4 style="color: #667eea;">Our Vision</h4>
+                            <p class="small text-muted">
+                                To be Uganda's go-to technology partner for innovative digital solutions.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-4" style="background: linear-gradient(135deg, #a8edea, #fed6e3); border-radius: 25px;">
+                        <h3 class="text-center mb-4" style="color: #333;">Why Choose Us?</h3>
+                        <ul class="list-unstyled">
+                            <li class="mb-3 fs-5">🎯 <strong>Local Expertise:</strong> We understand the Ugandan market</li>
+                            <li class="mb-3 fs-5">💰 <strong>Affordable:</strong> Quality solutions at reasonable prices</li>
+                            <li class="mb-3 fs-5">🤝 <strong>Personal Touch:</strong> Direct communication, no middlemen</li>
+                            <li class="mb-3 fs-5">🔄 <strong>Ongoing Support:</strong> We're here even after launch</li>
+                            <li class="mb-3 fs-5">🚀 <strong>Modern Tech:</strong> Latest tools and best practices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="service-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold mb-3" style="color: #333;">Our Services</h2>
+                    <p class="lead text-muted fs-4">We offer a complete range of digital services</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-1 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Custom Software Development</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            We build custom software solutions tailored to your specific business needs.
+                            From inventory management to customer relationship systems, we create software
+                            that streamlines your operations.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">💻 Desktop Applications</li>
+                            <li class="mb-2">🌐 Web-based Systems</li>
+                            <li class="mb-2">🔧 API Development</li>
+                            <li class="mb-2">🗄️ Database Design</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-2 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Website Development</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Beautiful, functional websites that represent your business online.
+                            Whether you need a simple business site or a complex e-commerce platform,
+                            we deliver responsive designs that work on all devices.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">📱 Mobile-Responsive Design</li>
+                            <li class="mb-2">🛒 E-commerce Sites</li>
+                            <li class="mb-2">📝 Content Management Systems</li>
+                            <li class="mb-2">🔍 SEO Optimization</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-3 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Mobile Applications</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Native mobile apps for iOS and Android that engage your customers.
+                            We create user-friendly applications that enhance your business
+                            and keep customers connected.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">🍎 iOS App Development</li>
+                            <li class="mb-2">🤖 Android App Development</li>
+                            <li class="mb-2">🔄 Cross-platform Solutions</li>
+                            <li class="mb-2">📱 App Store Deployment</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-4 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Web Hosting & Domain Services</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Reliable hosting solutions to keep your website online 24/7.
+                            We help you choose the right domain name and provide secure,
+                            fast hosting services with excellent customer support.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">🌐 Domain Registration</li>
+                            <li class="mb-2">💾 Web Hosting</li>
+                            <li class="mb-2">🔒 SSL Certificates</li>
+                            <li class="mb-2">📧 Email Hosting</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-5 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Graphics Design & Branding</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Creative visual solutions that make your brand stand out.
+                            From logos and business cards to flyers and social media graphics,
+                            we create designs that capture your brand's personality.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">🏷️ Logo Design</li>
+                            <li class="mb-2">📄 Flyer & Poster Design</li>
+                            <li class="mb-2">💼 Business Card Design</li>
+                            <li class="mb-2">🎨 Brand Identity</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="service-card service-6 p-4">
+                        <div class="service-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Social Media Marketing</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Grow your online presence with strategic social media marketing.
+                            We create engaging content, manage your social media accounts,
+                            and help you connect with your target audience.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">📱 Social Media Management</li>
+                            <li class="mb-2">📸 Content Creation</li>
+                            <li class="mb-2">📈 Growth Strategies</li>
+                            <li class="mb-2">🎯 Targeted Advertising</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-12 mb-4">
+                    <div class="service-card service-7 p-4 text-center">
+                        <div class="service-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3" style="color: #333;">Technical Support & Maintenance</h4>
+                        <p class="text-muted mb-3 fs-5">
+                            Ongoing support to keep your digital assets running smoothly.
+                            We provide regular updates, security monitoring, and technical assistance
+                            whenever you need it.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1rem;">
+                                    <h5 style="color: #333;">🔧 System Updates</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1rem;">
+                                    <h5 style="color: #333;">🛡️ Security Monitoring</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1rem;">
+                                    <h5 style="color: #333;">📞 24/7 Support</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1rem;">
+                                    <h5 style="color: #333;">🚀 Performance Optimization</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section id="process" class="process-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold mb-3">Our Process</h2>
+                    <p class="lead fs-4">How we bring your ideas to life</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h4 class="mb-3">Discovery</h4>
+                        <p class="mb-0">We listen to your needs and understand your goals</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h4 class="mb-3">Planning</h4>
+                        <p class="mb-0">We create a detailed plan and timeline for your project</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h4 class="mb-3">Development</h4>
+                        <p class="mb-0">We build your solution using the latest technologies</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h4 class="mb-3">Launch</h4>
+                        <p class="mb-0">We deploy your project and provide ongoing support</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold mb-3">Our Work</h2>
+                    <p class="lead fs-4">Some of the projects we've completed</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="portfolio-card">
+                        <div class="p-4">
+                            <div style="height: 200px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <img src="{{ url_for('static', filename='images/school_192.png') }}"
+                                     alt="School Management System"
+                                     style="max-width: 100%; max-height: 100%; border-radius: 10px;">
+                            </div>
+                            <h5 class="mb-3">School Management System</h5>
+                            <p class="mb-0">Complete digital solution for managing student records, attendance, and grades</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="portfolio-card">
+                        <div class="p-4">
+                            <div style="height: 200px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-shopping-cart fa-4x" style="color: rgba(255,255,255,0.7);"></i>
+                            </div>
+                            <h5 class="mb-3">E-commerce Website</h5>
+                            <p class="mb-0">Online shopping platform with payment integration and inventory management</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="portfolio-card">
+                        <div class="p-4">
+                            <div style="height: 200px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-mobile-alt fa-4x" style="color: rgba(255,255,255,0.7);"></i>
+                            </div>
+                            <h5 class="mb-3">Mobile Application</h5>
+                            <p class="mb-0">Cross-platform mobile app for customer engagement and business operations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonial-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold text-dark mb-3">What Our Clients Say</h2>
+                    <p class="lead text-muted fs-4">Real feedback from real clients</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="testimonial-card">
+                        <blockquote class="mb-0">
+                            <p class="mb-3 fs-5">
+                                "Sejjtechnologies helped us create a beautiful website for our business.
+                                They were professional, delivered on time, and the site looks amazing!
+                                Our online sales have increased since we launched."
+                            </p>
+                            <footer class="text-muted">
+                                — <strong>Sarah Nakato</strong>, Fashion Boutique Owner, Kampala
+                            </footer>
+                        </blockquote>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="testimonial-card">
+                        <blockquote class="mb-0">
+                            <p class="mb-3 fs-5">
+                                "We needed a custom inventory system for our shop. Sejjtechnologies
+                                built exactly what we wanted. It's easy to use and has saved us
+                                so much time. Great work!"
+                            </p>
+                            <footer class="text-muted">
+                                — <strong>Michael Okello</strong>, Retail Store Manager, Jinja
+                            </footer>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 fw-bold mb-3">Let's Work Together!</h2>
+                    <p class="lead fs-4">Ready to start your digital journey? Get in touch with us today!</p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="contact-card text-center">
+                        <h3 class="mb-4">Contact Information</h3>
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <i class="fas fa-phone fa-4x mb-3" style="color: #ffd93d;"></i>
+                                <h5>Phone</h5>
+                                <p class="mb-1 fs-5">+256 786 210 221</p>
+                                <p class="mb-0 fs-5">+256 744 137 174</p>
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <i class="fas fa-envelope fa-4x mb-3" style="color: #ffd93d;"></i>
+                                <h5>Email</h5>
+                                <a href="mailto:sejjtechnologies@gmail.com" class="text-warning text-decoration-none fw-semibold fs-5">
+                                    sejjtechnologies@gmail.com
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <i class="fas fa-map-marker-alt fa-4x mb-3" style="color: #ffd93d;"></i>
+                                <h5>Location</h5>
+                                <p class="mb-0 fs-5">Kampala, Uganda<br>East Africa</p>
+                            </div>
+                        </div>
+                        <div class="social-links">
+                            <a href="mailto:sejjtechnologies@gmail.com" title="Email Us">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:+256786210221" title="Call Us">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                            <a href="https://wa.me/256786210221" target="_blank" title="WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="https://www.facebook.com/sejjtechnologies" target="_blank" title="Facebook">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="https://www.instagram.com/sejjtechnologies" target="_blank" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/company/sejjtechnologies" target="_blank" title="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ url_for('static', filename='images/school_192.png') }}"
+                             alt="Sejjtechnologies(U) Ltd Logo"
+                             class="me-3 rounded-circle"
+                             style="width: 50px; height: 50px; object-fit: cover;">
+                        <h5 class="text-white mb-0">Sejjtechnologies(U) Ltd</h5>
+                    </div>
+                    <p class="text-muted mb-3 fs-6">
+                        Your trusted technology partner in Uganda. We create digital solutions
+                        that help businesses grow and succeed in the modern world.
+                    </p>
+                    <p class="text-muted small mb-0">
+                        &copy; 2025 Sejjtechnologies(U) Ltd. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-lg-8">
+                    <div class="footer-links">
+                        <div>
+                            <h6 class="text-white mb-3">Services</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="#services">Software Development</a></li>
+                                <li><a href="#services">Website Design</a></li>
+                                <li><a href="#services">Mobile Apps</a></li>
+                                <li><a href="#services">Graphics Design</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-3">Company</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="#about">About Us</a></li>
+                                <li><a href="#process">Our Process</a></li>
+                                <li><a href="#portfolio">Portfolio</a></li>
+                                <li><a href="#contact">Contact</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h6 class="text-white mb-3">Connect</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="tel:+256786210221">+256 786 210 221</a></li>
+                                <li><a href="tel:+256744137174">+256 744 137 174</a></li>
+                                <li><a href="mailto:sejjtechnologies@gmail.com">sejjtechnologies@gmail.com</a></li>
+                                <li><span class="text-muted">Kampala, Uganda</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.offsetTop - 80;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Back to top button
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Navbar background on scroll
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 107, 107, 0.95) !important';
+                navbar.style.backdropFilter = 'blur(10px)';
+            } else {
+                navbar.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%) !important';
+            }
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with fade-in class
+        document.querySelectorAll('.service-card, .testimonial-card, .portfolio-card, .process-step').forEach(card => {
+            card.classList.add('fade-in');
+            observer.observe(card);
+        });
+
+        // Add bounce-in animation to hero elements
+        document.querySelector('.hero-title').classList.add('bounce-in');
+        document.querySelector('.company-logo').classList.add('bounce-in');
+
+        // Social media button animations
+        document.querySelectorAll('.social-links a').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.animation = 'none';
+                setTimeout(() => {
+                    this.style.animation = 'pulse 0.6s ease-in-out';
+                }, 10);
+            });
+        });
+
+        // Service card hover effects
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) rotate(2deg)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) rotate(0deg)';
+            });
+        });
+
+        // Add click effects to buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+
+        // Typing effect for hero subtitle (optional enhancement)
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroSubtitle) {
+            const text = heroSubtitle.textContent;
+            heroSubtitle.textContent = '';
+            let i = 0;
+            const typeWriter = () => {
+                if (i < text.length) {
+                    heroSubtitle.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                }
+            };
+            setTimeout(typeWriter, 1000);
+        }
+    </script>
+</body>
+</html>

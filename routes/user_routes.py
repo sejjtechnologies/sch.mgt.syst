@@ -82,3 +82,9 @@ def role_firstnames():
         result.setdefault(u.role, []).append(u.first_name)
 
     return jsonify(result)
+
+
+@user_bp.route('/developer')
+def developer():
+    """Developer information page"""
+    return render_template('developer.html')

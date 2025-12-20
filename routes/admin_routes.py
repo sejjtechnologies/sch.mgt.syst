@@ -242,10 +242,11 @@ def system_settings():
     # Load current settings
     from utils.settings import SystemSettings
     settings = SystemSettings.get_category('general')
-    settings.update(SystemSettings.get_category('maintenance'))
+    settings.update(SystemSettings.get_category('system'))
     settings.update(SystemSettings.get_category('backups'))
     settings.update(SystemSettings.get_category('logs'))
     settings.update(SystemSettings.get_category('performance'))
+    settings.update(SystemSettings.get_category('security'))
 
     # Fetch academic years for dropdown
     from models.register_pupil import AcademicYear
@@ -297,7 +298,7 @@ def create_backup():
                 'backup_info': {
                     'timestamp': timestamp,
                     'type': 'manual',
-                    'version': '1.0'
+                    'version': '3.0.0'
                 },
                 'users': [model_to_dict(user) for user in User.query.all()],
                 'pupils': [model_to_dict(pupil) for pupil in Pupil.query.all()],
@@ -428,21 +429,27 @@ def download_backup(filename):
         return jsonify({'success': False, 'message': f'Error downloading backup: {str(e)}'}), 500
 
 
-@admin_bp.route('/delete_backup/<filename>', methods=['DELETE'])
+@admin_bp.route('/delete_backup/<filename>', methods=['DELETE', 'POST'])
 def delete_backup(filename):
     """Delete a specific backup file"""
+    print(f"DEBUG: delete_backup called with filename: {filename}, method: {request.method}")
     if 'user_id' not in session or session.get('user_role', '').lower() != 'admin':
+        print(f"DEBUG: Access denied for user_id: {session.get('user_id')}, role: {session.get('user_role')}")
         return jsonify({'success': False, 'message': 'Access denied'}), 403
 
     try:
         backup_dir = os.path.join(os.getcwd(), 'backups')
         file_path = os.path.join(backup_dir, filename)
+        print(f"DEBUG: Attempting to delete: {file_path}")
 
         if not os.path.exists(file_path):
+            print(f"DEBUG: File not found: {file_path}")
             return jsonify({'success': False, 'message': 'Backup file not found'}), 404
 
         os.remove(file_path)
+        print(f"DEBUG: Successfully deleted: {file_path}")
         return jsonify({'success': True, 'message': 'Backup deleted successfully'})
 
     except Exception as e:
+        print(f"DEBUG: Error deleting backup: {str(e)}")
         return jsonify({'success': False, 'message': f'Error deleting backup: {str(e)}'}), 500

@@ -101,10 +101,30 @@ else:
     print("⚠️  Skipping blueprint registration - system not configured")
 
 # ---------------------------------------------------------------------------
-# Automatic Backup System
+# Context Processors
 # ---------------------------------------------------------------------------
 
-def model_to_dict(model_instance):
+@app.context_processor
+def inject_version():
+    """Make version information available to all templates"""
+    try:
+        from version import __version__, APP_NAME, APP_AUTHOR, APP_EMAIL
+        return {
+            'app_version': __version__,
+            'app_name': APP_NAME,
+            'app_author': APP_AUTHOR,
+            'app_email': APP_EMAIL
+        }
+    except ImportError:
+        # Fallback if version.py is not available
+        return {
+            'app_version': '3.0.0',
+            'app_name': 'Elite Primary School Management System',
+            'app_author': 'Sejjtech',
+            'app_email': 'sejjtechnologies@gmail.com'
+        }
+
+# ---------------------------------------------------------------------------
     """Convert a SQLAlchemy model instance to a dictionary"""
     result = {}
     for column in model_instance.__table__.columns:
@@ -153,7 +173,7 @@ def create_automatic_backup():
                 'backup_info': {
                     'timestamp': timestamp,
                     'type': 'automatic',
-                    'version': '1.0'
+                    'version': '3.0.0'
                 },
                 'users': [model_to_dict(user) for user in User.query.all()],
                 'pupils': [model_to_dict(pupil) for pupil in Pupil.query.all()],

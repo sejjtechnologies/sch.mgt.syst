@@ -543,10 +543,30 @@
           'Delete Backup',
           'btn-danger',
           function() {
+            // Try DELETE first, fallback to POST if it fails
             fetch(`/admin/delete_backup/${filename}`, {
-              method: 'DELETE'
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              }
             })
-            .then(response => response.json())
+            .then(response => {
+              if (!response.ok) {
+                // If DELETE fails, try POST as fallback
+                throw new Error('DELETE failed, trying POST');
+              }
+              return response.json();
+            })
+            .catch(() => {
+              // Fallback to POST method
+              return fetch(`/admin/delete_backup/${filename}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ _method: 'DELETE' })
+              }).then(response => response.json());
+            })
             .then(data => {
               if (data.success) {
                 showAlert(data.message, 'success');
