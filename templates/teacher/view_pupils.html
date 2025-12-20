@@ -185,7 +185,7 @@
   <nav class="navbar-custom fixed-top">
     <span class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
       <img src="/static/images/school_192.png" alt="Logo" style="height:40px; width:auto;" />
-      {{ system_settings.abbreviated_school_name }} - Pupils Details
+      {{ system_settings.abbreviated_school_name }} - 
       {% if teacher_assignments and teacher_assignments[0] %}
         <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ teacher_assignments[0].class_name }}{% if teacher_assignments[0].stream_name %} {{ teacher_assignments[0].stream_name | truncate(1, end='') }}{% endif %}</span>
       {% endif %}

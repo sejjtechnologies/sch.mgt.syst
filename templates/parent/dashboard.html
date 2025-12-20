@@ -13,30 +13,56 @@
       .hero-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 2rem 0;
+        padding: 1.5rem 0;
         margin-bottom: 1rem;
         border-radius: 0 0 1rem 1rem;
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+      }
+
+      .hero-section .container {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .hero-section h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .hero-section p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      .hero-section .row .col-auto {
+        padding: 0.25rem;
+      }
+
+      .hero-section .d-flex {
+        font-size: 0.8rem;
       }
 
       .search-container {
         background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
       }
 
       .search-input {
         border: 2px solid #e1e5e9;
         border-radius: 50px;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.375rem 1rem;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
       }
 
       .search-input:focus {
         border-color: #667eea;
-        box-shadow: 0 0 0 0.15rem rgba(102, 126, 234, 0.25);
+        box-shadow: 0 0 0 0.1rem rgba(102, 126, 234, 0.25);
         outline: none;
       }
 
@@ -62,32 +88,32 @@
 
       .info-section {
         background: white;
-        border-radius: 0.75rem;
+        border-radius: 0.5rem;
         box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-        padding: 1.5rem;
-        margin-bottom: 1rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
       }
 
       .fees-balance {
         background: linear-gradient(135deg, #ff6b6b, #ee5a24);
         color: white;
-        border-radius: 0.75rem;
-        padding: 1rem;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
         text-align: center;
       }
 
       .attendance-card {
         background: linear-gradient(135deg, #00d2d3, #54a0ff);
         color: white;
-        border-radius: 0.75rem;
-        padding: 1rem;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
         text-align: center;
       }
 
       .payment-item {
         background: #f8f9fa;
         border-radius: 0.5rem;
-        padding: 0.75rem;
+        padding: 0.5rem;
         margin-bottom: 0.5rem;
         border-left: 3px solid #28a745;
       }
@@ -96,24 +122,285 @@
         display: none;
         justify-content: center;
         align-items: center;
-        min-height: 150px;
+        min-height: 120px;
       }
 
       .no-results {
         text-align: center;
         color: #6c757d;
-        padding: 2rem;
+        padding: 1.5rem;
+      }
+
+      @media (max-width: 576px) {
+        .hero-section {
+          padding: 1rem 0;
+          min-height: 60px;
+        }
+
+        .hero-section h1 {
+          font-size: 1.25rem;
+        }
+
+        .hero-section p {
+          font-size: 0.8rem;
+        }
+
+        .search-container {
+          padding: 0.75rem;
+        }
+
+        .info-section {
+          padding: 0.75rem;
+        }
+
+        .fees-balance, .attendance-card {
+          padding: 0.5rem;
+        }
+
+        .stat-number {
+          font-size: 1.1rem;
+        }
       }
 
       .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: bold;
         margin-bottom: 0.25rem;
       }
 
       .stat-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         opacity: 0.9;
+      }
+
+      /* Report Card Styles */
+      .report-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .report-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+      }
+
+      .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+      }
+
+      .report-meta {
+        margin-top: 0.5rem;
+      }
+
+      .report-meta .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+      }
+
+      .overall-score {
+        text-align: center;
+      }
+
+      .score-circle {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        border: 3px solid white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(10px);
+      }
+
+      .score-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+      }
+
+      .score-label {
+        font-size: 0.7rem;
+        opacity: 0.9;
+        margin-top: 2px;
+      }
+
+      .subjects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+      }
+
+      .subject-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-left: 4px solid #6c757d;
+        transition: all 0.3s ease;
+      }
+
+      .subject-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+      }
+
+      .subject-card.english { border-left-color: #28a745; }
+      .subject-card.mathematics { border-left-color: #007bff; }
+      .subject-card.science { border-left-color: #fd7e14; }
+      .subject-card.social-studies { border-left-color: #6f42c1; }
+
+      .subject-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .subject-header i {
+        font-size: 1.2rem;
+      }
+
+      .subject-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #212529;
+        margin-bottom: 0.25rem;
+      }
+
+      .subject-grade {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .subject-remark {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-style: italic;
+        line-height: 1.3;
+      }
+
+      .performance-summary {
+        padding: 1.5rem;
+        background: white;
+      }
+
+      .summary-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        height: 100%;
+      }
+
+      .summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      .summary-content h6 {
+        margin: 0 0 0.5rem 0;
+        color: #495057;
+        font-weight: 600;
+      }
+
+      .position-text {
+        font-size: 1.1rem;
+        color: #212529;
+        margin-bottom: 0.25rem;
+      }
+
+      .comment-text {
+        color: #495057;
+        line-height: 1.4;
+      }
+
+      .report-footer {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #dee2e6;
+      }
+
+      .total-score {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .total-label {
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .total-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #212529;
+      }
+
+      @media (max-width: 768px) {
+        .subjects-grid {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+          padding: 1rem;
+        }
+
+        .report-header {
+          padding: 1rem;
+        }
+
+        .score-circle {
+          width: 60px;
+          height: 60px;
+        }
+
+        .score-number {
+          font-size: 1.2rem;
+        }
+
+        .performance-summary {
+          padding: 1rem;
+        }
+
+        .summary-card {
+          flex-direction: column;
+          text-align: center;
+          gap: 0.75rem;
+        }
+
+        .summary-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1rem;
+        }
       }
     </style>
   </head>
@@ -171,7 +458,7 @@
       </div>
     </section>
 
-    <main class="container">
+    <main class="container px-2 px-md-3">
       <!-- Search Section -->
       <div class="search-container">
         <div class="row">
@@ -258,7 +545,7 @@
         </div>
 
         <!-- Fees Balance & Attendance -->
-        <div class="row g-4 mb-4">
+        <div class="row g-3 mb-3">
           <div class="col-md-6">
             <div class="fees-balance">
               <div class="stat-number" id="feesBalance">0.00</div>
@@ -296,7 +583,7 @@
             </li>
           </ul>
 
-          <div class="tab-content mt-4" id="pupilTabsContent">
+          <div class="tab-content mt-3" id="pupilTabsContent">
             <!-- Payment History Tab -->
             <div class="tab-pane fade show active" id="payments" role="tabpanel">
               <h5 class="mb-3">Recent Payments</h5>
@@ -311,31 +598,31 @@
             <!-- Attendance Tab -->
             <div class="tab-pane fade" id="attendance" role="tabpanel">
               <h5 class="mb-3">Attendance Summary</h5>
-              <div class="row g-4">
+              <div class="row g-3">
                 <div class="col-md-4">
                   <div class="card text-center">
-                    <div class="card-body">
-                      <h6 class="card-title text-primary">Daily (7 days)</h6>
+                    <div class="card-body py-2">
+                      <h6 class="card-title text-primary mb-1" style="font-size: 0.8rem;">Daily (7 days)</h6>
                       <div class="stat-number" id="dailyAttendance">0%</div>
-                      <small class="text-muted" id="dailyStats">0/0 days</small>
+                      <small class="text-muted" id="dailyStats" style="font-size: 0.7rem;">0/0 days</small>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="card text-center">
-                    <div class="card-body">
-                      <h6 class="card-title text-success">Weekly (Month)</h6>
+                    <div class="card-body py-2">
+                      <h6 class="card-title text-success mb-1" style="font-size: 0.8rem;">Weekly (Month)</h6>
                       <div class="stat-number" id="weeklyAttendance">0%</div>
-                      <small class="text-muted" id="weeklyStats">0/0 days</small>
+                      <small class="text-muted" id="weeklyStats" style="font-size: 0.7rem;">0/0 days</small>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="card text-center">
-                    <div class="card-body">
-                      <h6 class="card-title text-info">Termly (3 months)</h6>
+                    <div class="card-body py-2">
+                      <h6 class="card-title text-info mb-1" style="font-size: 0.8rem;">Termly (3 months)</h6>
                       <div class="stat-number" id="termlyAttendance">0%</div>
-                      <small class="text-muted" id="termlyStats">0/0 days</small>
+                      <small class="text-muted" id="termlyStats" style="font-size: 0.7rem;">0/0 days</small>
                     </div>
                   </div>
                 </div>
@@ -345,10 +632,40 @@
             <!-- Reports Tab -->
             <div class="tab-pane fade" id="reports" role="tabpanel">
               <h5 class="mb-3">Academic Reports</h5>
-              <div class="text-center text-muted py-4">
-                <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
-                <p>Report generation feature coming soon</p>
-                <small>This section will show academic reports, grades, and progress tracking</small>
+
+              <!-- Filter Controls -->
+              <div class="row g-2 mb-3" id="reportFilters" style="display: none;">
+                <div class="col-md-3 col-sm-6">
+                  <select class="form-select form-select-sm" id="filterYear">
+                    <option value="">Select Academic Year</option>
+                  </select>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <select class="form-select form-select-sm" id="filterExamType">
+                    <option value="">Select Exam Type</option>
+                  </select>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <select class="form-select form-select-sm" id="filterTerm">
+                    <option value="">Select Term</option>
+                  </select>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="d-grid">
+                    <button class="btn btn-primary btn-sm" id="loadReportsBtn">
+                      <i class="bi bi-search me-1"></i>Load Reports
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reports Display -->
+              <div id="reportsContainer">
+                <div class="text-center text-muted py-4">
+                  <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
+                  <p>Select a pupil to view academic reports</p>
+                  <small>Reports will show grades, marks, and academic progress</small>
+                </div>
               </div>
             </div>
           </div>
@@ -535,6 +852,9 @@
         // Show pupil details section
         document.getElementById('pupilDetails').style.display = 'block';
 
+        // Load reports for this pupil
+        loadReports(selectedPupilId);
+
         // Scroll to details
         document.getElementById('pupilDetails').scrollIntoView({ behavior: 'smooth' });
       }
@@ -542,7 +862,239 @@
       function refreshPupilData() {
         if (selectedPupilId) {
           loadPupilDetails(selectedPupilId);
+          loadReports(selectedPupilId);
         }
+      }
+
+      function loadReports(pupilId) {
+        const filtersDiv = document.getElementById('reportFilters');
+        const reportsContainer = document.getElementById('reportsContainer');
+
+        showLoading();
+
+        fetch(`/parent/api/pupil/${pupilId}/reports`)
+          .then(response => response.json())
+          .then(data => {
+            hideLoading();
+            if (data.success) {
+              // Populate filter dropdowns
+              populateFilters(data.filters);
+              // Display reports
+              displayReports(data.reports);
+              filtersDiv.style.display = 'grid';
+            } else {
+              reportsContainer.innerHTML = `<div class="alert alert-danger">Failed to load reports</div>`;
+            }
+          })
+          .catch(error => {
+            hideLoading();
+            reportsContainer.innerHTML = `<div class="alert alert-danger">Error loading reports: ${error.message}</div>`;
+          });
+      }
+
+      function populateFilters(filters) {
+        const yearSelect = document.getElementById('filterYear');
+        const examTypeSelect = document.getElementById('filterExamType');
+        const termSelect = document.getElementById('filterTerm');
+
+        // Clear existing options (except first)
+        yearSelect.innerHTML = '<option value="">All Years</option>';
+        examTypeSelect.innerHTML = '<option value="">All Exam Types</option>';
+        termSelect.innerHTML = '<option value="">All Terms</option>';
+
+        // Add academic years
+        filters.academic_years.forEach(year => {
+          const option = document.createElement('option');
+          option.value = year.id;
+          option.textContent = year.name;
+          yearSelect.appendChild(option);
+        });
+
+        // Add exam types
+        filters.exam_types.forEach(examType => {
+          const option = document.createElement('option');
+          option.value = examType;
+          option.textContent = examType;
+          examTypeSelect.appendChild(option);
+        });
+
+        // Add terms
+        filters.terms.forEach(term => {
+          const option = document.createElement('option');
+          option.value = term;
+          option.textContent = `Term ${term}`;
+          termSelect.appendChild(option);
+        });
+
+        // Add event listener for load reports button
+        document.getElementById('loadReportsBtn').addEventListener('click', applyFilters);
+      }
+
+      function applyFilters() {
+        const yearSelect = document.getElementById('filterYear');
+        const examTypeSelect = document.getElementById('filterExamType');
+        const termSelect = document.getElementById('filterTerm');
+
+        // Check if at least one filter is selected
+        if (!yearSelect.value && !examTypeSelect.value && !termSelect.value) {
+          alert('Please select at least one filter option before loading reports.');
+          return;
+        }
+
+        const params = new URLSearchParams();
+        if (yearSelect.value) params.append('academic_year_id', yearSelect.value);
+        if (examTypeSelect.value) params.append('exam_type', examTypeSelect.value);
+        if (termSelect.value) params.append('term', termSelect.value);
+
+        showLoading();
+
+        fetch(`/parent/api/pupil/${selectedPupilId}/reports?${params.toString()}`)
+          .then(response => response.json())
+          .then(data => {
+            hideLoading();
+            if (data.success) {
+              displayReports(data.reports);
+            } else {
+              document.getElementById('reportsContainer').innerHTML = `<div class="alert alert-danger">Failed to load filtered reports</div>`;
+            }
+          })
+          .catch(error => {
+            hideLoading();
+            document.getElementById('reportsContainer').innerHTML = `<div class="alert alert-danger">Error loading reports: ${error.message}</div>`;
+          });
+      }
+
+      function resetFilters() {
+        document.getElementById('filterYear').value = '';
+        document.getElementById('filterExamType').value = '';
+        document.getElementById('filterTerm').value = '';
+        applyFilters();
+      }
+
+      function displayReports(reports) {
+        const reportsContainer = document.getElementById('reportsContainer');
+
+        if (reports.length === 0) {
+          reportsContainer.innerHTML = `
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-file-earmark-x fs-1 mb-3 text-warning"></i>
+              <h5>No reports found</h5>
+              <p>Try adjusting your filter criteria or select different options.</p>
+            </div>
+          `;
+          return;
+        }
+
+        reportsContainer.innerHTML = reports.map(report => `
+          <div class="report-card mb-4">
+            <!-- Report Header -->
+            <div class="report-header">
+              <div class="row align-items-center">
+                <div class="col-md-8">
+                  <h5 class="mb-1">
+                    <i class="bi bi-file-earmark-text-fill me-2"></i>
+                    ${report.exam_type || 'Exam'} Report
+                  </h5>
+                  <div class="report-meta">
+                    <span class="badge bg-primary me-2">${report.academic_year || 'N/A'}</span>
+                    <span class="badge bg-secondary me-2">Term ${report.term || 'N/A'}</span>
+                    <span class="badge bg-success">${report.overall_grade || 'N/A'}</span>
+                  </div>
+                </div>
+                <div class="col-md-4 text-end">
+                  <div class="overall-score">
+                    <div class="score-circle">
+                      <span class="score-number">${report.average || 0}%</span>
+                      <span class="score-label">Average</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subject Scores -->
+            <div class="subjects-grid">
+              <div class="subject-card english">
+                <div class="subject-header">
+                  <i class="bi bi-book"></i>
+                  <span>English</span>
+                </div>
+                <div class="subject-score">${report.english || 0}/100</div>
+                <div class="subject-grade">${report.english_grade || 'N/A'}</div>
+                <div class="subject-remark">${report.english_remark || ''}</div>
+              </div>
+
+              <div class="subject-card mathematics">
+                <div class="subject-header">
+                  <i class="bi bi-calculator"></i>
+                  <span>Mathematics</span>
+                </div>
+                <div class="subject-score">${report.mathematics || 0}/100</div>
+                <div class="subject-grade">${report.mathematics_grade || 'N/A'}</div>
+                <div class="subject-remark">${report.mathematics_remark || ''}</div>
+              </div>
+
+              <div class="subject-card science">
+                <div class="subject-header">
+                  <i class="bi bi-flask"></i>
+                  <span>Science</span>
+                </div>
+                <div class="subject-score">${report.science || 0}/100</div>
+                <div class="subject-grade">${report.science_grade || 'N/A'}</div>
+                <div class="subject-remark">${report.science_remark || ''}</div>
+              </div>
+
+              <div class="subject-card social-studies">
+                <div class="subject-header">
+                  <i class="bi bi-globe"></i>
+                  <span>Social Studies</span>
+                </div>
+                <div class="subject-score">${report.social_studies || 0}/100</div>
+                <div class="subject-grade">${report.social_studies_grade || 'N/A'}</div>
+                <div class="subject-remark">${report.social_studies_remark || ''}</div>
+              </div>
+            </div>
+
+            <!-- Performance Summary -->
+            <div class="performance-summary">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="summary-card">
+                    <div class="summary-icon">
+                      <i class="bi bi-trophy"></i>
+                    </div>
+                    <div class="summary-content">
+                      <h6>Class Position</h6>
+                      <div class="position-text">
+                        <strong>${report.position_in_class || 'N/A'}</strong> out of ${report.class_student_count || 'N/A'}
+                      </div>
+                      <small class="text-muted">Stream: ${report.position_in_stream || 'N/A'} out of ${report.stream_student_count || 'N/A'}</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="summary-card">
+                    <div class="summary-icon">
+                      <i class="bi bi-chat-quote"></i>
+                    </div>
+                    <div class="summary-content">
+                      <h6>Teacher's Comment</h6>
+                      <div class="comment-text">${report.general_comment || 'No comment provided'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Score Footer -->
+            <div class="report-footer">
+              <div class="total-score">
+                <span class="total-label">Total Score:</span>
+                <span class="total-value">${report.total_marks || 0} / 400</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
       }
 
       function showLoading() {

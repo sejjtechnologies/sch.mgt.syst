@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
 from models import db
-from models.register_pupil import Pupil, AcademicYear
+from models.register_pupil import Pupil, AcademicYear, PupilMarks
 from models.bursar import Payment, StudentFee, FeeStructure
 from models.attendance import Attendance
 from models.user import User
@@ -95,6 +95,9 @@ def get_pupil_details(pupil_id):
     # Get attendance summary
     attendance_summary = get_pupil_attendance_summary(pupil_id)
 
+    # Get pupil reports (marks)
+    pupil_reports = get_pupil_reports(pupil_id)
+
     # Get class and stream names
     class_name = None
     stream_name = None
@@ -118,7 +121,8 @@ def get_pupil_details(pupil_id):
         'academic_year': pupil.academic_year.name if pupil.academic_year else None,
         'fees_balance': fees_balance,
         'recent_payments': payments_data,
-        'attendance_summary': attendance_summary
+        'attendance_summary': attendance_summary,
+        'reports': pupil_reports
     }
 
     return jsonify({'success': True, 'pupil': pupil_data})
@@ -257,3 +261,127 @@ def get_pupil_attendance_summary(pupil_id):
             'weekly': {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0},
             'termly': {'present': 0, 'absent': 0, 'total': 0, 'percentage': 0}
         }
+
+def get_pupil_reports(pupil_id, academic_year_id=None, exam_type=None, term=None):
+    """Get reports (marks) for a pupil with optional filtering
+    
+    Args:
+        pupil_id: ID of the pupil
+        academic_year_id: Optional academic year ID to filter by
+        exam_type: Optional exam type to filter by (e.g., 'Beginning of term', 'Mid_term', 'End of term')
+        term: Optional term number to filter by (1, 2, or 3)
+    """
+    try:
+        # Start with base query
+        query = PupilMarks.query.filter_by(pupil_id=pupil_id)
+        
+        # Apply filters if provided
+        if academic_year_id is not None:
+            query = query.filter_by(academic_year_id=academic_year_id)
+        if exam_type:
+            query = query.filter_by(exam_type=exam_type)
+        if term is not None:
+            query = query.filter_by(term=term)
+        
+        # Get all mark records for this pupil, ordered by date
+        pupil_marks = query.order_by(
+            PupilMarks.academic_year_id.desc(),
+            PupilMarks.term.desc()
+        ).all()
+
+        reports = []
+        for mark in pupil_marks:
+            reports.append({
+                'id': mark.id,
+                'term': mark.term,
+                'exam_type': mark.exam_type,
+                'academic_year': mark.academic_year.name if mark.academic_year else None,
+                'english': mark.english,
+                'mathematics': mark.mathematics,
+                'science': mark.science,
+                'social_studies': mark.social_studies,
+                'total_marks': mark.total_marks,
+                'average': mark.average,
+                'english_grade': mark.english_grade,
+                'mathematics_grade': mark.mathematics_grade,
+                'science_grade': mark.science_grade,
+                'social_studies_grade': mark.social_studies_grade,
+                'overall_grade': mark.overall_grade,
+                'position_in_class': mark.position_in_class,
+                'position_in_stream': mark.position_in_stream,
+                'class_student_count': mark.class_student_count,
+                'stream_student_count': mark.stream_student_count,
+                'general_comment': mark.general_comment,
+                'english_remark': mark.english_remark,
+                'mathematics_remark': mark.mathematics_remark,
+                'science_remark': mark.science_remark,
+                'social_studies_remark': mark.social_studies_remark,
+                'created_at': mark.created_at.isoformat() if mark.created_at else None
+            })
+
+        return reports
+
+    except Exception as e:
+        print(f"Error getting pupil reports: {e}")
+        return []
+
+@parent_bp.route('/api/pupil/<pupil_id>/reports')
+def get_reports_with_filters(pupil_id):
+    """Get filtered reports for a pupil with available filter options
+    
+    Query parameters:
+    - academic_year_id: Filter by academic year ID
+    - exam_type: Filter by exam type (Beginning of term, Mid_term, End of term)
+    - term: Filter by term (1, 2, or 3)
+    """
+    if 'user_id' not in session or session.get('user_role', '').lower() != 'parent':
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+    pupil = Pupil.query.get(pupil_id)
+    if not pupil:
+        return jsonify({'success': False, 'message': 'Pupil not found'}), 404
+
+    # Get filter parameters from query string
+    academic_year_id = request.args.get('academic_year_id', type=int)
+    exam_type = request.args.get('exam_type', type=str)
+    term = request.args.get('term', type=int)
+
+    # Get filtered reports
+    reports = get_pupil_reports(pupil_id, academic_year_id=academic_year_id, 
+                               exam_type=exam_type, term=term)
+    
+    # Get all available academic years for filter dropdown
+    available_years = db.session.query(db.distinct(PupilMarks.academic_year_id)).filter(
+        PupilMarks.pupil_id == pupil_id
+    ).all()
+    
+    year_list = []
+    for year_id in available_years:
+        if year_id[0]:
+            year_obj = AcademicYear.query.get(year_id[0])
+            if year_obj:
+                year_list.append({'id': year_obj.id, 'name': year_obj.name})
+    
+    # Get all available exam types for filter dropdown
+    available_exam_types = db.session.query(db.distinct(PupilMarks.exam_type)).filter(
+        PupilMarks.pupil_id == pupil_id
+    ).all()
+    
+    exam_types_list = [exam[0] for exam in available_exam_types if exam[0]]
+    
+    # Get all available terms for filter dropdown
+    available_terms = db.session.query(db.distinct(PupilMarks.term)).filter(
+        PupilMarks.pupil_id == pupil_id
+    ).all()
+    
+    terms_list = sorted([term[0] for term in available_terms if term[0]])
+
+    return jsonify({
+        'success': True,
+        'reports': reports,
+        'filters': {
+            'academic_years': year_list,
+            'exam_types': exam_types_list,
+            'terms': terms_list
+        }
+    })

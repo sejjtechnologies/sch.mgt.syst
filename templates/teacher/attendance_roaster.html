@@ -180,7 +180,7 @@
   <!-- Fixed Red Navbar -->
   <nav class="navbar">
     <span class="navbar-brand" style="display:flex; align-items:center; gap:8px;">
-      <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;"> {{ system_settings.abbreviated_school_name }} - Attendance Roster
+      <img src="/static/images/school_192.png" alt="Logo" style="height:32px; width:auto;"> {{ system_settings.abbreviated_school_name }} 
       {% if selected_class_id %}
         <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ selected_class_id }}{% if selected_stream %} {{ selected_stream | truncate(1, end='') }}{% endif %}</span>
       {% endif %}

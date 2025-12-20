@@ -111,10 +111,6 @@
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
       outline: none;
     }
-      border-color: #007bff;
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-      outline: none;
-    }
     .marks-input.is-invalid {
       border-color: #dc3545;
       background-color: #f8d7da;
@@ -182,8 +178,7 @@
   <nav class="navbar navbar-custom fixed-top">
     <a class="navbar-brand" href="#">
       <img src="/static/images/school_192.png" alt="Logo" style="height:36px; width:auto; margin-right:8px;">
-      {{ system_settings.abbreviated_school_name }} - Manage Pupils Marks
-    </a>
+      {{ system_settings.abbreviated_school_name }}  </a>
     <a href="{{ url_for('teacher.dashboard') }}" class="back-btn-small">
       <i class="bi bi-box-arrow-left"></i> Back
     </a>
@@ -334,9 +329,14 @@
   </footer>
 
   <script>
-    let currentAcademicYear = {{ current_academic_year.id if current_academic_year else 'null' | tojson }};
-    let currentTerm = {{ default_term | tojson }};
-    let currentExamType = {{ default_exam_type | tojson }};
+    // Initialize variables from server-side template data
+    let currentAcademicYear = "{{ current_academic_year.id if current_academic_year else 'null' }}";
+    let currentTerm = "{{ default_term }}";
+    let currentExamType = "{{ default_exam_type }}";
+
+    // Convert string values to appropriate types
+    currentAcademicYear = currentAcademicYear === 'null' ? null : parseInt(currentAcademicYear);
+    currentTerm = parseInt(currentTerm);
 
     // Update display when filters change
     document.getElementById('academicYearSelect').addEventListener('change', function() {

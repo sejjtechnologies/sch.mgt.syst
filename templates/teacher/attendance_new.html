@@ -99,7 +99,7 @@
       <a href="{{ url_for('teacher.dashboard') }}" class="navbar-brand d-flex align-items-center" style="gap:8px; text-decoration: none;">
         <img src="/static/images/school_192.png" alt="Logo" style="height:44px; width:auto;" />
         <span class="navbar-label">
-          <i class="bi bi-file-earmark-text"></i> {{ system_settings.abbreviated_school_name }} - Mark Attendance
+          <i class="bi bi-file-earmark-text"></i> {{ system_settings.abbreviated_school_name }} 
           {% if class_name %}
             <span style="font-weight: normal; margin-left: 8px; font-size: 0.9rem;">{{ class_name }}{% if stream_name %} {{ stream_name | truncate(1, end='') }}{% endif %}</span>
           {% endif %}
