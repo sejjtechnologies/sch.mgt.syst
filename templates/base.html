@@ -61,6 +61,96 @@
 <div class="container-fluid mt-4" style="padding-top: 100px;">
 
 <style>
+/* General spacing for better component separation */
+.container-fluid {
+  padding-bottom: 2rem;
+}
+
+.container-fluid > * {
+  margin-bottom: 1.5rem;
+}
+
+.container-fluid > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Add spacing between different content sections */
+.card, .alert, .table, .form-group, .btn-group {
+  margin-bottom: 1rem;
+}
+
+/* Improve spacing for form elements */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-control, .form-select {
+  margin-bottom: 0.75rem;
+}
+
+/* Add spacing for buttons */
+.btn {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-block {
+  margin-bottom: 1rem;
+}
+
+/* Improve spacing for lists and navigation */
+.nav, .list-group {
+  margin-bottom: 1rem;
+}
+
+.nav-item {
+  margin-bottom: 0.25rem;
+}
+
+/* Add spacing for tables */
+.table {
+  margin-bottom: 1.5rem;
+}
+
+/* Improve spacing for alerts */
+.alert {
+  margin-bottom: 1.25rem;
+}
+
+/* Add spacing for cards */
+.card {
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive spacing adjustments */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-bottom: 1rem;
+  }
+
+  .container-fluid > * {
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid > * {
+    margin-bottom: 0.75rem;
+  }
+
+  .card, .alert, .table {
+    margin-bottom: 1rem;
+  }
+}
 /* Fixed Banner Styling */
 #top-banner {
   box-shadow: 0 6px 20px rgba(0,0,0,0.25);

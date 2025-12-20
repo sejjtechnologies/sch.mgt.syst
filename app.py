@@ -9,6 +9,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import atexit
 
+# Helper function to convert SQLAlchemy models to dictionaries
+def model_to_dict(model):
+    """Convert SQLAlchemy model instance to dictionary"""
+    return {column.name: getattr(model, column.name) for column in model.__table__.columns}
+
 # ---------------------------------------------------------------------------
 # Load environment variables from .env
 # ---------------------------------------------------------------------------

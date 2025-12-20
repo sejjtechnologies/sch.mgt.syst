@@ -15,14 +15,14 @@
         }
 
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif !important;
+            font-family: 'Comic Sans MS', 'Comic Sans', 'Segoe UI', Arial, sans-serif !important;
             line-height: 1.6;
             background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Comic Sans MS', cursive, sans-serif !important;
-            font-weight: bold;
+            font-family: 'Comic Sans MS', 'Comic Sans', 'Segoe UI', Arial, sans-serif !important;
+            font-weight: 600;
         }
 
         /* Navigation */
@@ -146,14 +146,40 @@
             transition: left 0.5s;
         }
 
-        .service-card:hover::before {
-            left: 100%;
+        /* Different background colors for each service card */
+        .service-1 {
+            background: #f8f9fa;
+            color: #333;
         }
 
-        .service-card:hover {
-            transform: translateY(-15px) rotate(2deg);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            border-color: #ffd93d;
+        .service-2 {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .service-3 {
+            background: #f1f3f4;
+            color: #333;
+        }
+
+        .service-4 {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .service-5 {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .service-6 {
+            background: #f1f3f4;
+            color: #333;
+        }
+
+        .service-7 {
+            background: #f8f9fa;
+            color: #333;
         }
 
         .service-icon {
@@ -182,11 +208,6 @@
             transform: translate(-50%, -50%);
         }
 
-        .service-card:hover .service-icon::before {
-            width: 120%;
-            height: 120%;
-        }
-
         .service-1 .service-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; }
         .service-2 .service-icon { background: linear-gradient(135deg, #4ecdc4, #44a08d); color: white; }
         .service-3 .service-icon { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
@@ -211,11 +232,6 @@
             border: 2px solid rgba(255,255,255,0.2);
             transition: all 0.3s ease;
             margin-bottom: 2rem;
-        }
-
-        .process-step:hover {
-            transform: translateY(-10px);
-            background: rgba(255,255,255,0.2);
         }
 
         .step-number {
@@ -250,9 +266,17 @@
             margin-bottom: 2rem;
         }
 
-        .portfolio-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        /* Different background colors for portfolio cards */
+        .portfolio-card:nth-child(1) {
+            background: #f8f9fa;
+        }
+
+        .portfolio-card:nth-child(2) {
+            background: #e9ecef;
+        }
+
+        .portfolio-card:nth-child(3) {
+            background: #f1f3f4;
         }
 
         /* Testimonials */
@@ -278,7 +302,18 @@
             left: 2rem;
             font-size: 5rem;
             color: rgba(255, 217, 61, 0.2);
-            font-family: 'Comic Sans MS', cursive;
+            font-family: 'Comic Sans MS', 'Comic Sans', 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* Different background colors for testimonial cards */
+        .testimonial-card:nth-child(1) {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .testimonial-card:nth-child(2) {
+            background: #e9ecef;
+            color: #333;
         }
 
         /* Contact Section */
@@ -289,11 +324,12 @@
         }
 
         .contact-card {
-            background: rgba(255,255,255,0.1);
+            background: #f8f9fa;
             border-radius: 25px;
             padding: 3rem;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255,255,255,0.2);
+            color: #333;
         }
 
         .social-links {
@@ -446,15 +482,27 @@
             }
 
             .service-card {
-                margin-bottom: 2rem;
-                padding: 1.5rem; /* Reduce padding */
+                margin-bottom: 1.5rem;
+                padding: 1rem; /* Further reduce padding for mobile */
+                border-radius: 15px; /* Smaller border radius for mobile */
+                transform: scale(0.95); /* Slightly smaller cards on mobile */
             }
 
             .service-icon {
-                width: 70px; /* Smaller icons */
-                height: 70px;
-                font-size: 2rem;
-                margin-bottom: 1.5rem;
+                width: 60px; /* Even smaller icons */
+                height: 60px;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .service-card h4 {
+                font-size: 1.1rem; /* Smaller headings */
+                margin-bottom: 0.5rem;
+            }
+
+            .service-card p {
+                font-size: 0.9rem; /* Smaller text */
+                line-height: 1.4;
             }
 
             .process-step {
@@ -475,6 +523,26 @@
             .testimonial-card {
                 margin-bottom: 2rem;
                 padding: 2rem; /* Reduce padding */
+                border-radius: 15px; /* Smaller border radius */
+                transform: scale(0.95); /* Slightly smaller on mobile */
+            }
+
+            .testimonial-card::before {
+                font-size: 3rem; /* Smaller quote mark */
+                top: 0.5rem;
+                left: 1rem;
+            }
+
+            .contact-card {
+                padding: 2rem; /* Reduce padding */
+                border-radius: 15px; /* Smaller border radius */
+                margin-bottom: 2rem;
+            }
+
+            .portfolio-card {
+                margin-bottom: 1.5rem;
+                border-radius: 15px; /* Smaller border radius */
+                transform: scale(0.95); /* Slightly smaller on mobile */
             }
 
             .social-links {
@@ -1102,11 +1170,11 @@
                              style="width: 50px; height: 50px; object-fit: cover;">
                         <h5 class="text-white mb-0">Sejjtechnologies(U) Ltd</h5>
                     </div>
-                    <p class="text-muted mb-3 fs-6">
+                    <p class="text-light mb-3 fs-6">
                         Your trusted technology partner in Uganda. We create digital solutions
                         that help businesses grow and succeed in the modern world.
                     </p>
-                    <p class="text-muted small mb-0">
+                    <p class="text-light small mb-0">
                         &copy; 2025 Sejjtechnologies(U) Ltd. All rights reserved.
                     </p>
                 </div>
